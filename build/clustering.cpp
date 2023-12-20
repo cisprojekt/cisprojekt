@@ -1,18 +1,17 @@
+// Copyright [year] <Copyright Owner>
 #include <Eigen/Dense>
 #include <cmath>
 #include <emscripten.h>
 #include <iostream>
 #include <map>
 #include <random>
+#include "./clustering.h"
+#include "./fastcluster.h"
 
-#include "clustering.h"
-#include "fastcluster.h"
-
-using namespace Eigen;
+using Eigen::MatrixXd;
 
 MatrixXd calculateWeights(MatrixXd distMat) {
-
-  // TODO: Set to zero if element does not exist in distMat
+  // TODO(Jonas): Set to zero if element does not exist in distMat
   MatrixXd weights(distMat.rows(), distMat.cols());
   for (int i = 0; i < weights.rows(); i++) {
     for (int j = 0; j < weights.cols(); j++) {
@@ -28,7 +27,7 @@ MatrixXd calculateV(MatrixXd weights) {
   for (int i = 0; i < V.rows(); i++) {
     for (int j = 0; j < V.cols(); j++) {
       if (i == j) {
-        V(i, j) = weights.row(i).sum() - weights(i, j); // Not optimal but works
+        V(i, j) = weights.row(i).sum() - weights(i, j);  // Not optimal but works
       } else {
         V(i, j) = -weights(i, j);
       }
@@ -39,7 +38,6 @@ MatrixXd calculateV(MatrixXd weights) {
 }
 
 MatrixXd calculateRandomZ(int n, int m) {
-
   // Create pseudo-random double values
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -76,7 +74,7 @@ MatrixXd calculateB(MatrixXd Z, MatrixXd weights, MatrixXd distMat) {
   for (int i = 0; i < B.rows(); i++) {
     for (int j = 0; j < B.cols(); j++) {
       if (i == j) {
-        B(i, i) = -B.row(i).sum() + B(i, j); // Not optimal but works
+        B(i, i) = -B.row(i).sum() + B(i, j);  //  Not optimal but works
       }
     }
   }
@@ -111,8 +109,7 @@ MatrixXd distanceMatrix(MatrixXd points) {
   MatrixXd distMat(n, n);
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-
-      // TODO: Implement other distance functions
+      // TODO(Jonas): Implement other distance functions
       distMat(i, j) = euclideanDistance(points.row(i), points.row(j));
     }
   }
@@ -125,7 +122,7 @@ double euclideanDistance(VectorXd pointA, VectorXd pointB) {
 }
 
 MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights) {
-  // TODO: Implement Moore-Penrose inverse if there exists weight unequal to one
+  // TODO(Jonas): Implement Moore-Penrose inverse if there exists weight unequal to one
   bool weightsOne = true;
   for (int i = 0; i < weights.rows(); i++) {
     for (int j = 0; j < weights.cols(); j++) {
@@ -141,7 +138,6 @@ MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights) {
 }
 
 MatrixXd calculateMDS(MatrixXd distMat, int maxIt, double eps, int dim) {
-
   // Counter for iterations
   int k = 0;
 
@@ -160,7 +156,6 @@ MatrixXd calculateMDS(MatrixXd distMat, int maxIt, double eps, int dim) {
 
   // Step 3: While-loop, stop if maximal number of iterations is reached
   while (k < maxIt) {
-
     // Step 4: Increase iteration counter
     k++;
 
@@ -174,7 +169,7 @@ MatrixXd calculateMDS(MatrixXd distMat, int maxIt, double eps, int dim) {
     // Step 7: Update Z
     Z = XUpdated;
 
-    // TODO: Step 8: End while-loop if eps small enough
+    // TODO(Jonas): Step 8: End while-loop if eps small enough
   }
 
   return XUpdated;
@@ -188,7 +183,7 @@ MatrixXd createRandomPoints(int n, int m) {
   MatrixXd points(n, m);
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
-      points(i, j) = (int)dis(gen);
+      points(i, j) = static_cast<int>(dis(gen));
     }
   }
 
@@ -199,9 +194,7 @@ EMSCRIPTEN_KEEPALIVE
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels, int calcDistMethod) {
-  if(calcDistMethod == 1){
-
-  
+  if (calcDistMethod == 1) {
     // Move points into matrix
     MatrixXd pointMatrix(nPoints, dimension);
     for (int i = 0; i < nPoints; i++) {
@@ -228,8 +221,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
         k++;
       }
     }
-  }
-  else{
+  } else {
     double* distMatMDS = calculateEuclideanDistanceMatrix(points, nPoints, dimension);
   }
 
@@ -238,7 +230,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
   hclust_fast(nPoints, distMat, HCLUST_METHOD_COMPLETE, merge, height);
 
   // Find maximum distance in order to create good cuts of dendrogram
-  // TODO: Check if its always last element
+  // TODO(Jonas): Check if its always last element
   double maxHeight = 0;
   for (int i = 0; i < nPoints - 1; i++) {
     if (height[i] > maxHeight) {
@@ -272,7 +264,6 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE
     double* calculateEuclideanDistanceMatrix(double* array, int num_points, int dimension) {
-
         double** distanceArray = new double*[num_points];
 
         for (size_t i = 0; i < num_points; ++i) {
@@ -306,7 +297,6 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE
     int calculateHammingDistance(char* str1, char* str2, int string_length) {
-
         int distance = 0;
         for (size_t i = 0; i < string_length; i++) {
             if (str1[i] != str2[i]) {
@@ -320,7 +310,6 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE
     int* calculateHammingDistanceMatrix(char** array, int num_strings, int string_length) {
-
         int** distanceArray = new int*[num_strings];
 
         for (size_t i = 0; i < num_strings; ++i) {
