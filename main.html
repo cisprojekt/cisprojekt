@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"/>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <mate name="viewport" content="width=device-width"/>
+        <title>Data Visualizer</title>
+        <link href="style/generalstyle.css" rel="stylesheet">
+        <link href="style/actionstyle.css" rel="stylesheet">
+        <script src="script/map.js"></script>
+        <script src="build/clustering.js"></script>
+        <script src="script/interact.js" ></script>
+
+
+        <!--   Site-spesificiale Style   -->
+        <style>
+            textarea{
+                width: 70%;
+                height: 100%;
+                min-width: 200px;
+                min-height: 100px;
+                text-align: left;
+            }
+            select{
+                width:150px;
+                background-color: #969FE2;
+                margin: 2px;
+                padding: 10px 15px;
+                border-radius: 5px;
+                border-color: transparent;
+            }
+
+            #result{
+                display: none;
+            }
+
+            #mapHTMLContainer{
+                transform: scale(0.6);
+                position: relative;
+            }
+
+        </style>
+    </head>
+</html>
+
+
+<body>
+    <header>
+        <h1>
+            Data Visualizer
+        </h1>
+    </header>
+
+    <main style="text-align: center;">
+        <div id="prepare">
+            <!-- Input Area for daten and function -->
+            <textarea id="text_box" name="textinput" placeholder="Type here..."></textarea>
+
+            <!-- Here the funtional buttons -->
+            <div>
+                <!-- Formal and real Button for add data --> 
+                <button type="button" id="addDataButton" >
+                    Add Data
+                </button>
+                <input type="file" id="dataFile" name="dataFile" accept=".CSV" style="display: none;">    
+                
+                <!-- Choose Funciton Button -->
+                
+                <select id="D_function" name="selectFunction" >
+                    <option value="noChoice">Add Function</option>
+                    <option value="Euclidean">Euclidean distance</option>
+                    <option value="Tanimoto">Tanimoto distance</option>
+                    <option value="Hamming">Hamming distance</option>
+                </select>
+            </div>
+            
+            <div>
+                <!-- Delete All Button -->
+                <button id="deleAllButton" onclick="deletedatenandfunc()">
+                    Delete All
+                </button>
+                <!-- Run function Button -->
+                <button id="runFuncButton" onclick="dealwithrun()">
+                    Run
+                </button>
+            </div>
+        </div>
+
+        
+        <!-- Here for result, will only be showed after click -->
+        <div id="result" >
+
+            <!-- Information Box -->
+            <div id="InforArea" style="text-align: left; border: none; width: 30%;">
+                <table id="InforList" style="padding: 5px; border: 1px solid;">
+                    <tr>
+                        <td>Cluster Information</td>
+                    </tr>
+                    <tr>
+                        <td>cluster 1</td>
+                    </tr>
+                    <tr>
+                       <td>cluster 2</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- map Container with .js
+            <div id="chartContainer" style="width: 50%; height: 100%;">
+                <button type="button" style="float: right;">full screen</button>
+            </div>
+            -->
+
+            <!-- Fullscreen complited -->
+            <div id="mapContainer" style="border: none; width: auto; overflow: hidden;">
+                <button id="switchbtn"; type="button"; value="preview"; style="position: relative; float: left; margin-left: 5px; z-index: 5;"; onclick="MapViewSwitcher()">Full Screen</button>
+                <button id="BackButton2" style=" position: relative; float: left;  z-index: 5;" onclick="back2input()">
+                    Restart
+                </button>
+                <div id="chartContainer" style="border: red;position: relative;z-index: 4; left: -260px; top: -120px; width: 1330px; transform: scale(0.6);"></div>
+                
+            </div>
+            
+
+        </div>
+
+        
+    </main>
+
+    <noscript>
+        <div id="nojs">
+            Error: JavaScript is not enabled in your browser. Please enable it for the best experience.
+        </div>
+    </noscript>
+
+    <footer>
+        <div>
+            <!-- Back Button
+            <button id="BackButton1" style="float: right; margin-right: 60px;" onclick="back2input()">
+                Restart
+            </button> -->
+        </div> 
+    </footer>
+</body>
+
+<script>
+    document.getElementById('addDataButton').addEventListener('click', function () {
+            document.getElementById('dataFile').click();
+            
+        });
+    
+        document.getElementById('dataFile').addEventListener('change', function (){
+            readFileContents();
+        })
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var statusElement = document.getElementById("js-status");
+
+            // Update the status element to indicate whether JavaScript is enabled
+            if (statusElement) {
+                statusElement.innerHTML = "JavaScript is enabled!";
+                statusElement.style.color = "green";
+            }
+
+        });
+
+</script>
