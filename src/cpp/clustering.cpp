@@ -1,11 +1,14 @@
 // Copyright [year] <Copyright Owner>
+#include "src/cpp/clustering.h"
+
+#include <emscripten.h>
+
 #include <Eigen/Dense>
 #include <cmath>
-#include <emscripten.h>
 #include <iostream>
 #include <map>
 #include <random>
-#include "./clustering.h"
+
 #include "./fastcluster.h"
 
 using Eigen::MatrixXd;
@@ -27,7 +30,8 @@ MatrixXd calculateV(MatrixXd weights) {
   for (int i = 0; i < V.rows(); i++) {
     for (int j = 0; j < V.cols(); j++) {
       if (i == j) {
-        V(i, j) = weights.row(i).sum() - weights(i, j);  // Not optimal but works
+        V(i, j) =
+            weights.row(i).sum() - weights(i, j);  // Not optimal but works
       } else {
         V(i, j) = -weights(i, j);
       }
@@ -122,7 +126,8 @@ double euclideanDistance(VectorXd pointA, VectorXd pointB) {
 }
 
 MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights) {
-  // TODO(Jonas): Implement Moore-Penrose inverse if there exists weight unequal to one
+  // TODO(Jonas): Implement Moore-Penrose inverse if there exists weight unequal
+  // to one
   bool weightsOne = true;
   for (int i = 0; i < weights.rows(); i++) {
     for (int j = 0; j < weights.cols(); j++) {
@@ -191,9 +196,10 @@ MatrixXd createRandomPoints(int n, int m) {
 }
 
 EMSCRIPTEN_KEEPALIVE
-extern "C" void clusterPoints(double *points, int dimension, double *distMat,
-                              double *height, int *merge, int *labels,
-                              int nPoints, int maxIterations, int zoomLevels, int calcDistMethod) {
+extern "C" void clusterPoints(double* points, int dimension, double* distMat,
+                              double* height, int* merge, int* labels,
+                              int nPoints, int maxIterations, int zoomLevels,
+                              int calcDistMethod) {
   if (calcDistMethod == 1) {
     // Move points into matrix
     MatrixXd pointMatrix(nPoints, dimension);
@@ -222,9 +228,9 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
       }
     }
   } else {
-    double* distMatMDS = calculateEuclideanDistanceMatrix(points, nPoints, dimension);
+    double* distMatMDS =
+        calculateEuclideanDistanceMatrix(points, nPoints, dimension);
   }
-
 
   // Do the clustering
   hclust_fast(nPoints, distMat, HCLUST_METHOD_COMPLETE, merge, height);
@@ -239,7 +245,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
   }
 
   // For each zoomlevel calculate a labels assignment
-  int *oneLabel = new int[nPoints];
+  int* oneLabel = new int[nPoints];
   for (int i = 0; i < zoomLevels; i++) {
     cutree_cdist(nPoints, merge, height, (i + 1) * maxHeight / zoomLevels,
                  oneLabel);
@@ -250,92 +256,95 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
 }
 
 extern "C" {
-    EMSCRIPTEN_KEEPALIVE
-    double calculateEuclideanDistance(double* vector1, double* vector2, int string_length) {
-        double sumOfSquares = 0.0;
-        for (size_t i = 0; i < string_length; i++) {
-            double diff = vector2[i] - vector1[i];
-            sumOfSquares += diff * diff;
-        }
+EMSCRIPTEN_KEEPALIVE
+double calculateEuclideanDistance(double* vector1, double* vector2,
+                                  int string_length) {
+  double sumOfSquares = 0.0;
+  for (size_t i = 0; i < string_length; i++) {
+    double diff = vector2[i] - vector1[i];
+    sumOfSquares += diff * diff;
+  }
 
-        double distance = std::sqrt(sumOfSquares);
-        return distance;
+  double distance = std::sqrt(sumOfSquares);
+  return distance;
+}
+
+EMSCRIPTEN_KEEPALIVE
+double* calculateEuclideanDistanceMatrix(double* array, int num_points,
+                                         int dimension) {
+  double** distanceArray = new double*[num_points];
+
+  for (size_t i = 0; i < num_points; ++i) {
+    distanceArray[i] = new double[num_points];
+  }
+  for (size_t i = 0; i < num_points; i++) {
+    for (size_t j = 0; j < i + 1; j++) {
+      double distance = calculateEuclideanDistance(
+          array + i * dimension, array + j * dimension, dimension);
+      distanceArray[i][j] = distance;
+      distanceArray[j][i] = distance;
     }
-
-    EMSCRIPTEN_KEEPALIVE
-    double* calculateEuclideanDistanceMatrix(double* array, int num_points, int dimension) {
-        double** distanceArray = new double*[num_points];
-
-        for (size_t i = 0; i < num_points; ++i) {
-            distanceArray[i] = new double[num_points];
-        }
-        for (size_t i = 0; i < num_points; i++) {
-            for (size_t j = 0; j < i+1; j++) {
-                double distance = calculateEuclideanDistance(array+i*dimension,
-                array+j*dimension, dimension);
-                distanceArray[i][j] = distance;
-                distanceArray[j][i] = distance;
-            }
-        }
-        // flatten the array
-        double* flatArray = new double[num_points * (num_points + 1) / 2];
-        int index = 0;
-        for (size_t i = 0; i < num_points; i++) {
-            for (size_t j = 0; j < num_points; j++) {
-                flatArray[index] = distanceArray[i][j];
-                index++;
-            }
-        }
-        // free memory
-        for (size_t i = 0; i < num_points; ++i) {
-            delete[] distanceArray[i];
-        }
-        delete[] distanceArray;
-
-        return flatArray;
+  }
+  // flatten the array
+  double* flatArray = new double[num_points * (num_points + 1) / 2];
+  int index = 0;
+  for (size_t i = 0; i < num_points; i++) {
+    for (size_t j = 0; j < num_points; j++) {
+      flatArray[index] = distanceArray[i][j];
+      index++;
     }
+  }
+  // free memory
+  for (size_t i = 0; i < num_points; ++i) {
+    delete[] distanceArray[i];
+  }
+  delete[] distanceArray;
 
-    EMSCRIPTEN_KEEPALIVE
-    int calculateHammingDistance(char* str1, char* str2, int string_length) {
-        int distance = 0;
-        for (size_t i = 0; i < string_length; i++) {
-            if (str1[i] != str2[i]) {
-                distance++;
-            }
-        }
+  return flatArray;
+}
 
-        return distance;
+EMSCRIPTEN_KEEPALIVE
+int calculateHammingDistance(char* str1, char* str2, int string_length) {
+  int distance = 0;
+  for (size_t i = 0; i < string_length; i++) {
+    if (str1[i] != str2[i]) {
+      distance++;
     }
+  }
 
+  return distance;
+}
 
-    EMSCRIPTEN_KEEPALIVE
-    int* calculateHammingDistanceMatrix(char** array, int num_strings, int string_length) {
-        int** distanceArray = new int*[num_strings];
+EMSCRIPTEN_KEEPALIVE
+int* calculateHammingDistanceMatrix(char** array, int num_strings,
+                                    int string_length) {
+  int** distanceArray = new int*[num_strings];
 
-        for (size_t i = 0; i < num_strings; ++i) {
-            distanceArray[i] = new int[i + 1];
-        }
-        for (size_t i = 0; i < num_strings; i++) {
-            for (size_t j = 0; j < i+1; j++) {
-                int distance = calculateHammingDistance(array[i], array[j], string_length);
-                distanceArray[i][j] = distance;
-            }
-        }
-        // flatten the array
-        int* flatArray = new int[num_strings * (num_strings + 1) / 2];
-        int index = 0;
-        for (size_t i = 0; i < num_strings; i++) {
-            for (size_t j = 0; j < i+1; j++) {
-                flatArray[index] = distanceArray[i][j];
-                index++;
-            }
-        }
-        // free memory
-        for (size_t i = 0; i < num_strings; ++i) {
-            delete[] distanceArray[i];
-        }
-        delete[] distanceArray;
-
-        return flatArray;
+  for (size_t i = 0; i < num_strings; ++i) {
+    distanceArray[i] = new int[i + 1];
+  }
+  for (size_t i = 0; i < num_strings; i++) {
+    for (size_t j = 0; j < i + 1; j++) {
+      int distance =
+          calculateHammingDistance(array[i], array[j], string_length);
+      distanceArray[i][j] = distance;
     }
+  }
+  // flatten the array
+  int* flatArray = new int[num_strings * (num_strings + 1) / 2];
+  int index = 0;
+  for (size_t i = 0; i < num_strings; i++) {
+    for (size_t j = 0; j < i + 1; j++) {
+      flatArray[index] = distanceArray[i][j];
+      index++;
+    }
+  }
+  // free memory
+  for (size_t i = 0; i < num_strings; ++i) {
+    delete[] distanceArray[i];
+  }
+  delete[] distanceArray;
+
+  return flatArray;
+}
 }

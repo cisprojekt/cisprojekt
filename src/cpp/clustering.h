@@ -1,16 +1,25 @@
+#ifndef SRC_CPP_CLUSTERING_H_
+#define SRC_CPP_CLUSTERING_H_
+
+// Copyright [year] <Copyright Owner>
 #include <Eigen/Dense>
 #include <cmath>
 #include <iostream>
 #include <random>
 
-using namespace Eigen;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
 /**
- *  ____  __  __    _    ____ ___  _____    ___      ____ _    _   _ ____ _____ _____ ____  ___ _   _  ____ 
- * / ___||  \/  |  / \  / ___/ _ \|  ___|  ( _ )    / ___| |  | | | / ___|_   _| ____|  _ \|_ _| \ | |/ ___|
- * \___ \| |\/| | / _ \| |  | | | | |_     / _ \/\ | |   | |  | | | \___ \ | | |  _| | |_) || ||  \| | |  _ 
- *  ___) | |  | |/ ___ \ |__| |_| |  _|   | (_>  < | |___| |__| |_| |___) || | | |___|  _ < | || |\  | |_| |
- * |____/|_|  |_/_/   \_\____\___/|_|      \___/\/  \____|_____\___/|____/ |_| |_____|_| \_\___|_| \_|\____|                                                                                                         
+ *  ____  __  __    _    ____ ___  _____    ___      ____ _    _   _ ____ _____
+ * _____ ____  ___ _   _  ____ / ___||  \/  |  / \  / ___/ _ \|  ___|  ( _ ) /
+ * ___| |  | | | / ___|_   _| ____|  _ \|_ _| \ | |/ ___|
+ * \___ \| |\/| | / _ \| |  | | | | |_     / _ \/\ | |   | |  | | | \___ \ | | |
+ * _| | |_) || ||  \| | |  _
+ *  ___) | |  | |/ ___ \ |__| |_| |  _|   | (_>  < | |___| |__| |_| |___) || | |
+ * |___|  _ < | || |\  | |_| |
+ * |____/|_|  |_/_/   \_\____\___/|_|      \___/\/  \____|_____\___/|____/ |_|
+ * |_____|_| \_\___|_| \_|\____|
  *
  * Implementation of the SMACOF-Algorithm for MDS as it is described in
  * [1] Modern Multidimensional Scaling. (2005). In Springer Series in
@@ -125,16 +134,22 @@ MatrixXd createRandomPoints(int n, int m);
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
  */
-extern "C" void clusterPoints(double *points, int dimension, double *distMat,
-                              double *height, int *merge, int *labels,
-                              int nPoints, int maxIterations, int zoomLevels, int calcDistMethod);
+extern "C" void clusterPoints(double* points, int dimension, double* distMat,
+                              double* height, int* merge, int* labels,
+                              int nPoints, int maxIterations, int zoomLevels,
+                              int calcDistMethod);
 
 extern "C" {
-    double calculateEuclideanDistance(double* vector1, double* vector2, int string_length);
+double calculateEuclideanDistance(double* vector1, double* vector2,
+                                  int string_length);
 
-    double* calculateEuclideanDistanceMatrix(double* array, int num_points, int dimension);
+double* calculateEuclideanDistanceMatrix(double* array, int num_points,
+                                         int dimension);
 
-    int calculateHammingDistance(char* str1, char* str2, int string_length);
+int calculateHammingDistance(char* str1, char* str2, int string_length);
 
-    int* calculateHammingDistanceMatrix(char** array, int num_strings, int string_length);
+int* calculateHammingDistanceMatrix(char** array, int num_strings,
+                                    int string_length);
 }
+
+#endif  // SRC_CPP_CLUSTERING_H_

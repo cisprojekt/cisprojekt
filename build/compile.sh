@@ -1,1 +1,0 @@
-em++ -o clustering.js --no-entry clustering.cpp fastcluster.cpp -I "C:\ProgramData\chocolatey\lib\eigen\include" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_clusterPoints']" -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s ALLOW_MEMORY_GROWTH
