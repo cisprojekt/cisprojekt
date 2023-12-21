@@ -2,6 +2,7 @@
 #define SRC_CPP_CLUSTERING_H_
 
 // Copyright [year] <Copyright Owner>
+
 #include <Eigen/Dense>
 #include <cmath>
 #include <iostream>
@@ -10,21 +11,21 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+// clang-format off
+
 /**
- *  ____  __  __    _    ____ ___  _____    ___      ____ _    _   _ ____ _____
- * _____ ____  ___ _   _  ____ / ___||  \/  |  / \  / ___/ _ \|  ___|  ( _ ) /
- * ___| |  | | | / ___|_   _| ____|  _ \|_ _| \ | |/ ___|
- * \___ \| |\/| | / _ \| |  | | | | |_     / _ \/\ | |   | |  | | | \___ \ | | |
- * _| | |_) || ||  \| | |  _
- *  ___) | |  | |/ ___ \ |__| |_| |  _|   | (_>  < | |___| |__| |_| |___) || | |
- * |___|  _ < | || |\  | |_| |
- * |____/|_|  |_/_/   \_\____\___/|_|      \___/\/  \____|_____\___/|____/ |_|
- * |_____|_| \_\___|_| \_|\____|
+ *  ____  __  __    _    ____ ___  _____    ___      ____ _    _   _ ____ _____ _____ ____  ___ _   _  ____ 
+ * / ___||  \/  |  / \  / ___/ _ \|  ___|  ( _ )    / ___| |  | | | / ___|_   _| ____|  _ \|_ _| \ | |/ ___|
+ * \___ \| |\/| | / _ \| |  | | | | |_     / _ \/\ | |   | |  | | | \___ \ | | |  _| | |_) || ||  \| | |  _ 
+ *  ___) | |  | |/ ___ \ |__| |_| |  _|   | (_>  < | |___| |__| |_| |___) || | | |___|  _ < | || |\  | |_| |
+ * |____/|_|  |_/_/   \_\____\___/|_|      \___/\/  \____|_____\___/|____/ |_| |_____|_| \_\___|_| \_|\____|                                                                                                         
  *
  * Implementation of the SMACOF-Algorithm for MDS as it is described in
  * [1] Modern Multidimensional Scaling. (2005). In Springer Series in
  * Statistics. Springer New York. https://doi.org/10.1007/0-387-28981-x
  */
+
+// clang-format on
 
 /**
  * @brief Calculate weights matrix, entry is 1 if (dis)similarity is present,
