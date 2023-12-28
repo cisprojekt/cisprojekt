@@ -8,6 +8,8 @@
 #include <iostream>
 #include <map>
 #include <random>
+#include <string>
+#include <vector>
 
 #include "./fastcluster.h"
 
@@ -121,8 +123,34 @@ MatrixXd distanceMatrix(MatrixXd points) {
   return distMat;
 }
 
+MatrixXd distanceMatrix(std::vector<std::string> strings) {
+  int n = strings.size();
+  MatrixXd distMat(n, n);
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      // TODO(Jonas): Implement other distance functions
+      distMat(i, j) = tanimotoDistance(strings[i], strings[j]);
+    }
+  }
+
+  return distMat;
+}
+
 double euclideanDistance(VectorXd pointA, VectorXd pointB) {
   return (pointA - pointB).norm();
+}
+
+double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
+  int molA = 0, molB = 0, molC = 0;
+  // We assume both fingerprints have equal length
+  for (std::string::size_type i = 0; i < fingerprintA.size(); i++) {
+    if (fingerprintA[i] == '1') molA++;
+    if (fingerprintB[i] == '1') molB++;
+    if (fingerprintA[i] == '1' && fingerprintB[i] == '1') molC++;
+  }
+
+  double dist = 1 - (static_cast<double>(molC) / (molA + molB - molC));
+  return dist;
 }
 
 MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights) {
@@ -196,10 +224,80 @@ MatrixXd createRandomPoints(int n, int m) {
 }
 
 EMSCRIPTEN_KEEPALIVE
+extern "C" void clusterStrings(char* inputStringChar, double* lengthOfString,
+                               double* distMat, double* height, int* merge,
+                               int* labels, int nStrings, int maxIterations,
+                               int zoomLevels, int calcDistMethod,
+                               double* resultPoints) {
+  // Split the long string into smaller strings
+  // and put them in a vector
+  std::string inputString(inputStringChar);
+  std::vector<std::string> stringVector(nStrings);
+  int startLength = 0;
+  for (int i = 0; i < nStrings; i++) {
+    std::string tempString = inputString.substr(startLength, lengthOfString[i]);
+    stringVector[i] = tempString;
+    startLength += lengthOfString[i];
+  }
+
+  // For now we assume the input are fingerprints, not SMILES
+  MatrixXd distMatMDS = distanceMatrix(stringVector);
+  MatrixXd resultMDS = calculateMDS(distMatMDS, maxIterations);
+
+  // Overwrite points with the new configuration
+  for (int i = 0; i < nStrings; i++) {
+    for (int j = 0; j < 2; j++) {
+      resultPoints[i * 2 + j] = resultMDS(i, j);
+    }
+  }
+
+  // Create condensed distance matrix to work with hclust-cpp
+  int k = 0;
+  for (int i = 0; i < nStrings; i++) {
+    for (int j = i + 1; j < nStrings; j++) {
+      distMat[k] = euclideanDistance(resultMDS.row(i), resultMDS.row(j));
+      k++;
+    }
+  }
+
+  // Do the clustering
+  hclust_fast(nStrings, distMat, HCLUST_METHOD_COMPLETE, merge, height);
+
+  // Find maximum distance in order to create good cuts of dendrogram
+  // TODO(Jonas): Check if its always last element
+  double maxHeight = 0;
+  for (int i = 0; i < nStrings - 1; i++) {
+    if (height[i] > maxHeight) {
+      maxHeight = height[i];
+    }
+  }
+
+  // For each zoomlevel calculate a labels assignment
+  int* oneLabel = new int[nStrings];
+  for (int i = 0; i < zoomLevels; i++) {
+    cutree_cdist(nStrings, merge, height, (i + 1) * maxHeight / zoomLevels,
+                 oneLabel);
+    std::memcpy(labels + i * nStrings, oneLabel, nStrings * sizeof(int));
+  }
+
+  delete[] oneLabel;
+}
+
+EMSCRIPTEN_KEEPALIVE
 extern "C" void clusterPoints(double* points, int dimension, double* distMat,
                               double* height, int* merge, int* labels,
                               int nPoints, int maxIterations, int zoomLevels,
                               int calcDistMethod) {
+  /**
+   * Two different types of distance matrices exist:
+   * (1) reduced condensed distance matrix
+   * (2) full distance matrix
+   * Depending on which MDS algorithm is to be used
+   * the appropriate type is choosen
+   */
+
+  // Calculate full distance matrix
+  // For MDS using SMACOF
   if (calcDistMethod == 1) {
     // Move points into matrix
     MatrixXd pointMatrix(nPoints, dimension);
@@ -219,6 +317,7 @@ extern "C" void clusterPoints(double* points, int dimension, double* distMat,
         points[i * dimension + j] = resultMDS(i, j);
       }
     }
+
     // Create condensed distance matrix to work with hclust-cpp
     int k = 0;
     for (int i = 0; i < nPoints; i++) {
@@ -227,6 +326,8 @@ extern "C" void clusterPoints(double* points, int dimension, double* distMat,
         k++;
       }
     }
+
+    // Calculate condensed distance matrix
   } else {
     double* distMatMDS =
         calculateEuclideanDistanceMatrix(points, nPoints, dimension);

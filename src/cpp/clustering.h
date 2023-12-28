@@ -7,6 +7,8 @@
 #include <cmath>
 #include <iostream>
 #include <random>
+#include <string>
+#include <vector>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -86,12 +88,27 @@ double stressFunction(MatrixXd X, MatrixXd Z, MatrixXd B, MatrixXd weights,
 MatrixXd distanceMatrix(MatrixXd points);
 
 /**
+ * @brief Calculate a square distance matrix for strings
+ * @param strings Molecule fingerprints
+ * @return distMat Distance Matrix
+ */
+MatrixXd distanceMatrix(std::vector<std::string> strings);
+
+/**
  * @brief Calculate Euclidean distance between two points
  * @param pointA First point
  * @param pointB Second point
  * @return dist Euclidean distance between two points
  */
 double euclideanDistance(VectorXd pointA, VectorXd pointB);
+
+/**
+ * @brief Calculate Anti-Tanimoto distance between two fingerprints
+ * @param fingerprintA Fingerprint of first molecule
+ * @param fingerprintB Fingerprint of second molecule
+ * @return dist Euclidean distance between two points
+ */
+double tanimotoDistance(std::string fingerprintA, std::string fingerprintB);
 
 /**
  * @brief Apply Guttman transformation according to e.q. (8.28, 8.29)
@@ -124,6 +141,27 @@ MatrixXd createRandomPoints(int n, int m);
 
 /**
  * @brief Webassembly function, will apply multidimensional scaling and
+ * clustering for given fingerprints
+ * @param inputStringChar One long string of concatenated fingerprints
+ * @param lengthOfString Array with length of each fingerprint
+ * @param distMat Distance matrix for the fingerprints
+ * @param height Cluster distance for each step
+ * @param merge Encoded dendrogram
+ * @param labels Label assignment for clusters
+ * @param nStrings Number of finferprints
+ * @param maxIterations Maximum number of iterations
+ * @param zoomLevels Number of zoomlevels for the d3js plot
+ * @param calcDistMethod Method to use for MDS
+ * @param resultPoints Heap to write the MDS result into
+ */
+extern "C" void clusterStrings(char* inputStringChar, double* lengthOfString,
+                               double* distMat, double* height, int* merge,
+                               int* labels, int nStrings, int maxIterations,
+                               int zoomLevels, int calcDistMethod,
+                               double* resultPoints);
+
+/**
+ * @brief Webassembly function, will apply multidimensional scaling and
  * clustering for given points
  * @param points The points to cluster
  * @param dimension Dimension of the input points
@@ -134,6 +172,7 @@ MatrixXd createRandomPoints(int n, int m);
  * @param nPoints Number of points
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
+ * @param calcDistMethod Method to use for MDS
  */
 extern "C" void clusterPoints(double* points, int dimension, double* distMat,
                               double* height, int* merge, int* labels,
