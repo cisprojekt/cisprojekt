@@ -1806,6 +1806,8 @@ var wasmImports = {
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper("__wasm_call_ctors");
+var _clusterStrings = (Module["_clusterStrings"] =
+  createExportWrapper("clusterStrings"));
 var _clusterPoints = (Module["_clusterPoints"] =
   createExportWrapper("clusterPoints"));
 var _calculateEuclideanDistanceMatrix = (Module[

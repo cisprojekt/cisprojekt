@@ -124,6 +124,7 @@ function dealwithrun() {
   var data_for_map = [];
 
   var type = "default";
+  var names = [];
   switch (functionFlag) {
     case "noChoice":
       alert("Please choose a distance function");
@@ -144,14 +145,29 @@ function dealwithrun() {
       //igone the header
       for (let i = 1; i < lines.length; i++) {
         let line = lines[i].split(",");
-        for (let j = 0; j < line.length; j++) {
+        console.log(line);
+        for (let j = 0; j < line.length - 1; j++) {
           data_for_map.push(line[j]);
         }
+
+        // last item will be name for point
+        names.push(line[line.length - 1]);
       }
 
       break;
     case "Tanimoto":
+      type = "tanimotoFingerprints";
       console.log("function as Tani");
+      for (let i = 1; i < lines.length; i++) {
+        let line = lines[i].split(",");
+        console.log(line);
+        for (let j = 0; j < line.length - 1; j++) {
+          data_for_map.push(line[j]);
+        }
+
+        names.push(line[line.length - 1]);
+      }
+
       break;
     case "Hamming":
       // Initialize an array to store the objects
@@ -217,7 +233,7 @@ function dealwithrun() {
   if (matchflag) {
     hideprepera();
     showresult();
-    initializeMap(data_for_map, type);
+    initializeMap(data_for_map, type, names);
   } else {
     alert("Input data dosen't match the distance function");
     return false;
