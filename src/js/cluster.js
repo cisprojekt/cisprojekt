@@ -2,6 +2,7 @@ let wasmReady = new Promise((resolve) => {
   Module.onRuntimeInitialized = resolve;
 });
 
+// inputPointsis NOT flattened!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 async function initializeMap(inputPoints, type) {
   await wasmReady;
   console.log("Starting Clustering Program");
@@ -9,17 +10,23 @@ async function initializeMap(inputPoints, type) {
   // For euclidean inputs
   if (type == "euclidean") {
     let pointsToPlot = [];
-    n = inputPoints.length / 2; // TODO make this dynamic with dimension
+    n = inputPoints.length;
     console.log(n);
     console.log("Module loaded");
-    dim = 2;
+    if(inputPoints.length == 0) {
+      var dim = 1;
+    } else {
+      var dim = inputPoints[0].length;
+    }
+    let flatInputPoints = inputPoints.flat();
+
     var zoomLevels = 20;
     maxIterations = 5;
 
     points = new Float64Array(n * dim);
 
     for (let i = 0; i < n * dim; i++) {
-      points[i] = parseFloat(inputPoints[i]);
+      points[i] = parseFloat(flatInputPoints[i]);
     }
 
     console.log(points);

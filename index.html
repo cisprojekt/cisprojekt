@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en-US">
   <head>
     <meta charset="utf-8" />
@@ -29,6 +29,13 @@
         border-radius: 5px;
         border-color: transparent;
       }
+      .dropdown-container {
+        display: none;
+      }
+
+      .visible {
+        display: block;
+      }
 
       #result {
         display: none;
@@ -49,16 +56,17 @@
 
   <main style="text-align: center">
     <div id="prepare">
-      <!-- Input Area for daten and function -->
+      <!-- Input Area for data and function -->
       <textarea
         id="text_box"
         name="textinput"
         placeholder="Type here..."
+        oninput="showDropdowns()"
       ></textarea>
 
       <!-- Here the funtional buttons -->
       <div>
-        <!-- Formal and real Button for add data -->
+        <!-- Formal and real button for add data -->
         <button type="button" id="addDataButton">Add Data</button>
         <input
           type="file"
@@ -68,9 +76,13 @@
           style="display: none"
         />
 
-        <!-- Choose Funciton Button -->
+        <!-- Choose Function Button -->
 
-        <select id="D_function" name="selectFunction">
+        <select
+          id="D_function"
+          name="selectFunction"
+          onchange="showDropdowns()"
+        >
           <option value="noChoice">Add Function</option>
           <option value="Euclidean">Euclidean distance</option>
           <option value="Tanimoto">Tanimoto distance</option>
@@ -86,6 +98,60 @@
         <!-- Run function Button -->
         <button id="runFuncButton" onclick="dealwithrun()">Run</button>
       </div>
+
+      <!-- Code for Selecting Data/Flags -->
+      <!-- Code for Selecting Data/Flags -->
+      <!-- Code for Selecting Data/Flags -->
+
+      <title>Dynamic Dropdowns Example</title>
+
+      <h2>Dynamic Dropdowns Example</h2>
+
+      <!--
+
+    The select elements of this dropdown at the time of run are iterated over, and the at that point in time selected option is used
+    to determine the data columns of the user input. Therefore, they should, at that point in time, map one to one onto the intended dimensions of
+    the euclidean space.
+
+    See getDataColumns() from interact.js.
+
+    -->
+      <div id="Euclidean-dropdowns" class="dropdown-container">
+        <button id="add-dimension" onclick="addDimension()">
+          Add Dimension
+        </button>
+        <label for="x1">x1:</label>
+        <select id="x1" name="x1">
+          <!-- Column options are dynamically created through showDropdowns() function -->
+        </select>
+      </div>
+
+      <div id="Tanimoto-dropdowns" class="dropdown-container">
+        <label for="tanimoto-option1">Tanimoto Option 1:</label>
+        <select id="tanimoto-option1" name="tanimoto-option1">
+          <!-- Column options are dynamically created through showDropdowns() function -->
+        </select>
+
+        <label for="tanimoto-option2">Tanimoto Option 2:</label>
+        <select id="tanimoto-option2" name="tanimoto-option2">
+          <!-- Column options are dynamically created through showDropdowns() function -->
+        </select>
+      </div>
+
+      <div id="Hamming-dropdowns" class="dropdown-container">
+        <label for="hamming-option1">Hamming Data:</label>
+        <select id="hamming-option1" name="hamming-option1">
+          <!-- Column options are dynamically created through showDropdowns() function -->
+        </select>
+      </div>
+
+      <div id="Flags-dropdowns" class="dropdown-container">
+        <button id="add-flag" onclick="addFlag()">Add Flag</button>
+      </div>
+
+      <!-- Code for Selecting Data/Flags -->
+      <!-- Code for Selecting Data/Flags -->
+      <!-- Code for Selecting Data/Flags -->
     </div>
 
     <!-- Here for result, will only be showed after click -->
