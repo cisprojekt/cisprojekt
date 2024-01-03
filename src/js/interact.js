@@ -221,7 +221,7 @@ function dealwithrun() {
       }
       //initialize array with pointers to the strings as Uint8Arrays
       const string_array = nucleotides.map(
-        (str) => new Uint8Array(str.split("").map((c) => c.charCodeAt(0)))
+        (str) => new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
       );
       //allocate memory for each string in the array
       const charPtrs = string_array.map((chars) => {
@@ -231,7 +231,7 @@ function dealwithrun() {
       });
       //allocate memory for the array of pointers
       const ptrBuf = Module._malloc(
-        charPtrs.length * Int32Array.BYTES_PER_ELEMENT
+        charPtrs.length * Int32Array.BYTES_PER_ELEMENT,
       );
 
       // Copy the array of pointers to the allocated memory
@@ -243,14 +243,14 @@ function dealwithrun() {
         "calculateHammingDistanceMatrix",
         "number",
         ["number", "number", "number"],
-        [ptrBuf, nucleotides.length, nucleotides[0].length]
+        [ptrBuf, nucleotides.length, nucleotides[0].length],
       );
 
       //create a typed array from the pointer containing the distmat as flattened array
       let hamdistmat = new Int32Array(
         Module.HEAP32.buffer,
         resultPtr2,
-        (nucleotides.length * (nucleotides.length + 1)) / 2
+        (nucleotides.length * (nucleotides.length + 1)) / 2,
       );
 
       for (
@@ -313,7 +313,7 @@ function showDropdowns() {
   // Show the dropdown container corresponding to the selected function
   if (selectedFunction !== "noChoice") {
     var selectedContainer = document.getElementById(
-      selectedFunction + "-dropdowns"
+      selectedFunction + "-dropdowns",
     );
     var flagsContainer = document.getElementById("Flags-dropdowns");
     if (selectedContainer) {

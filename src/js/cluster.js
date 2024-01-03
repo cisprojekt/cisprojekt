@@ -33,12 +33,12 @@ async function initializeMap(inputPoints, type) {
 
     let pointsBuf = Module._malloc(n * dim * Float64Array.BYTES_PER_ELEMENT);
     let distMatBuf = Module._malloc(
-      ((n * (n - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT
+      ((n * (n - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT,
     );
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
     let labelsBuf = Module._malloc(
-      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT
+      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
 
     Module.HEAPF64.set(points, pointsBuf / points.BYTES_PER_ELEMENT);
@@ -69,20 +69,20 @@ async function initializeMap(inputPoints, type) {
         maxIterations,
         zoomLevels,
         1,
-      ]
+      ],
     );
 
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
         labelsBuf / Int32Array.BYTES_PER_ELEMENT,
-        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels
-      )
+        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels,
+      ),
     );
     let pointsResult = new Float64Array(
       Module.HEAPF64.subarray(
         pointsBuf / Float64Array.BYTES_PER_ELEMENT,
-        pointsBuf / Float64Array.BYTES_PER_ELEMENT + n * dim
-      )
+        pointsBuf / Float64Array.BYTES_PER_ELEMENT + n * dim,
+      ),
     );
 
     for (var i = 0; i < n * 2; i += 2) {
