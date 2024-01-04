@@ -3,7 +3,12 @@ let wasmReady = new Promise((resolve) => {
 });
 
 // inputPointsis NOT flattened!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-async function initializeMap(inputPoints, type) {
+async function initializeMap(
+  inputPoints,
+  type,
+  nonnumflags_array,
+  numflags_array,
+) {
   await wasmReady;
   console.log("Starting Clustering Program");
 

@@ -157,6 +157,34 @@ function getDataColumns(d_function_value) {
   return dataColumns;
 }
 
+function getFlagColumns(d_function_value, type) {
+  //choose the right dropdown container
+  let dropdownId = "";
+  if (type == "nonnum") {
+    dropdownId = "Flags-dropdowns";
+  } else {
+    dropdownId = "NumericalFlags-dropdowns";
+  }
+
+  //return if no function is chosen
+  let flagColumns = [];
+  if (d_function_value == "noChoice" || !d_function_value) {
+    return flagColumns;
+  }
+  //get the selected column indices
+  var dropdownContainer = document.getElementById(dropdownId);
+  var selectElements = dropdownContainer.querySelectorAll("select");
+  selectElements.forEach(function (selectElement) {
+    // Get the index of the selected option
+    var selectedIndex = selectElement.selectedIndex;
+    var selectedOption = selectElement.options[selectedIndex];
+    // selectedValue = idx of the column
+    var selectedValue = selectedOption.value;
+    flagColumns.push(selectedValue);
+  });
+  return flagColumns;
+}
+
 function dealwithrun() {
   let punktdata = "";
   let matchflag = new Boolean();
@@ -164,6 +192,11 @@ function dealwithrun() {
   let d_function_value = functionFlag;
 
   let dataColumnsDict = getDataColumns(d_function_value);
+  let nonnumflagColumns = getFlagColumns(d_function_value, "nonnum");
+  let numflagColumns = getFlagColumns(d_function_value, "num");
+  console.log(dataColumnsDict);
+  console.log(nonnumflagColumns);
+  console.log(numflagColumns);
 
   //read data from text box
   punktdata = getinputdata();
@@ -174,7 +207,26 @@ function dealwithrun() {
   // gotta be careful here, if the first line is not the header, this will fail
   var headers = lines[0].split(",");
 
+  //arrays for data and flags
   var points_array = [];
+  var nonnumflags_array = [];
+  var numflags_array = [];
+
+  //assigning flag values to the flags arrays
+  //if flagColumns is empty, the array will be empty
+  for (let i = 1; i < lines.length; i++) {
+    let line = lines[i].split(",");
+    let FlagValues = [];
+    nonnumflagColumns.forEach((columnIndex) => {
+      FlagValues.push(line[columnIndex]);
+    });
+    nonnumflags_array.push(FlagValues);
+    FlagValues = [];
+    numflagColumns.forEach((columnIndex) => {
+      FlagValues.push(line[columnIndex]);
+    });
+    numflags_array.push(FlagValues);
+  }
 
   var type = "default";
   var names = []; //will be flags probably
@@ -284,8 +336,7 @@ function dealwithrun() {
   if (matchflag) {
     hideprepera();
     showresult();
-
-    initializeMap(points_array, type);
+    initializeMap(points_array, type, nonnumflags_array, numflags_array);
   } else {
     alert("Input data dosen't match the distance function");
     return false;
@@ -329,7 +380,9 @@ function showDropdowns() {
     var selectedContainer = document.getElementById(
       selectedFunction + "-dropdowns",
     );
-    var flagsContainer = document.getElementById("Flags-dropdowns");
+    var nonnumflagsContainer = document.getElementById("Flags-dropdowns");
+    var numflagsContainer = document.getElementById("NumericalFlags-dropdowns");
+
     if (selectedContainer) {
       selectedContainer.classList.add("visible");
       // Dynamically populate dropdown options based on columns
@@ -345,14 +398,16 @@ function showDropdowns() {
         columns.forEach(function (column) {
           var option = document.createElement("option");
           option.value = idx; // Assuming you want to use the idx as the option value
-          option.textContent = column.trim(); // Assuming you want to display the column value as the option text
+          option.textContent =
+            column.trim() + "(" + (idx + 1).toString() + ". Column)";
           dropdown.appendChild(option);
           idx++;
         });
       });
       //same for flags
-      flagsContainer.classList.add("visible");
-      var dropdowns = flagsContainer.querySelectorAll("select");
+      nonnumflagsContainer.classList.add("visible");
+      numflagsContainer.classList.add("visible");
+      var dropdowns = nonnumflagsContainer.querySelectorAll("select");
       dropdowns.forEach(function (dropdown) {
         // Clear existing options
         dropdown.innerHTML = "";
@@ -360,7 +415,22 @@ function showDropdowns() {
         columns.forEach(function (column) {
           var option = document.createElement("option");
           option.value = idx; // Assuming you want to use the column value as the option value
-          option.textContent = column.trim(); // Assuming you want to display the column value as the option text
+          option.textContent =
+            column.trim() + "(" + (idx + 1).toString() + ". Column)";
+          dropdown.appendChild(option);
+          idx++;
+        });
+      });
+      var dropdowns = numflagsContainer.querySelectorAll("select");
+      dropdowns.forEach(function (dropdown) {
+        // Clear existing options
+        dropdown.innerHTML = "";
+        var idx = 0;
+        columns.forEach(function (column) {
+          var option = document.createElement("option");
+          option.value = idx; // Assuming you want to use the column value as the option value
+          option.textContent =
+            column.trim() + "(" + (idx + 1).toString() + ". Column)";
           dropdown.appendChild(option);
           idx++;
         });
@@ -404,9 +474,9 @@ function removeDimension() {
   showDropdowns();
 }
 
-function addFlag() {
+function addFlag(flagType) {
   // Get the dropdown container
-  var dropdownContainer = document.getElementById("Flags-dropdowns");
+  var dropdownContainer = document.getElementById(flagType + "-dropdowns");
 
   // Create a new label and select element
   var label = document.createElement("label");
