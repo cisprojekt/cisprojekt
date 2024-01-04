@@ -157,7 +157,7 @@ function getDataColumns(d_function_value) {
   return dataColumns;
 }
 
-function getFlagColumns(d_function_value, type) {
+function getFlagIdxName(d_function_value, type) {
   //choose the right dropdown container
   let dropdownId = "";
   if (type == "nonnum") {
@@ -180,23 +180,24 @@ function getFlagColumns(d_function_value, type) {
     var selectedOption = selectElement.options[selectedIndex];
     // selectedValue = idx of the column
     var selectedValue = selectedOption.value;
-    flagColumns.push(selectedValue);
+    outputTuple = [selectedValue, selectedOption.textContent];
+    flagColumns.push(outputTuple);
   });
   return flagColumns;
 }
 
 function dealwithrun() {
   let punktdata = "";
-  let matchflag = new Boolean();
+  let matchflag = true;
   let functionFlag = getfunctionflag();
   let d_function_value = functionFlag;
 
   let dataColumnsDict = getDataColumns(d_function_value);
-  let nonnumflagColumns = getFlagColumns(d_function_value, "nonnum");
-  let numflagColumns = getFlagColumns(d_function_value, "num");
+  let nonnumflagsIdxName = getFlagIdxName(d_function_value, "nonnum");
+  let numflagsIdxName = getFlagIdxName(d_function_value, "num");
   console.log(dataColumnsDict);
-  console.log(nonnumflagColumns);
-  console.log(numflagColumns);
+  console.log(nonnumflagsIdxName);
+  console.log(numflagsIdxName);
 
   //read data from text box
   punktdata = getinputdata();
@@ -217,13 +218,23 @@ function dealwithrun() {
   for (let i = 1; i < lines.length; i++) {
     let line = lines[i].split(",");
     let FlagValues = [];
-    nonnumflagColumns.forEach((columnIndex) => {
-      FlagValues.push(line[columnIndex]);
+    nonnumflagsIdxName.forEach((flagIdxName) => {
+      FlagValues.push(line[flagIdxName[0]]);
     });
     nonnumflags_array.push(FlagValues);
     FlagValues = [];
-    numflagColumns.forEach((columnIndex) => {
-      FlagValues.push(line[columnIndex]);
+    numflagsIdxName.forEach((flagIdxName) => {
+      //throw error if the value is not a number
+      number = parseFloat(line[flagIdxName[0]]);
+      if (isNaN(number)) {
+        alert(
+          `All numflag values must be valid numbers. number "${
+            number + 1
+          }" in line ${i}, column ${flagIdxName[0] + 1} was invalid`,
+        );
+      }
+      assert(!isNaN(number), "All numflag values must be valid numbers");
+      FlagValues.push(number);
     });
     numflags_array.push(FlagValues);
   }
@@ -239,7 +250,8 @@ function dealwithrun() {
       //check if the data is coordinate data
       //
       console.log("function as Euc");
-      punktdata = isCoordindat(punktdata);
+      //isCoordindat() does not consider flags TODO make this work;
+      //punktdata = isCoordindat(punktdata);
       if (Boolean(punktdata)) {
         console.log("match the euc");
       } else {
@@ -273,62 +285,6 @@ function dealwithrun() {
 
       break;
     case "Hamming":
-      // Initialize an array to store the objects
-      flags = [];
-      nucleotideData = [];
-      for (var i = 1; i < lines.length; i++) {
-        var nucleotides = lines[i].split(",");
-        nucleotideData.push(nucleotides[0]);
-        //store the flags
-        for (var j = 1; j < nucleotides.length; j++) {
-          flags.push(nucleotides[j]);
-        }
-      }
-      //initialize array with pointers to the strings as Uint8Arrays
-      const string_array = nucleotides.map(
-        (str) => new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
-      );
-      //allocate memory for each string in the array
-      const charPtrs = string_array.map((chars) => {
-        const ptr = Module._malloc(chars.length * chars.BYTES_PER_ELEMENT);
-        Module.HEAPU8.set(chars, ptr);
-        return ptr;
-      });
-      //allocate memory for the array of pointers
-      const ptrBuf = Module._malloc(
-        charPtrs.length * Int32Array.BYTES_PER_ELEMENT,
-      );
-
-      // Copy the array of pointers to the allocated memory
-      Module.HEAP32.set(charPtrs, ptrBuf / Int32Array.BYTES_PER_ELEMENT);
-
-      //call the distance matrix function
-      //returns the pointer to the result array
-      let resultPtr2 = Module.ccall(
-        "calculateHammingDistanceMatrix",
-        "number",
-        ["number", "number", "number"],
-        [ptrBuf, nucleotides.length, nucleotides[0].length],
-      );
-
-      //create a typed array from the pointer containing the distmat as flattened array
-      let hamdistmat = new Int32Array(
-        Module.HEAP32.buffer,
-        resultPtr2,
-        (nucleotides.length * (nucleotides.length + 1)) / 2,
-      );
-
-      for (
-        let i = 0;
-        i < (nucleotides.length * (nucleotides.length + 1)) / 2;
-        i++
-      ) {
-        console.log(hamdistmat[i]);
-      }
-
-      Module._free(ptrBuf);
-
-      break;
     default:
       console.log("Input data doesn't match the distance function");
   }
@@ -415,8 +371,7 @@ function showDropdowns() {
         columns.forEach(function (column) {
           var option = document.createElement("option");
           option.value = idx; // Assuming you want to use the column value as the option value
-          option.textContent =
-            column.trim() + "(" + (idx + 1).toString() + ". Column)";
+          option.textContent = column.trim();
           dropdown.appendChild(option);
           idx++;
         });
@@ -429,8 +384,7 @@ function showDropdowns() {
         columns.forEach(function (column) {
           var option = document.createElement("option");
           option.value = idx; // Assuming you want to use the column value as the option value
-          option.textContent =
-            column.trim() + "(" + (idx + 1).toString() + ". Column)";
+          option.textContent = column.trim();
           dropdown.appendChild(option);
           idx++;
         });

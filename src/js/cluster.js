@@ -104,6 +104,103 @@ async function initializeMap(
     Module._free(mergeBuf);
     Module._free(labelsBuf);
 
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+
+    // Create list of Cluster objects
+    console.log("OIWUGDiuqsgdhjoagfduzsqaguiodgsajhodgvsaiudgbsahdölksadas");
+    console.log(labelsResult);
+    var largestLabel = 0;
+    labelsResult.forEach((label) => {
+      if (label > largestLabel) {
+        largestLabel = label;
+      }
+    });
+
+    if (numflags_array.length == 0) {
+      var numNumColumns = 0;
+    } else {
+      var numNumColumns = numflags_array[0].length;
+    }
+
+    // Create an array of Cluster objects
+    let clusters = new Array(largestLabel + 1)
+      .fill()
+      .map(
+        (_, idx) =>
+          new Cluster(
+            (label = idx),
+            (numPoints = 0),
+            (numflagMins = new Array(numNumColumns).fill(Infinity)),
+            (numflagMaxs = new Array(numNumColumns).fill(-Infinity)),
+          ),
+      );
+
+    labelsResult.forEach((label) => {
+      clusters[label].numPoints++;
+    });
+
+    console.log("-------------------");
+    clusters.forEach((cluster) => {
+      console.log(cluster.name + " has " + cluster.numPoints + " points");
+    });
+    console.log("-------------------");
+
+    // flags is array of values of the flag columns of the i'th point in labels
+    var point_idx = 0;
+    nonnumflags_array.forEach((flags) => {
+      flags.forEach((flag) => {
+        let cluster_idx = labelsResult[point_idx];
+        if (flag in clusters[cluster_idx].nonnumflagCounters) {
+          clusters[cluster_idx].nonnumflagCounters[flag];
+        } else {
+          clusters[cluster_idx].nonnumflagCounters[flag] = 1;
+        }
+      });
+      point_idx++;
+    });
+
+    // flags is a list of values of the selceted columns of the i'th point in numflags_array
+    // calculating average, max, min of numflags
+    var numflags_array_idx = -1;
+    numflags_array.forEach((flags) => {
+      numflags_array_idx++;
+
+      let cluster_idx = labelsResult[numflags_array_idx];
+
+      flag_idx = -1;
+      flags.forEach((flag) => {
+        flag_idx++;
+
+        clusters[cluster_idx].numflagSums[flag_idx] += flag;
+        if (flag > clusters[cluster_idx].numflagMaxs[flag_idx]) {
+          clusters[cluster_idx].numflagMaxs[flag_idx] = flag;
+        }
+        if (flag < clusters[cluster_idx].numflagMins[flag_idx]) {
+          clusters[cluster_idx].numflagMins[flag_idx] = flag;
+        }
+      });
+    });
+
+    // calculating average of numflags
+    for (let cluster_idx = 0; cluster_idx < largestLabel + 1; cluster_idx++) {
+      for (let flag_idx = 0; flag_idx < numNumColumns; flag_idx++) {
+        clusters[cluster_idx].numflagAverages[flag_idx] =
+          clusters[cluster_idx].numflagSums[flag_idx] /
+          clusters[cluster_idx].numPoints;
+      }
+    }
+    console.log(
+      "-----------------------------------------------------------------",
+    );
+    console.log(clusters);
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+
     // Call the function of map to plot
     mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
   } else if (type == "tanimotoFingerprints") {
@@ -218,5 +315,28 @@ async function initializeMap(
 
     // Call the function of map to plot
     mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
+  }
+}
+
+class Cluster {
+  constructor(
+    label,
+    numPoints = 0,
+    nonnumflagCounters = {},
+    numflagSums = [],
+    numflagAverages = [],
+    numflagMaxs = [],
+    numflagMins = [],
+  ) {
+    this.label = label;
+    this.numPoints = numPoints;
+    this.nonnumflagCounters = nonnumflagCounters;
+    this.numflagSums = numflagSums;
+    this.numflagAverages = numflagAverages;
+    this.numflagMaxs = numflagMaxs;
+    this.numflagMins = numflagMins;
+  }
+  get name() {
+    return "Cluster #" + this.label;
   }
 }
