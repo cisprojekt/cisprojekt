@@ -2,24 +2,31 @@ let wasmReady = new Promise((resolve) => {
   Module.onRuntimeInitialized = resolve;
 });
 
-async function initializeMap(inputPoints, type, names) {
+// inputPointsis NOT flattened!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+async function initializeMap(inputPoints, type) {
   await wasmReady;
   console.log("Starting Clustering Program");
 
   // For euclidean inputs
   if (type == "euclidean") {
     let pointsToPlot = [];
-    let n = inputPoints.length / 2; // TODO make this dynamic with dimension
+    n = inputPoints.length;
     console.log(n);
     console.log("Module loaded");
-    let dim = 2;
-    let zoomLevels = 20;
-    let maxIterations = 5;
+    if (inputPoints.length == 0) {
+      var dim = 1;
+    } else {
+      var dim = inputPoints[0].length;
+    }
+    let flatInputPoints = inputPoints.flat();
+
+    var zoomLevels = 20;
+    maxIterations = 5;
 
     let points = new Float64Array(n * dim);
 
     for (let i = 0; i < n * dim; i++) {
-      points[i] = parseFloat(inputPoints[i]);
+      points[i] = parseFloat(flatInputPoints[i]);
     }
 
     console.log(points);
@@ -93,7 +100,7 @@ async function initializeMap(inputPoints, type, names) {
     Module._free(labelsBuf);
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, names);
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
   } else if (type == "tanimotoFingerprints") {
     // For fingerprints input
 
@@ -205,6 +212,6 @@ async function initializeMap(inputPoints, type, names) {
     Module._free(lengthOfStringBuf);
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, names);
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
   }
 }
