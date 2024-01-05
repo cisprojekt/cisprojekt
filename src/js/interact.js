@@ -124,33 +124,37 @@ function getDataColumns(d_function_value) {
     // meaning the number of data columns is not fixed like for any other distance function.
     let axesArray = [];
     selectElements.forEach(function (selectElement) {
-      // Get the index of the selected option
-      var selectedIndex = selectElement.selectedIndex;
-      // Access the selected option using the selectedIndex
-      var selectedOption = selectElement.options[selectedIndex];
-      // selectedValue = idx of the column
-      var selectedValue = selectedOption.value;
-      axesArray.push(selectedValue);
+      if (selectElement.selectedIndex !== -1) {
+        // Get the index of the selected option
+        var selectedIndex = selectElement.selectedIndex;
+        // Access the selected option using the selectedIndex
+        var selectedOption = selectElement.options[selectedIndex];
+        // selectedValue = idx of the column
+        var selectedValue = selectedOption.value;
+        axesArray.push(selectedValue);
+      }
     });
     dataColumns["axesArray"] = axesArray;
     return dataColumns;
   } else {
     selectElements.forEach(function (selectElement) {
-      // Get the ID of the select element (e.g., "x", "y", "z")
-      var selectId = selectElement.id;
+      if (selectElement.selectedIndex !== -1) {
+        // Get the ID of the select element (e.g., "x", "y", "z")
+        var selectId = selectElement.id;
 
-      // Get the index of the selected option
-      var selectedIndex = selectElement.selectedIndex;
+        // Get the index of the selected option
+        var selectedIndex = selectElement.selectedIndex;
 
-      // Access the selected option using the selectedIndex
-      var selectedOption = selectElement.options[selectedIndex];
+        // Access the selected option using the selectedIndex
+        var selectedOption = selectElement.options[selectedIndex];
 
-      // selectedValue = idx of the column
-      var selectedValue = selectedOption.value;
+        // selectedValue = idx of the column
+        var selectedValue = selectedOption.value;
 
-      // Populate the dataColumns object with the selectId as key and selectedValue as value
-      // e.g., dataColumns["x"] = 0, that is the 0th column is the x-column
-      dataColumns[selectId] = selectedValue;
+        // Populate the dataColumns object with the selectId as key and selectedValue as value
+        // e.g., dataColumns["x"] = 0, that is the 0th column is the x-column
+        dataColumns[selectId] = selectedValue;
+      }
     });
   }
 
@@ -179,9 +183,12 @@ function getFlagIdxName(d_function_value, type) {
     var selectedIndex = selectElement.selectedIndex;
     var selectedOption = selectElement.options[selectedIndex];
     // selectedValue = idx of the column
-    var selectedValue = selectedOption.value;
-    outputTuple = [selectedValue, selectedOption.textContent];
-    flagColumns.push(outputTuple);
+    if (selectElement.selectedIndex !== -1) {
+      var selectedValue = selectedOption.value;
+      outputTuple = [selectedValue, selectedOption.textContent];
+      flagColumns.push(outputTuple);
+      console.log(outputTuple);
+    }
   });
   return flagColumns;
 }
@@ -344,6 +351,9 @@ function showDropdowns() {
       // Dynamically populate dropdown options based on columns
       var dropdowns = selectedContainer.querySelectorAll("select");
       dropdowns.forEach(function (dropdown) {
+        // Get the currently selected value
+        var selectedValue = dropdown.selectedIndex;
+
         // Clear existing options
         dropdown.innerHTML = "";
 
@@ -354,42 +364,54 @@ function showDropdowns() {
         columns.forEach(function (column) {
           var option = document.createElement("option");
           option.value = idx; // Assuming you want to use the idx as the option value
-          option.textContent =
-            column.trim() + "(" + (idx + 1).toString() + ". Column)";
-          dropdown.appendChild(option);
-          idx++;
-        });
-      });
-      //same for flags
-      nonnumflagsContainer.classList.add("visible");
-      numflagsContainer.classList.add("visible");
-      var dropdowns = nonnumflagsContainer.querySelectorAll("select");
-      dropdowns.forEach(function (dropdown) {
-        // Clear existing options
-        dropdown.innerHTML = "";
-        var idx = 0;
-        columns.forEach(function (column) {
-          var option = document.createElement("option");
-          option.value = idx; // Assuming you want to use the column value as the option value
           option.textContent = column.trim();
+
+          // Set the selected option if it matches the previously selected value
+          if (Number(option.value) === Number(selectedValue)) {
+            console.log("selectedValue: " + selectedValue);
+            console.log("option.value: " + option.value);
+            option.selected = true;
+          }
+
           dropdown.appendChild(option);
           idx++;
         });
-      });
-      var dropdowns = numflagsContainer.querySelectorAll("select");
-      dropdowns.forEach(function (dropdown) {
-        // Clear existing options
-        dropdown.innerHTML = "";
-        var idx = 0;
-        columns.forEach(function (column) {
-          var option = document.createElement("option");
-          option.value = idx; // Assuming you want to use the column value as the option value
-          option.textContent = column.trim();
-          dropdown.appendChild(option);
-          idx++;
-        });
+        dropdown.selectedIndex = selectedValue;
       });
     }
+    //same for flags
+    nonnumflagsContainer.classList.add("visible");
+    numflagsContainer.classList.add("visible");
+    var dropdowns = nonnumflagsContainer.querySelectorAll("select");
+    dropdowns.forEach(function (dropdown) {
+      var selectedValue = dropdown.selectedIndex;
+      // Clear existing options
+      dropdown.innerHTML = "";
+      var idx = 0;
+      columns.forEach(function (column) {
+        var option = document.createElement("option");
+        option.value = idx; // Assuming you want to use the column value as the option value
+        option.textContent = column.trim();
+        dropdown.appendChild(option);
+        idx++;
+      });
+      dropdown.selectedIndex = selectedValue;
+    });
+    var dropdowns = numflagsContainer.querySelectorAll("select");
+    dropdowns.forEach(function (dropdown) {
+      var selectedValue = dropdown.selectedIndex;
+      // Clear existing options
+      dropdown.innerHTML = "";
+      var idx = 0;
+      columns.forEach(function (column) {
+        var option = document.createElement("option");
+        option.value = idx; // Assuming you want to use the column value as the option value
+        option.textContent = column.trim();
+        dropdown.appendChild(option);
+        idx++;
+      });
+      dropdown.selectedIndex = selectedValue;
+    });
   }
 }
 
