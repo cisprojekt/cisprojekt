@@ -164,40 +164,6 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
     .style("padding", "0px")
     .style("position", "absolute");
 
-  // Add dots to plot
-  svg
-    .selectAll("circle")
-    .data(getAverages(1))
-    .enter()
-    .append("circle")
-    .attr("cx", function (d) {
-      return x(d[1]);
-    }) //function x determines the linear scaling factor relativ to the x-axis as defined above
-    .attr("cy", function (d) {
-      return y(d[2]);
-    }) //function y determines the linear scaling factor relativ to the y-axis as defined above
-    .attr("r", 5)
-    .style("fill", "#0000ff")
-    .style("fill-opacity", 0.5)
-    .on("mouseover", function (event, d) {
-      // A function that change this tooltip when the user hover a point.
-      // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
-      console.log(event);
-      tooltip.transition().duration(0).style("opacity", 0.9);
-      tooltip
-        .html("x: " + d[1].toFixed(3) + " y: " + d[2].toFixed(3))
-        .style("left", event.pageX + "px")
-        .style("top", event.pageY - 28 + "px");
-      tooltip.transition().duration(2500).style("opacity", 0);
-    });
-  /* .on("mouseleave", function(event) {
-            // A function that change this tooltip when the leaves a point: just need to set opacity to 0 again
-            console.log(event)
-            tooltip.transition()
-                .duration(1)
-                .style("opacity", 0);
-        }); */
-
   // Create a zoom behavior function
   var zoom = d3
     .zoom()
@@ -257,7 +223,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
       .append("circle")
       .merge(circles)
       .attr("r", function (d) {
-        return d.r * 2;
+        return d.r * 1;
       })
 
       .attr("cx", function (d) {
@@ -266,6 +232,8 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
       .attr("cy", function (d) {
         return d.y;
       })
+      .style("fill", "#0000ff")
+      .style("fill-opacity", 0.5)
       .attr("transform", event.transform);
   }
 
