@@ -30,31 +30,6 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
   var newDomainX = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
   var newDomainY = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
 
-  // #### code for generating data points ####
-
-  // Function to generate a scaled y coordinate in pixels
-  function generate_y() {
-    var max_y_value = y_max;
-    var y_coord = 0;
-    y_coord = Math.random() * max_y_value; //+ y_offset is now obsolete, because points get scaled by scaling func y() anyway
-    return y_coord;
-  }
-
-  // Function to generate a scaled x coordinate in pixels
-  function generate_x() {
-    var max_x_value = x_max;
-    var x_coord = 0;
-    x_coord = Math.random() * max_x_value; //+ x_offset is now obsolete, because points get scaled by scaling func x() anyway
-    return x_coord;
-  }
-
-  //fill data array
-  for (let i = 0; i < 100; i++) {
-    y_coord = generate_y();
-    x_coord = generate_x();
-    data.push([i, x_coord, y_coord]);
-  }
-
   //transformation function from pixel to coordinates
   function coordFromPixels(x_coord, y_coord) {
     //_coord=Pix
@@ -95,13 +70,13 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
   // Declare the y (vertical position) scale.
   const y = d3
     .scaleLinear()
-    .domain([-y_max, y_max]) //initial domain shown on y axis [0,...]
+    .domain([-y_max, y_max]) //initial domain shown on y axis
     .range([-y_axis_width, y_axis_width]); // //length of axis in pixel on reference svg
 
   // Declare the x (horizontal position) scale.
   const x = d3
     .scaleLinear()
-    .domain([-x_max, x_max]) //initial domain shown on x axis [0,...]
+    .domain([-x_max, x_max]) //initial domain shown on x axis
     .range([-x_axis_width, x_axis_width]); //length of axis in pixel on reference svg
 
   // #### remaining code: creating svgs and handeling zoom ####
@@ -171,15 +146,17 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
     .on("zoom", handleZoom);
 
   // Add dots to plot 
-svg.selectAll("circle")
-.data(getAverages(1))
-.enter()
-.append("circle")
-    .attr("cx", function(d) {return d.x;}) //function x determines the linear scaling factor relativ to the x-axis as defined above
-    .attr("cy", function(d) {return d.y;}) //function y determines the linear scaling factor relativ to the y-axis as defined above
-    .attr("r", 5)
-    .style("fill", "red")
-    .style("fill-opacity", 0.5)
+  svg.selectAll("circle")
+    .data(getAverages(1))
+    .enter()
+    .append("circle")
+      .attr("cx", function(d) {return d.x;}) //function x determines the linear scaling factor relativ to the x-axis as defined above
+      .attr("cy", function(d) {return d.y;}) //function y determines the linear scaling factor relativ to the y-axis as defined above
+      .attr("r", function (d) {
+        return d.r * 1;
+      })
+      .style("fill", "#0000ff")
+      .style("fill-opacity", 0.5)
 
   // Define the event handler function for zoom
   function handleZoom(event) {
