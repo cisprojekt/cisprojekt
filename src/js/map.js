@@ -170,6 +170,17 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
     .scaleExtent([1, zoomLevels - 5])
     .on("zoom", handleZoom);
 
+  // Add dots to plot 
+svg.selectAll("circle")
+.data(getAverages(1))
+.enter()
+.append("circle")
+    .attr("cx", function(d) {return d.x;}) //function x determines the linear scaling factor relativ to the x-axis as defined above
+    .attr("cy", function(d) {return d.y;}) //function y determines the linear scaling factor relativ to the y-axis as defined above
+    .attr("r", 5)
+    .style("fill", "red")
+    .style("fill-opacity", 0.5)
+
   // Define the event handler function for zoom
   function handleZoom(event) {
     //variable to store current zoom level
@@ -208,7 +219,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
       );
 
     // gives and draws new position of drawn circles
-    svg.selectAll("circle");
+    //svg.selectAll("circle");
     //.attr('cx', function(d) {return newX(d[1])})
     //.attr('cy', function(d) {return newY(d[2])});
 
