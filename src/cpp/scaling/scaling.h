@@ -1,7 +1,12 @@
+#ifndef SRC_CPP_SCALING_SCALING_H_
+#define SRC_CPP_SCALING_SCALING_H_
+// Copyright [year] <Copyright Owner>
+#include <algorithm>
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-//SMACOF funtions
+// SMACOF funtions
 
 //
 
@@ -56,7 +61,6 @@ double calculateConst(MatrixXd weights, MatrixXd distMat);
 double stressFunction(MatrixXd X, MatrixXd Z, MatrixXd B, MatrixXd weights,
                       MatrixXd distMat);
 
-
 /**
  * @brief Apply Guttman transformation according to e.q. (8.28, 8.29)
  * @param n Number of points
@@ -75,8 +79,8 @@ MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights);
  * @param dim Dimensions to scale the data to
  * @return XUpdated Final configuration
  */
-MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt = 50, double eps = 10e-6,
-                      int dim = 2);
+MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt = 50,
+                            double eps = 10e-6, int dim = 2);
 
 /**
  * @brief Created n random m dimensional points
@@ -100,39 +104,45 @@ MatrixXd createRandomPoints(int n, int m);
  * @param zoomLevels Number of zoomlevels for the d3js plot
  */
 
+// full distance-matrix needed!
 
-//full distance-matrix needed!
+// Scikit functions
+double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
+                         int n_samples, bool init, bool metric,
+                         int n_components, int max_iter, bool verbose,
+                         double eps, int random_state, bool normalized_stress);
 
-//Scikit functions
-double scikit_mds_single(double* dissimilarities, double* x, double* x_inter, int n_samples, bool init, bool metric, int n_components, int max_iter, bool verbose, double eps, int random_state, bool normalized_stress);
+void scikit_mds_multi(double *dissimilarities, double *x, double *x_inter,
+                      int n_iterations, int n_samples, bool init, bool metric,
+                      int n_components, int max_iter, bool verbose, double eps,
+                      int random_state, bool normalized_stress);
 
-void scikit_mds_multi(double* dissimilarities, double* x, double* x_inter, int n_iterations, int n_samples, bool init, bool metric, int n_components, int max_iter, bool verbose, double eps, int random_state, bool normalized_stress);
+void outputscikit(double *embedding);
 
-void outputscikit( double *embedding );
+int calculateMDSscikit(void);
 
-int calculateMDSscikit (void);
-
-//Glimmer functions
+// Glimmer functions
 
 typedef struct _INDEXTYPE {
-	int index;		// index of the other point
-	float highd;	// high dimensional distance
-	float lowd;		// low dimensional distance
+  int index;    // index of the other point
+  float highd;  // high dimensional distance
+  float lowd;   // low dimensional distance
 } INDEXTYPE;
 
 typedef struct _VECTYPE {
-	int index;
-	float value;
+  int index;
+  float value;
 } VECTYPE;
 
 int calculateMDSglimmer(void);
 int myrand(void);
-int distcomp( const void *a, const void *b );
-int idxcomp( const void *a, const void *b );
-float max( float a, float b);
-float min( float a, float b);
-int terminate( INDEXTYPE *idx_set, int size );
-void force_directed( int size, int fixedsize, float* distmat );
-void init_embedding( float *embedding );
-int fill_level_count( int input, int *h );
+int distcomp(const void *a, const void *b);
+int idxcomp(const void *a, const void *b);
+float max(float a, float b);
+float min(float a, float b);
+int terminate(INDEXTYPE *idx_set, int size);
+void force_directed(int size, int fixedsize, float *distmat);
+void init_embedding(float *embedding);
+int fill_level_count(int input, int *h);
 
+#endif  // SRC_CPP_SCALING_SCALING_H_
