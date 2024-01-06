@@ -124,46 +124,87 @@ function getDataColumns(d_function_value) {
     // meaning the number of data columns is not fixed like for any other distance function.
     let axesArray = [];
     selectElements.forEach(function (selectElement) {
-      // Get the index of the selected option
-      var selectedIndex = selectElement.selectedIndex;
-      // Access the selected option using the selectedIndex
-      var selectedOption = selectElement.options[selectedIndex];
-      // selectedValue = idx of the column
-      var selectedValue = selectedOption.value;
-      axesArray.push(selectedValue);
+      if (selectElement.selectedIndex !== -1) {
+        // Get the index of the selected option
+        var selectedIndex = selectElement.selectedIndex;
+        // Access the selected option using the selectedIndex
+        var selectedOption = selectElement.options[selectedIndex];
+        // selectedValue = idx of the column
+        var selectedValue = selectedOption.value;
+        axesArray.push(selectedValue);
+      }
     });
     dataColumns["axesArray"] = axesArray;
     return dataColumns;
   } else {
     selectElements.forEach(function (selectElement) {
-      // Get the ID of the select element (e.g., "x", "y", "z")
-      var selectId = selectElement.id;
+      if (selectElement.selectedIndex !== -1) {
+        // Get the ID of the select element (e.g., "x", "y", "z")
+        var selectId = selectElement.id;
 
-      // Get the index of the selected option
-      var selectedIndex = selectElement.selectedIndex;
+        // Get the index of the selected option
+        var selectedIndex = selectElement.selectedIndex;
 
-      // Access the selected option using the selectedIndex
-      var selectedOption = selectElement.options[selectedIndex];
+        // Access the selected option using the selectedIndex
+        var selectedOption = selectElement.options[selectedIndex];
 
-      // selectedValue = idx of the column
-      var selectedValue = selectedOption.value;
+        // selectedValue = idx of the column
+        var selectedValue = selectedOption.value;
 
-      // Populate the dataColumns object with the selectId as key and selectedValue as value
-      // e.g., dataColumns["x"] = 0, that is the 0th column is the x-column
-      dataColumns[selectId] = selectedValue;
+        // Populate the dataColumns object with the selectId as key and selectedValue as value
+        // e.g., dataColumns["x"] = 0, that is the 0th column is the x-column
+        dataColumns[selectId] = selectedValue;
+      }
     });
   }
 
   return dataColumns;
 }
 
+function getFlagIdxName(d_function_value, type) {
+  //choose the right dropdown container
+  let dropdownId = "";
+  if (type == "nonnum") {
+    dropdownId = "Flags-dropdowns";
+  } else {
+    dropdownId = "NumericalFlags-dropdowns";
+  }
+
+  //return if no function is chosen
+  let flagColumns = [];
+  if (d_function_value == "noChoice" || !d_function_value) {
+    return flagColumns;
+  }
+  //get the selected column indices
+  var dropdownContainer = document.getElementById(dropdownId);
+  var selectElements = dropdownContainer.querySelectorAll("select");
+  selectElements.forEach(function (selectElement) {
+    // Get the index of the selected option
+    var selectedIndex = selectElement.selectedIndex;
+    var selectedOption = selectElement.options[selectedIndex];
+    // selectedValue = idx of the column
+    if (selectElement.selectedIndex !== -1) {
+      var selectedValue = selectedOption.value;
+      outputTuple = [selectedValue, selectedOption.textContent];
+      flagColumns.push(outputTuple);
+      console.log(outputTuple);
+    }
+  });
+  return flagColumns;
+}
+
 function dealwithrun() {
   let punktdata = "";
-  let matchflag = new Boolean();
+  let matchflag = true;
   let functionFlag = getfunctionflag();
   let d_function_value = functionFlag;
 
   let dataColumnsDict = getDataColumns(d_function_value);
+  let nonnumflagsIdxName = getFlagIdxName(d_function_value, "nonnum");
+  let numflagsIdxName = getFlagIdxName(d_function_value, "num");
+  console.log(dataColumnsDict);
+  console.log(nonnumflagsIdxName);
+  console.log(numflagsIdxName);
 
   //read data from text box
   punktdata = getinputdata();
@@ -174,7 +215,36 @@ function dealwithrun() {
   // gotta be careful here, if the first line is not the header, this will fail
   var headers = lines[0].split(",");
 
+  //arrays for data and flags
   var points_array = [];
+  var nonnumflags_array = [];
+  var numflags_array = [];
+
+  //assigning flag values to the flags arrays
+  //if flagColumns is empty, the array will be empty
+  for (let i = 1; i < lines.length; i++) {
+    let line = lines[i].split(",");
+    let FlagValues = [];
+    nonnumflagsIdxName.forEach((flagIdxName) => {
+      FlagValues.push(line[flagIdxName[0]]);
+    });
+    nonnumflags_array.push(FlagValues);
+    FlagValues = [];
+    numflagsIdxName.forEach((flagIdxName) => {
+      //throw error if the value is not a number
+      number = parseFloat(line[flagIdxName[0]]);
+      if (isNaN(number)) {
+        alert(
+          `All numflag values must be valid numbers. number "${
+            number + 1
+          }" in line ${i}, column ${flagIdxName[0] + 1} was invalid`,
+        );
+      }
+      assert(!isNaN(number), "All numflag values must be valid numbers");
+      FlagValues.push(number);
+    });
+    numflags_array.push(FlagValues);
+  }
 
   var type = "default";
   var names = []; //will be flags probably
@@ -187,7 +257,8 @@ function dealwithrun() {
       //check if the data is coordinate data
       //
       console.log("function as Euc");
-      punktdata = isCoordindat(punktdata);
+      //isCoordindat() does not consider flags TODO make this work;
+      //punktdata = isCoordindat(punktdata);
       if (Boolean(punktdata)) {
         console.log("match the euc");
       } else {
@@ -221,62 +292,6 @@ function dealwithrun() {
 
       break;
     case "Hamming":
-      // Initialize an array to store the objects
-      flags = [];
-      nucleotideData = [];
-      for (var i = 1; i < lines.length; i++) {
-        var nucleotides = lines[i].split(",");
-        nucleotideData.push(nucleotides[0]);
-        //store the flags
-        for (var j = 1; j < nucleotides.length; j++) {
-          flags.push(nucleotides[j]);
-        }
-      }
-      //initialize array with pointers to the strings as Uint8Arrays
-      const string_array = nucleotides.map(
-        (str) => new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
-      );
-      //allocate memory for each string in the array
-      const charPtrs = string_array.map((chars) => {
-        const ptr = Module._malloc(chars.length * chars.BYTES_PER_ELEMENT);
-        Module.HEAPU8.set(chars, ptr);
-        return ptr;
-      });
-      //allocate memory for the array of pointers
-      const ptrBuf = Module._malloc(
-        charPtrs.length * Int32Array.BYTES_PER_ELEMENT,
-      );
-
-      // Copy the array of pointers to the allocated memory
-      Module.HEAP32.set(charPtrs, ptrBuf / Int32Array.BYTES_PER_ELEMENT);
-
-      //call the distance matrix function
-      //returns the pointer to the result array
-      let resultPtr2 = Module.ccall(
-        "calculateHammingDistanceMatrix",
-        "number",
-        ["number", "number", "number"],
-        [ptrBuf, nucleotides.length, nucleotides[0].length],
-      );
-
-      //create a typed array from the pointer containing the distmat as flattened array
-      let hamdistmat = new Int32Array(
-        Module.HEAP32.buffer,
-        resultPtr2,
-        (nucleotides.length * (nucleotides.length + 1)) / 2,
-      );
-
-      for (
-        let i = 0;
-        i < (nucleotides.length * (nucleotides.length + 1)) / 2;
-        i++
-      ) {
-        console.log(hamdistmat[i]);
-      }
-
-      Module._free(ptrBuf);
-
-      break;
     default:
       console.log("Input data doesn't match the distance function");
   }
@@ -284,8 +299,7 @@ function dealwithrun() {
   if (matchflag) {
     hideprepera();
     showresult();
-
-    initializeMap(points_array, type);
+    initializeMap(points_array, type, nonnumflags_array, numflags_array);
   } else {
     alert("Input data dosen't match the distance function");
     return false;
@@ -329,12 +343,17 @@ function showDropdowns() {
     var selectedContainer = document.getElementById(
       selectedFunction + "-dropdowns",
     );
-    var flagsContainer = document.getElementById("Flags-dropdowns");
+    var nonnumflagsContainer = document.getElementById("Flags-dropdowns");
+    var numflagsContainer = document.getElementById("NumericalFlags-dropdowns");
+
     if (selectedContainer) {
       selectedContainer.classList.add("visible");
       // Dynamically populate dropdown options based on columns
       var dropdowns = selectedContainer.querySelectorAll("select");
       dropdowns.forEach(function (dropdown) {
+        // Get the currently selected value
+        var selectedValue = dropdown.selectedIndex;
+
         // Clear existing options
         dropdown.innerHTML = "";
 
@@ -345,27 +364,54 @@ function showDropdowns() {
         columns.forEach(function (column) {
           var option = document.createElement("option");
           option.value = idx; // Assuming you want to use the idx as the option value
-          option.textContent = column.trim(); // Assuming you want to display the column value as the option text
+          option.textContent = column.trim();
+
+          // Set the selected option if it matches the previously selected value
+          if (Number(option.value) === Number(selectedValue)) {
+            console.log("selectedValue: " + selectedValue);
+            console.log("option.value: " + option.value);
+            option.selected = true;
+          }
+
           dropdown.appendChild(option);
           idx++;
         });
-      });
-      //same for flags
-      flagsContainer.classList.add("visible");
-      var dropdowns = flagsContainer.querySelectorAll("select");
-      dropdowns.forEach(function (dropdown) {
-        // Clear existing options
-        dropdown.innerHTML = "";
-        var idx = 0;
-        columns.forEach(function (column) {
-          var option = document.createElement("option");
-          option.value = idx; // Assuming you want to use the column value as the option value
-          option.textContent = column.trim(); // Assuming you want to display the column value as the option text
-          dropdown.appendChild(option);
-          idx++;
-        });
+        dropdown.selectedIndex = selectedValue;
       });
     }
+    //same for flags
+    nonnumflagsContainer.classList.add("visible");
+    numflagsContainer.classList.add("visible");
+    var dropdowns = nonnumflagsContainer.querySelectorAll("select");
+    dropdowns.forEach(function (dropdown) {
+      var selectedValue = dropdown.selectedIndex;
+      // Clear existing options
+      dropdown.innerHTML = "";
+      var idx = 0;
+      columns.forEach(function (column) {
+        var option = document.createElement("option");
+        option.value = idx; // Assuming you want to use the column value as the option value
+        option.textContent = column.trim();
+        dropdown.appendChild(option);
+        idx++;
+      });
+      dropdown.selectedIndex = selectedValue;
+    });
+    var dropdowns = numflagsContainer.querySelectorAll("select");
+    dropdowns.forEach(function (dropdown) {
+      var selectedValue = dropdown.selectedIndex;
+      // Clear existing options
+      dropdown.innerHTML = "";
+      var idx = 0;
+      columns.forEach(function (column) {
+        var option = document.createElement("option");
+        option.value = idx; // Assuming you want to use the column value as the option value
+        option.textContent = column.trim();
+        dropdown.appendChild(option);
+        idx++;
+      });
+      dropdown.selectedIndex = selectedValue;
+    });
   }
 }
 
@@ -404,9 +450,9 @@ function removeDimension() {
   showDropdowns();
 }
 
-function addFlag() {
+function addFlag(flagType) {
   // Get the dropdown container
-  var dropdownContainer = document.getElementById("Flags-dropdowns");
+  var dropdownContainer = document.getElementById(flagType + "-dropdowns");
 
   // Create a new label and select element
   var label = document.createElement("label");

@@ -5,3 +5,4 @@ fastcluster.cpp
 fastcluster.h
 .DS_Store
 .vscode/
+glimmer.cpp

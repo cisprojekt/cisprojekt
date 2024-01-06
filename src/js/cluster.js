@@ -3,7 +3,12 @@ let wasmReady = new Promise((resolve) => {
 });
 
 // inputPointsis NOT flattened!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-async function initializeMap(inputPoints, type) {
+async function initializeMap(
+  inputPoints,
+  type,
+  nonnumflags_array,
+  numflags_array,
+) {
   await wasmReady;
   console.log("Starting Clustering Program");
 
@@ -98,6 +103,26 @@ async function initializeMap(inputPoints, type) {
     Module._free(heightBuf);
     Module._free(mergeBuf);
     Module._free(labelsBuf);
+
+    // Create list of Cluster objects
+
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+
+    console.log("moooooooooooooooooin");
+    var clusterInfos = getClusterInfo(
+      zoomLevels,
+      labelsResult,
+      n,
+      numflags_array,
+      nonnumflags_array,
+    );
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
 
     // Call the function of map to plot
     mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
@@ -211,7 +236,175 @@ async function initializeMap(inputPoints, type) {
     Module._free(resultPointsBuf);
     Module._free(lengthOfStringBuf);
 
+    // -----------------------------------------------------------------
+
+    console.log("moooooooooooooooooin");
+    var clusterInfos = getClusterInfo(
+      zoomLevels,
+      labelsResult,
+      n,
+      numflags_array,
+      nonnumflags_array,
+    );
+    // -----------------------------------------------------------------
+
     // Call the function of map to plot
     mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
   }
+}
+
+class Cluster {
+  constructor(
+    label,
+    numPoints = 0,
+    nonnumflagCounters = [{}],
+    numflagSums = [],
+    numflagAverages = [],
+    numflagMins = [],
+    numflagMaxs = [],
+  ) {
+    // label is the label of the cluster corresponding to the label in the labelsResult array
+    this.label = label;
+    // numPoints is the number of points in the cluster
+    this.numPoints = numPoints;
+    // nonnumflagCounters is an array of dictionaries which count the occurences of each nonnumflag
+    // the first array element corresponds to the first selected nonnumflag, the second to the second nonnumflag, ...
+    this.nonnumflagCounters = nonnumflagCounters;
+    // numflagSums is an array which contains the sum of each numflag
+    // the first array element corresponds to the first selected numflag, the second to the second numflag, ...
+    this.numflagSums = numflagSums;
+    // numflagAverages is an array which contains the average of each numflag
+    this.numflagAverages = numflagAverages;
+    // numflagMins is an array which contains the minimum of each numflag
+    this.numflagMins = numflagMins;
+    // numflagMaxs is an array which contains the maximum of each numflag
+    this.numflagMaxs = numflagMaxs;
+  }
+  get name() {
+    return "Cluster #" + this.label;
+  }
+}
+
+// this function returns an array of arrays of Cluster objects
+// the first element of the array corresponds to the first zoomlevel, the second to the second zoomlevel, ...
+// the first element of the inner array corresponds to the first cluster, the second to the second cluster, ...
+// look for the definiton of the cluster class to see what information is stored in each cluster
+function getClusterInfo(
+  zoom,
+  labelsResult,
+  n,
+  numflags_array,
+  nonnumflags_array,
+) {
+  // Create an array for each Zoomlevel which contais the info of the clusters
+  var clusterInfos = new Array(zoom);
+
+  //fill clusterinfos with the clusterinfo for each zoomlevel
+  for (var i = 0; i < zoom; i++) {
+    //
+    let currentLabels = labelsResult.slice(i * n, i * n + n);
+
+    // determine the largest label so we know how many clusters there are
+    let largestLabel = 0;
+    currentLabels.forEach((label) => {
+      if (label > largestLabel) {
+        largestLabel = label;
+      }
+    });
+
+    if (numflags_array.length == 0) {
+      var numNumColumns = 0;
+    } else {
+      var numNumColumns = numflags_array[0].length;
+    }
+
+    if (nonnumflags_array.length == 0) {
+      var numNonNumColumns = 0;
+    } else {
+      var numNonNumColumns = nonnumflags_array[0].length;
+    }
+
+    // Create an array of Cluster objects
+    let clusters = new Array(largestLabel + 1)
+      .fill()
+      .map(
+        (_, idx) =>
+          new Cluster(
+            (label = idx),
+            (numPoints = 0),
+            (nonnumflagCounters = new Array(numNonNumColumns)
+              .fill(null)
+              .map(() => ({}))),
+            (numflagSums = new Array(numNumColumns).fill(0)),
+            (numflagAverages = new Array(numNumColumns).fill(0)),
+            (numflagMins = new Array(numNumColumns).fill(Infinity)),
+            (numflagMaxs = new Array(numNumColumns).fill(-Infinity)),
+          ),
+      );
+
+    // Count the number of points in each cluster
+    currentLabels.forEach((label) => {
+      clusters[label].numPoints++;
+    });
+
+    console.log("-------------------");
+    clusters.forEach((cluster) => {
+      console.log(cluster.name + " has " + cluster.numPoints + " points");
+    });
+    console.log("-------------------");
+    // flags is array of values of the flag columns of the i'th point in labels
+    // counting the nonnumflags of each cluster
+    var point_idx = 0;
+    nonnumflags_array.forEach((flags) => {
+      let cluster_idx = currentLabels[point_idx];
+      flag_idx = 0;
+      flags.forEach((flag) => {
+        if (flag in clusters[cluster_idx].nonnumflagCounters[flag_idx]) {
+          clusters[cluster_idx].nonnumflagCounters[flag_idx][flag]++;
+        } else {
+          clusters[cluster_idx].nonnumflagCounters[flag_idx][flag] = 1;
+        }
+
+        flag_idx++;
+      });
+      point_idx++;
+    });
+
+    // flags is a list of values of the selceted columns of the i'th point in numflags_array
+    // calculating average, max, min of numflags
+    var numflags_array_idx = -1;
+    numflags_array.forEach((flags) => {
+      numflags_array_idx++;
+
+      let cluster_idx = currentLabels[numflags_array_idx];
+
+      flag_idx = -1;
+      flags.forEach((flag) => {
+        flag_idx++;
+
+        clusters[cluster_idx].numflagSums[flag_idx] += flag;
+        if (flag > clusters[cluster_idx].numflagMaxs[flag_idx]) {
+          clusters[cluster_idx].numflagMaxs[flag_idx] = flag;
+        }
+        if (flag < clusters[cluster_idx].numflagMins[flag_idx]) {
+          clusters[cluster_idx].numflagMins[flag_idx] = flag;
+        }
+      });
+    });
+
+    // calculating average of numflags
+    for (let cluster_idx = 0; cluster_idx < largestLabel + 1; cluster_idx++) {
+      for (let flag_idx = 0; flag_idx < numNumColumns; flag_idx++) {
+        clusters[cluster_idx].numflagAverages[flag_idx] =
+          clusters[cluster_idx].numflagSums[flag_idx] /
+          clusters[cluster_idx].numPoints;
+      }
+    }
+    console.log(
+      "-----------------------------------------------------------------",
+    );
+    console.log(clusters);
+    clusterInfos[i] = clusters;
+  }
+  return clusterInfos;
 }
