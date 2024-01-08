@@ -1,4 +1,4 @@
-function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
+function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   //minor change
 
   //initialize
@@ -145,18 +145,23 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
     .scaleExtent([1, zoomLevels - 5])
     .on("zoom", handleZoom);
 
-  // Add dots to plot 
-  svg.selectAll("circle")
+  // Add dots to plot
+  svg
+    .selectAll("circle")
     .data(getAverages(1))
     .enter()
     .append("circle")
-      .attr("cx", function(d) {return d.x;}) //function x determines the linear scaling factor relativ to the x-axis as defined above
-      .attr("cy", function(d) {return d.y;}) //function y determines the linear scaling factor relativ to the y-axis as defined above
-      .attr("r", function (d) {
-        return d.r * 1;
-      })
-      .style("fill", "#0000ff")
-      .style("fill-opacity", 0.5)
+    .attr("cx", function (d) {
+      return d.x;
+    }) //function x determines the linear scaling factor relativ to the x-axis as defined above
+    .attr("cy", function (d) {
+      return d.y;
+    }) //function y determines the linear scaling factor relativ to the y-axis as defined above
+    .attr("r", function (d) {
+      return d.r * 1;
+    })
+    .style("fill", "#0000ff")
+    .style("fill-opacity", 0.5);
 
   // Define the event handler function for zoom
   function handleZoom(event) {
