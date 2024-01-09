@@ -1,14 +1,10 @@
 // Copyright [year] <Copyright Owner>
 #include "src/cpp/dv_main.h"
-
-#include "./clustering/fastcluster.cpp"
-#include "./clustering/fastcluster.h"
-#include "./distancematrix/distmat.cpp"
-#include "./distmat/distmat.h"
-#include "./scaling/glimmer.cpp"
-#include "./scaling/scaling.h"
-#include "./scaling/scikit.cpp"
-#include "./scaling/smacof.cpp"
+#include "src/cpp/distmat/distmat.h"
+#include "src/cpp/external/fastcluster.h"
+#include "src/cpp/scaling/scaling.h"
+#include <string>
+#include <vector>
 
 using Eigen::MatrixXd;
 
