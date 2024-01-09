@@ -1,9 +1,3 @@
-#ifndef SRC_CPP_DISTMAT_DISTMAT_H_
-#define SRC_CPP_DISTMAT_DISTMAT_H_
-// Copyright [year] <Copyright Owner>
-#include <string>
-#include <vector>
-
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -38,15 +32,14 @@ double euclideanDistance(VectorXd pointA, VectorXd pointB);
 double tanimotoDistance(std::string fingerprintA, std::string fingerprintB);
 
 extern "C" {
-double calculateEuclideanDistance(double *vector1, double *vector2,
+double calculateEuclideanDistance(double* vector1, double* vector2,
                                   int string_length);
 
-double *calculateEuclideanDistanceMatrix(double *array, int num_points,
+double* calculateEuclideanDistanceMatrix(double* array, int num_points,
                                          int dimension);
 
-int calculateHammingDistance(char *str1, char *str2, int string_length);
+int calculateHammingDistance(char* str1, char* str2, int string_length);
 
-int *calculateHammingDistanceMatrix(char **array, int num_strings,
+int* calculateHammingDistanceMatrix(char** array, int num_strings,
                                     int string_length);
 }
-#endif  // SRC_CPP_DISTMAT_DISTMAT_H_

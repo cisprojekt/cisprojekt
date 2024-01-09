@@ -1,8 +1,3 @@
 demo.cpp
-fastcluster_dm.cpp
-fastcluster_R_dm.cpp
-fastcluster.cpp
-fastcluster.h
 .DS_Store
 .vscode/
-glimmer.cpp

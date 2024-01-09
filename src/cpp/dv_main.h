@@ -1,5 +1,5 @@
-#ifndef SRC_CPP_DV_MAIN_H_
-#define SRC_CPP_DV_MAIN_H_
+#ifndef SRC_CPP_CLUSTERING_H_
+#define SRC_CPP_CLUSTERING_H_
 
 // Copyright [year] <Copyright Owner>
 
@@ -24,11 +24,11 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
-                               double *distMat, double *height, int *merge,
-                               int *labels, int nStrings, int maxIterations,
+extern "C" void clusterStrings(char* inputStringChar, double* lengthOfString,
+                               double* distMat, double* height, int* merge,
+                               int* labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
-                               double *resultPoints);
+                               double* resultPoints);
 
 /**
  * @brief Webassembly function, will apply multidimensional scaling and
@@ -43,9 +43,9 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
  */
-extern "C" void clusterPoints(double *points, int dimension, double *distMat,
-                              double *height, int *merge, int *labels,
+extern "C" void clusterPoints(double* points, int dimension, double* distMat,
+                              double* height, int* merge, int* labels,
                               int nPoints, int maxIterations, int zoomLevels,
                               int calcDistMethod);
 
-#endif  // SRC_CPP_DV_MAIN_H_
+#endif  // SRC_CPP_CLUSTERING_H_

@@ -1,12 +1,7 @@
-#ifndef SRC_CPP_SCALING_SCALING_H_
-#define SRC_CPP_SCALING_SCALING_H_
-// Copyright [year] <Copyright Owner>
-#include <algorithm>
-
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-// SMACOF funtions
+// SMACOF functions
 
 //
 
@@ -144,5 +139,3 @@ int terminate(INDEXTYPE *idx_set, int size);
 void force_directed(int size, int fixedsize, float *distmat);
 void init_embedding(float *embedding);
 int fill_level_count(int input, int *h);
-
-#endif  // SRC_CPP_SCALING_SCALING_H_

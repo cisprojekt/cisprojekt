@@ -1,4 +1,3 @@
-// Copyright [year] <Copyright Owner>
 #include <float.h>
 #include <math.h>
 #include <stdbool.h>
@@ -14,7 +13,7 @@
 
 int n = 0;
 
-double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
+double scikit_mds_single(double* dissimilarities, double* x, double* x_inter,
                          int n_samples, bool init = false, bool metric = true,
                          int n_components = 2, int max_iter = 1000,
                          bool verbose = 0, double eps = 1e-5,
@@ -38,8 +37,8 @@ double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
     x_inter[9] = -1.0;
   }
   double old_stress = 1e15;
-  double *disparities = new double[n_samples * n_samples];
-  double *dis = new double[n_samples * n_samples];
+  double* disparities = new double[n_samples * n_samples];
+  double* dis = new double[n_samples * n_samples];
   double stress = 0;
   // isotonic regression
   for (int it = 0; it < max_iter; it++) {
@@ -130,7 +129,7 @@ double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
   delete dis;
   return stress;
 }
-void scikit_mds_multi(double *dissimilarities, double *x, double *x_inter,
+void scikit_mds_multi(double* dissimilarities, double* x, double* x_inter,
                       int n_iterations, int n_samples, bool init = false,
                       bool metric = true, int n_components = 2,
                       int max_iter = 1000, bool verbose = 0, double eps = 1e-5,
@@ -150,9 +149,9 @@ void scikit_mds_multi(double *dissimilarities, double *x, double *x_inter,
   }
 }
 
-void outputCSV(double *embedding) {
+void outputCSV(double* embedding) {
   // open the file
-  FILE *fp = NULL;
+  FILE* fp = NULL;
   if ((fp = fopen("scikit_result.csv", "w")) == NULL) {
     printf("ERROR: Can't open points output file %s\n", "scikit_result.csv");
     exit(0);
@@ -178,7 +177,7 @@ int calculateMDSscikit(void) {
   char line[65536];  // line of input buffer
   char item[512];    // single number string
 
-  FILE *fp = fopen("distmat_full.csv", "r");
+  FILE* fp = fopen("distmat_full.csv", "r");
   if (fp == NULL) {
     printf("ERROR cannot open %s\n", "distmat_full.csv");
     exit(0);
@@ -194,9 +193,9 @@ int calculateMDSscikit(void) {
 
   fclose(fp);
   float n_float = sqrt(line_num);
-  n = static_cast<int>(n_float);
+  n = (int)n_float;
 
-  double *distmat = new double[line_num];
+  double* distmat = new double[line_num];
 
   fp = fopen("distmat_full.csv", "r");
   if (fp == NULL) {
@@ -215,7 +214,7 @@ int calculateMDSscikit(void) {
 
       if (line[i] == '\n' || line[i] == '\0') {
         item[j] = '\0';
-        distmat[k++] = static_cast<double>(atof(item));
+        distmat[k++] = (double)atof(item);
         done++;
       } else if (line[i] != ' ') {
         item[j++] = line[i];
@@ -225,11 +224,11 @@ int calculateMDSscikit(void) {
   }
 
   // distmat = delta
-  double *x_inter = new double[2 * n];
+  double* x_inter = new double[2 * n];
   // for (int g = 0; g < 2*n; g++) {
   // x_inter[g] = 0.1*g;
   //}
-  double *x = new double[2 * n];
+  double* x = new double[2 * n];
   int n_iterations = 2;
   bool init = false;
   bool metric = true;

@@ -1,17 +1,14 @@
 // Copyright [year] <Copyright Owner>
 #include "src/cpp/dv_main.h"
 
-#include <string>
-#include <vector>
-
-// #include "./clustering/fastcluster.cpp"
+#include "./clustering/fastcluster.cpp"
 #include "./clustering/fastcluster.h"
-// #include "./distancematrix/distmat.cpp"
+#include "./distancematrix/distmat.cpp"
 #include "./distmat/distmat.h"
-// #include "./scaling/glimmer.cpp"
+#include "./scaling/glimmer.cpp"
 #include "./scaling/scaling.h"
-// #include "./scaling/scikit.cpp"
-// #include "./scaling/smacof.cpp"
+#include "./scaling/scikit.cpp"
+#include "./scaling/smacof.cpp"
 
 using Eigen::MatrixXd;
 
@@ -34,7 +31,11 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
 
   // For now we assume the input are fingerprints, not SMILES
   MatrixXd distMatMDS = distanceMatrix(stringVector);
-  MatrixXd resultMDS = calculateMDS(distMatMDS, maxIterations);
+  /*(Todo Timo: case - different scaling algorithms
+  calculateMDSglimmer()
+  calculateMDSscikit()
+  */
+  MatrixXd resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
 
   // Overwrite points with the new configuration
   for (int i = 0; i < nStrings; i++) {
