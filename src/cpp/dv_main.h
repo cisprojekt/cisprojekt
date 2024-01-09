@@ -18,7 +18,7 @@
 #include <random>
 
 #include "src/cpp/distmat/distmat.h"
-#include "src/cpp/external/fastcluster.h"
+#include "src/cpp/external/hclust/fastcluster.h"
 #include "src/cpp/scaling/scaling.h"
 
 using Eigen::MatrixXd;

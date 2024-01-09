@@ -1,7 +1,7 @@
 // Copyright [year] <Copyright Owner>
 #include "src/cpp/dv_main.h"
 #include "src/cpp/distmat/distmat.h"
-#include "src/cpp/external/fastcluster.h"
+#include "src/cpp/external/hclust/fastcluster.h"
 #include "src/cpp/scaling/scaling.h"
 #include <string>
 #include <vector>
