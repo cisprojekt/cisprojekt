@@ -125,7 +125,7 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos);
   } else if (type == "tanimotoFingerprints") {
     // For fingerprints input
 
@@ -249,7 +249,7 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos);
   }
 }
 
