@@ -17,18 +17,18 @@
 #include <map>
 #include <random>
 
-#include "./clustering/fastcluster.h"
-#include "./distmat/distmat.h"
-#include "./scaling/scaling.h"
+#include "src/cpp/distmat/distmat.h"
+#include "src/cpp/external/fastcluster.h"
+#include "src/cpp/scaling/scaling.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-extern "C" void clusterStrings(char* inputStringChar, double* lengthOfString,
-                               double* distMat, double* height, int* merge,
-                               int* labels, int nStrings, int maxIterations,
+extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
+                               double *distMat, double *height, int *merge,
+                               int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
-                               double* resultPoints);
+                               double *resultPoints);
 
 /**
  * @brief Webassembly function, will apply multidimensional scaling and
@@ -43,8 +43,8 @@ extern "C" void clusterStrings(char* inputStringChar, double* lengthOfString,
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
  */
-extern "C" void clusterPoints(double* points, int dimension, double* distMat,
-                              double* height, int* merge, int* labels,
+extern "C" void clusterPoints(double *points, int dimension, double *distMat,
+                              double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
                               int calcDistMethod);
 
