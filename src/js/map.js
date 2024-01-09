@@ -1,4 +1,4 @@
-function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
+function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   //minor change
 
   //initialize
@@ -15,7 +15,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
   //var y_offset= 5; //not needed at the moment
 
   var currentZoomLevel = 1.0;
-
+  var button_zoom_level = 1.0; // starting layer of points which are generated
   var x_axis_width = width; // length of x-axis in pixels
   var x_max = 15; //initial domain shown on x axis starting with 0
 
@@ -145,18 +145,31 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
     .scaleExtent([1, zoomLevels - 5])
     .on("zoom", handleZoom);
 
-  // Add dots to plot 
+  // Add (initial) circles to plot 
   svg.selectAll("circle")
-    .data(getAverages(1))
-    .enter()
-    .append("circle")
-      .attr("cx", function(d) {return d.x;}) //function x determines the linear scaling factor relativ to the x-axis as defined above
-      .attr("cy", function(d) {return d.y;}) //function y determines the linear scaling factor relativ to the y-axis as defined above
-      .attr("r", function (d) {
-        return d.r * 1;
-      })
-      .style("fill", "#0000ff")
-      .style("fill-opacity", 0.5)
+  .data(getAverages(1))
+  .enter()
+  .append("circle")
+  .attr("cx", function(d) {return d.x;})
+  .attr("cy", function(d) {return d.y;})
+  .attr("r", function (d) { return d.r * 1; })
+  .style("fill", "#0000ff")
+  .style("fill-opacity", 0.5)
+  /* .on("mouseover", function(event, d) {
+    tooltip.style("opacity", 1)
+           .html("X: " + d.x + "<br>Y: " + d.y)
+           .style("left", (d3.event.pageX) + "px")
+           .style("top", (d3.event.pageY - 28) + "px");
+  }) */
+  /* .on("mouseout", function(d) {
+    tooltip.style("opacity", 0);
+  }) */
+  .on("click", function(event, d) {
+    // Add your click event handling code here
+    // For example, you can add more circles or perform other actions
+    console.log(event)
+    d3.select(this).style("fill", "red");
+  });
 
   // Define the event handler function for zoom
   function handleZoom(event) {
@@ -200,7 +213,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
     //.attr('cx', function(d) {return newX(d[1])})
     //.attr('cy', function(d) {return newY(d[2])});
 
-    let averages = getAverages(currentZoomLevel);
+    let averages = getAverages(button_zoom_level);
 
     var circles = svg.selectAll("circle").data(averages);
 
@@ -221,8 +234,25 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
         return d.y;
       })
       .style("fill", "#0000ff")
+      //.style("fill", "red")
       .style("fill-opacity", 0.5)
-      .attr("transform", event.transform);
+      .attr("transform", event.transform)
+      /* .on("mouseover", function(event, d) {
+        tooltip.style("opacity", 1)
+               .html("X: " + d.x + "<br>Y: " + d.y)
+               .style("left", (d3.event.pageX) + "px")
+               .style("top", (d3.event.pageY - 28) + "px");
+      }) */
+      /* .on("mouseout", function(d) {
+        tooltip.style("opacity", 0);
+      }) */
+      .on("click", function(event, d) {
+        // Add your click event handling code here
+        // For example, you can add more circles or perform other actions
+        console.log(event)
+        d3.select(this).style("fill", "red");
+      })
+  
   }
 
   // Append a new SVG element to the existing SVG
@@ -359,7 +389,67 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
     .on("click", function () {
       svg.call(zoom.transform, d3.zoomIdentity); // d3.zoomIdentity conviniently resets all changes to zoom behaviour
     });
+ //create html button element and append it to svg
+ 
+ 
+ var button_change_layer_in_embed = svg
+ .append("foreignObject")
+ .attr("x", width - 200)
+ .attr("y", height - 120)
+ .attr("width", 200)
+ .attr("height", 60)
+ .style("opacity", 0.9);
 
-  // Attach the zoom behavior to the SVG element
-  svg.call(zoom);
+ var button_change_layer_in = button_change_layer_in_embed
+ .append("xhtml:button")
+ .text("-")
+ .style("color", "white")
+ .style("background-color", "#0080ff")
+ .on("mouseover", function () {
+  // Change the color of the button when hovered over
+  d3.select(this).style("background-color", "#3b9dff"); // Change the background color
+})
+.on("mouseout", function () {
+  // Change the color of the button back to its original color when the mouse moves out
+  d3.select(this).style("background-color", "#0080ff"); // Change the background color back to blue
+})
+.on("click", function () {
+  button_zoom_level -= 1;
+  //handleZoom(d3.event);
+});
+
+
+ var button_change_layer_out_embed = svg
+ .append("foreignObject")
+ .attr("x", width - 200)
+ .attr("y", height - 180)
+ .attr("width", 200)
+ .attr("height", 60)
+ .style("opacity", 0.9);
+
+ var button_change_layer_out = button_change_layer_out_embed
+ .append("xhtml:button")
+ .text("+")
+ .style("color", "white")
+ .style("background-color", "#0080ff")
+ .on("mouseover", function () {
+  // Change the color of the button when hovered over
+  d3.select(this).style("background-color", "#3b9dff"); // Change the background color
+})
+.on("mouseout", function () {
+  // Change the color of the button back to its original color when the mouse moves out
+  d3.select(this).style("background-color", "#0080ff"); // Change the background color back to blue
+})
+.on("click", function () {
+  button_zoom_level += 1;
+  //handleZoom(d3.event);
+});
+
+
+
+
+  // Attach the zoom behavior to the SVG element and disable zoom
+  d3.select("svg")
+    .call(zoom)
+    .on("dblclick.zoom", null);
 }
