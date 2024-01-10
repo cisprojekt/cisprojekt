@@ -14,7 +14,7 @@ using Eigen::MatrixXd
 
     int n = 0;
 
-double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
+double scikit_mds_single(MatrixXd dissimilarities, double *x, double *x_inter,
                          int n_samples, bool init = false, bool metric = true,
                          int n_components = 2, int max_iter = 1000,
                          bool verbose = 0, double eps = 1e-5,
@@ -51,8 +51,10 @@ double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
       }
     }
     if (metric) {
-      for (int i = 0; i < n_samples * n_samples; i++) {
-        disparities[i] = dissimilarities[i];
+      for (int i = 0; i < n_samples; i++) {
+        for (int i = 0; i < n_samples; j++) {
+          disparities[i * n_samples + j] = dissimilarities(i, j);
+        }
       }
     }
     /* non-metric case
@@ -130,7 +132,7 @@ double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
   delete dis;
   return stress;
 }
-void scikit_mds_multi(double *dissimilarities, double *x, double *x_inter,
+void scikit_mds_multi(MatrixXd dissimilarities, double *x, double *x_inter,
                       int n_iterations, int n_samples, bool init = false,
                       bool metric = true, int n_components = 2,
                       int max_iter = 1000, bool verbose = 0, double eps = 1e-5,
@@ -149,7 +151,7 @@ void scikit_mds_multi(double *dissimilarities, double *x, double *x_inter,
     }
   }
 }
-
+/*
 void outputCSV(double *embedding) {
   // open the file
   FILE *fp = NULL;
@@ -174,7 +176,7 @@ void outputCSV(double *embedding) {
   // close the file
   fclose(fp);
 }
-
+*/
 MatrixXd calculateMDSscikit(int n, MatrixXd distanceMatrix) {
 
   // distmat = delta
@@ -195,8 +197,8 @@ MatrixXd calculateMDSscikit(int n, MatrixXd distanceMatrix) {
   int random_state = 0;
   bool normalized_stress = false;
 
-  scikit_mds_multi(distmat, x, x_inter, n_iterations, n_samples, init, metric,
-                   n_components, max_iter, verbose, eps, random_state,
+  scikit_mds_multi(distanceMatrix, x, x_inter, n_iterations, n_samples, init,
+                   metric, n_components, max_iter, verbose, eps, random_state,
                    normalized_stress);
   for (int it_1; it_1 < 2 * n; it_1++) {
     XUpdated(it_1, 1) = x[2 * it_1];

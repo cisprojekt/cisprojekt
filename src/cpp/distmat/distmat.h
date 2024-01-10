@@ -1,3 +1,7 @@
+// Copyright [year] <Copyright Owner>
+#ifndef SRC_CPP_DISTMAT_DISTMAT_H_
+#define SRC_CPP_DISTMAT_DISTMAT_H_
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -58,4 +62,14 @@ int *calculateHammingDistanceMatrix(char **array, int num_strings,
 }
 
 double toRadians(double degree);
+/**
+ * @brief Calculate Earths Distance between two points given lat and lon
+ * @param lat1 Latitude of first point
+ * @param lon1 Longitude of first point
+ * @param lat2 Latitude of second point
+ * @param lon2 Longitude of second point
+ * @return distance using the haversine formula
+ */
 double haversine(double lat1, double lon1, double lat2, double lon2);
+
+#endif  // SRC_CPP_DISTMAT_DISTMAT_H_

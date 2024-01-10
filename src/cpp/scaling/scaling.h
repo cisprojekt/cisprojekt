@@ -1,3 +1,7 @@
+// Copyright [year] <Copyright Owner>
+#ifndef SRC_CPP_SCALING_SCALING_H_
+#define SRC_CPP_SCALING_SCALING_H_
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -111,12 +115,12 @@ MatrixXd createRandomPoints(int n, int m);
 // full distance-matrix needed!
 
 // Scikit functions
-double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
+double scikit_mds_single(MatrixXd dissimilarities, double *x, double *x_inter,
                          int n_samples, bool init, bool metric,
                          int n_components, int max_iter, bool verbose,
                          double eps, int random_state, bool normalized_stress);
 
-void scikit_mds_multi(double *dissimilarities, double *x, double *x_inter,
+void scikit_mds_multi(MatrixXd dissimilarities, double *x, double *x_inter,
                       int n_iterations, int n_samples, bool init, bool metric,
                       int n_components, int max_iter, bool verbose, double eps,
                       int random_state, bool normalized_stress);
@@ -146,3 +150,5 @@ int terminate(INDEXTYPE *idx_set, int size);
 void force_directed(int size, int fixedsize, float *distmat);
 void init_embedding(float *embedding);
 int fill_level_count(int input, int *h);
+
+#endif  // SRC_CPP_SCALING_SCALING_H_
