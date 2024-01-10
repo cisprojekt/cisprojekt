@@ -8,6 +8,7 @@
 #include "src/cpp/scaling/scaling.h"
 #include <Eigen/Dense>
 #include <float.h>
+#include <iostream>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -592,9 +593,9 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
   srand((unsigned)(time(&t)));
   // initialize embedding
   init_embedding(g_embed);
-  printf("init_embedding\n");
+  std::cout << "init_embedding";
   for (int i = 0; i < 2 * N; i++) {
-    printf("%f", g_embed[i]);
+    std::cout << g_embed[i];
   }
   int chalm = 0;
   if (chalm == 1) {
