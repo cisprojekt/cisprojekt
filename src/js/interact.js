@@ -116,6 +116,11 @@ function getDataColumns(d_function_value) {
   }
 
   let dropdownId = d_function_value + "-dropdowns";
+  //we handle earth-dist and Euclidean the same way might want to change that
+  //since earth-dist can only have 2D data (lat,lon)
+  if (d_function_value == "earth-dist") {
+    dropdownId = "Euclidean-dropdowns";
+  }
   var dropdownContainer = document.getElementById(dropdownId);
   var selectElements = dropdownContainer.querySelectorAll("select");
 
@@ -426,8 +431,8 @@ function showDropdowns() {
     });
   }
 }
-
 // Add a new dimension to the Euclidean dropdowns
+
 function addDimension() {
   // Get the dropdown container
   var dropdownContainer = document.getElementById("Euclidean-dropdowns");

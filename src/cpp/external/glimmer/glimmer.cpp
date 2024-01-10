@@ -593,9 +593,9 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
   srand((unsigned)(time(&t)));
   // initialize embedding
   init_embedding(g_embed);
-  std::cout << "init_embedding";
+  std::cout << "init_embedding" << std::endl;
   for (int i = 0; i < 2 * N; i++) {
-    std::cout << g_embed[i];
+    std::cout << g_embed[i] << std::endl;
   }
   int chalm = 0;
   if (chalm == 1) {
