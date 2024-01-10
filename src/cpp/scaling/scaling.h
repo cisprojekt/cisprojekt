@@ -143,7 +143,7 @@ typedef struct _VECTYPE {
   float value;
 } VECTYPE;
 
-MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix);
+MatrixXd calculateMDSglimmer(int num_p, MatrixXd distanceMatrix);
 int myrand(void);
 int distcomp(const void *a, const void *b);
 int idxcomp(const void *a, const void *b);

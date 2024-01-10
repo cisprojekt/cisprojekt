@@ -124,7 +124,7 @@ function getDataColumns(d_function_value) {
   var dropdownContainer = document.getElementById(dropdownId);
   var selectElements = dropdownContainer.querySelectorAll("select");
 
-  if (d_function_value == "Euclidean") {
+  if (d_function_value == "Euclidean" || d_function_value == "earth-dist") {
     // Euclidean dict has axesArray key with all the column indices of the axes, since it might have any n number of data columns,
     // meaning the number of data columns is not fixed like for any other distance function.
     let axesArray = [];
@@ -344,6 +344,10 @@ function back2input() {
 /*+++++++++++++++++++++++ function for sdropdowns ++++++++++++++++++++ */
 function showDropdowns() {
   var selectedFunction = document.getElementById("D_function").value;
+  //handle earth-dist and Euclidean the same way
+  if (selectedFunction == "earth-dist") {
+    selectedFunction = "Euclidean";
+  }
   var csvInput = document.getElementById("text_box").value;
 
   var firstLine = csvInput.split("\n")[0];
