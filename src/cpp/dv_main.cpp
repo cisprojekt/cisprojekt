@@ -31,10 +31,10 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
     resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
     break;
   case 2:
-    resultMDS = calculateMDSscikit(N, distMatMDS);
+    resultMDS = calculateMDSscikit(nStrings, distMatMDS);
     break;
   case 3:
-    resultMDS = calculateMDSglimmer(N, distMatMDS);
+    resultMDS = calculateMDSglimmer(nStrings, distMatMDS);
     break;
   default:
     printf("no valid scaling algorithm was chosen");
@@ -113,10 +113,10 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
       resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
       break;
     case 2:
-      resultMDS = calculateMDSscikit(N, distMatMDS);
+      resultMDS = calculateMDSscikit(nPoints, distMatMDS);
       break;
     case 3:
-      resultMDS = calculateMDSglimmer(N, distMatMDS);
+      resultMDS = calculateMDSglimmer(nPoints, distMatMDS);
       break;
     default:
       printf("no valid scaling algorithm was chosen");
