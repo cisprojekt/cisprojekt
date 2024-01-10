@@ -571,9 +571,8 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
   }
   // max_dist = biggest distance in distancematrix
 
-  for (int r; r < line_num; r++) {
-    distanceMatrix /= max_dist;
-  }
+  distanceMatrix /= max_dist;
+
   // begin timing -------------------------------------BEGIN TIMING
   clock_t start_time1 = clock();
 
@@ -581,6 +580,8 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
   g_levels = fill_level_count(N, g_heir);
   g_current_level = g_levels - 1;
 
+  float *embedding = NULL;
+  embedding = (float *)malloc(sizeof(float) * n_embedding_dims * N);
   g_embed = (float *)malloc(sizeof(float) * n_embedding_dims * N);
   g_vel = (float *)calloc(n_embedding_dims * N, sizeof(float));
   g_force = (float *)calloc(n_embedding_dims * N, sizeof(float));
@@ -633,12 +634,12 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
   clock_t start_time2 = clock();
 
   // printf("Anzahl Punkte: %d\nbenötigte Zeit %f\n", N,
-         static_cast<float>(start_time2 - start_time1) / CLOCKS_PER_SEC);
-         // printf("stop_iteration %d\n", stop_iteration);
-         for (int it_1 = 0; it_1 < N; it_1++) {
-           for (int it_1 = 0; it_1 < N; it_1++) {
-             XUpdated(i, j) = embedding[(i * n_embedding_dims) + j]
-           }
-         }
-         return XUpdated;
+  static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC);
+  // printf("stop_iteration %d\n", stop_iteration);
+  for (int it_1 = 0; it_1 < N; it_1++) {
+    for (int it_1 = 0; it_1 < N; it_1++) {
+      XUpdated(it_1, it_2) = embedding[(it_1 * n_embedding_dims) + it_2]
+    }
+  }
+  return XUpdated;
 }
