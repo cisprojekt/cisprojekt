@@ -24,20 +24,17 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
 
   // For now we assume the input are fingerprints, not SMILES
   MatrixXd distMatMDS = distanceMatrix(stringVector);
-  /*(Todo Timo: case - different scaling algorithms
-  calculateMDSglimmer()
-  calculateMDSscikit()
-  */
+  MatrixXd resultMDS;
 
   switch (calcScalingMethod) {
   case 1:
-    MatrixXd resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+    resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
     break;
   case 2:
-    MatrixXd resultMDS = calculateMDSscikit(distMatMDS, maxIterations);
+    resultMDS = calculateMDSscikit(N, distMatMDS);
     break;
   case 3:
-    MatrixXd resultMDS = calculateMDSglimmer(distMatMDS, maxIterations);
+    resultMDS = calculateMDSglimmer(N, distMatMDS);
     break;
   default:
     printf("no valid scaling algorithm was chosen");
@@ -110,16 +107,16 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
 
     // Calculate distance matrix and apply SMACOF algorithm for MDS
     MatrixXd distMatMDS = distanceMatrix(pointMatrix, isSpherical);
-
+    MatrixXd resultMDS;
     switch (calcScalingMethod) {
     case 1:
-      MatrixXd resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
       break;
     case 2:
-      MatrixXd resultMDS = calculateMDSscikit(distMatMDS, maxIterations);
+      resultMDS = calculateMDSscikit(N, distMatMDS);
       break;
     case 3:
-      MatrixXd resultMDS = calculateMDSglimmer(N, distMatMDS);
+      resultMDS = calculateMDSglimmer(N, distMatMDS);
       break;
     default:
       printf("no valid scaling algorithm was chosen");

@@ -253,8 +253,12 @@ function dealwithrun() {
     case "noChoice":
       alert("Please choose a distance function");
       break;
+    case "earth-dist":
     case "Euclidean":
       type = "euclidean";
+      if (functionFlag == "earth-dist") {
+        type = "earth-dist";
+      }
       //check if the data is coordinate data
       //
       console.log("function as Euc");
@@ -293,6 +297,7 @@ function dealwithrun() {
 
       break;
     case "Hamming":
+      break;
     default:
       console.log("Input data doesn't match the distance function");
   }
