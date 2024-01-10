@@ -2,6 +2,7 @@
 #ifndef SRC_CPP_SCALING_SCALING_H_
 #define SRC_CPP_SCALING_SCALING_H_
 
+#include "src/cpp/distmat/distmat.h"
 #include <Eigen/Dense>
 
 using Eigen::MatrixXd;
@@ -82,7 +83,7 @@ double stressFunction(MatrixXd X, MatrixXd Z, MatrixXd B, MatrixXd weights,
 MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights);
 
 /**
- * @brief Applies multidimensional scaling with SMACOF algorithm
+ * @brief Applies multidimensional scaling with SMACOF Algorithm
  * @param distMat Original distance matrix
  * @param maxIt Maximum number of iterations
  * @param eps Cutoff for differences between new and old stress values

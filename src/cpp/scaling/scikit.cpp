@@ -1,3 +1,4 @@
+// Copyright [year] <Copyright Owner>
 #include <float.h>
 #include <math.h>
 #include <stdbool.h>
@@ -178,7 +179,6 @@ void outputCSV(double *embedding) {
 }
 */
 MatrixXd calculateMDSscikit(int n, MatrixXd distanceMatrix) {
-
   // distmat = delta
   MatrixXd XUpdated(n, 2);
   double *x_inter = new double[2 * n];

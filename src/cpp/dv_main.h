@@ -1,5 +1,5 @@
-#ifndef SRC_CPP_CLUSTERING_H_
-#define SRC_CPP_CLUSTERING_H_
+#ifndef SRC_CPP_DV_MAIN_H_
+#define SRC_CPP_DV_MAIN_H_
 
 // Copyright [year] <Copyright Owner>
 
@@ -62,4 +62,4 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               int calcDistMethod, int calcScalingMethod,
                               bool isSpherical);
 
-#endif  // SRC_CPP_CLUSTERING_H_
+#endif  // SRC_CPP_DV_MAIN_H_
