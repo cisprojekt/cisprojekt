@@ -637,8 +637,8 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
   static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC);
   // printf("stop_iteration %d\n", stop_iteration);
   for (int it_1 = 0; it_1 < N; it_1++) {
-    XUpdated(it_1, 0) = embedding[(it_1 * n_embedding_dims)];
-    XUpdated(it_1, 1) = embedding[(it_1 * n_embedding_dims + 1)];
+    XUpdated(it_1, 0) = g_embed[(it_1 * n_embedding_dims)];
+    XUpdated(it_1, 1) = g_embed[(it_1 * n_embedding_dims + 1)];
   }
   return XUpdated;
 }
