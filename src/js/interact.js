@@ -290,14 +290,10 @@ function dealwithrun() {
       //substitute names with flags
       type = "tanimotoFingerprints";
       console.log("function as Tani");
+      column = dataColumnsDict["tanimoto-fingerprint"];
       for (let i = 1; i < lines.length; i++) {
         let line = lines[i].split(",");
-        console.log(line);
-        for (let j = 0; j < line.length - 1; j++) {
-          data_for_map.push(line[j]);
-        }
-
-        names.push(line[line.length - 1]);
+        points_array.push(line[column]);
       }
 
       break;
