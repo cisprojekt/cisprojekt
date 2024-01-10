@@ -49,19 +49,20 @@
 #ifdef NO_INCLUDE_FENV
 #pragma message("Do not use fenv header.")
 #else
-#pragma message( \
+#pragma message(                                                               \
     "Use fenv header. If there is a warning about unknown #pragma STDC FENV_ACCESS, this can be ignored.")
 #pragma STDC FENV_ACCESS on
 #include <fenv.h>
 #endif
 
 #include <algorithm>  // for std::fill_n
-#include <cfloat>     // also for DBL_MAX, DBL_MIN
 #include <cmath>      // for std::pow, std::sqrt
 #include <cstddef>    // for std::ptrdiff_t
 #include <limits>     // for std::numeric_limits<...>::infinity()
 #include <stdexcept>  // for std::runtime_error
 #include <string>     // for std::string
+
+#include <cfloat>  // also for DBL_MAX, DBL_MIN
 #ifndef DBL_MANT_DIG
 #error The constant DBL_MANT_DIG could not be defined.
 #endif
@@ -174,13 +175,12 @@ enum method_codes_vector {
 };
 
 // self-destructing array pointer
-template <typename type>
-class auto_array_ptr {
- private:
+template <typename type> class auto_array_ptr {
+private:
   type *ptr;
   auto_array_ptr(auto_array_ptr const &);  // non construction-copyable
   auto_array_ptr &operator=(auto_array_ptr const &);  // non copyable
- public:
+public:
   auto_array_ptr() : ptr(NULL) {}
   template <typename index>
   auto_array_ptr(index const size) : ptr(new type[size]) {}
@@ -193,8 +193,7 @@ class auto_array_ptr {
     delete[] ptr;
     ptr = NULL;
   }
-  template <typename index>
-  void init(index const size) {
+  template <typename index> void init(index const size) {
     ptr = new type[size];
   }
   template <typename index, typename value>
@@ -213,11 +212,11 @@ struct node {
 inline bool operator<(const node a, const node b) { return (a.dist < b.dist); }
 
 class cluster_result {
- private:
+private:
   auto_array_ptr<node> Z;
   t_index pos;
 
- public:
+public:
   cluster_result(const t_index size) : Z(size), pos(0) {}
 
   void append(const t_index node1, const t_index node2, const t_float dist) {
@@ -284,15 +283,15 @@ class doubly_linked_list {
     or
     for (i=somevalue; L<size; i=L.succ[I])
   */
- public:
+public:
   t_index start;
   auto_array_ptr<t_index> succ;
 
- private:
+private:
   auto_array_ptr<t_index> pred;
   // Not necessarily private, we just do not need it in this instance.
 
- public:
+public:
   doubly_linked_list(const t_index size)
       // Initialize to the given size.
       : start(0), succ(size + 1), pred(size + 1) {
@@ -323,7 +322,7 @@ class doubly_linked_list {
 // Indexing functions
 // D is the upper triangular part of a symmetric (NxN)-matrix
 // We require r_ < c_ !
-#define D_(r_, c_) \
+#define D_(r_, c_)                                                             \
   (D[(static_cast<std::ptrdiff_t>(2 * N - 3 - (r_)) * (r_) >> 1) + (c_)-1])
 // Z is an ((N-1)x4)-array
 #define Z_(_r, _c) (Z[(_r) * 4 + (_c)])
@@ -337,11 +336,11 @@ class doubly_linked_list {
   idx and all its parents is updated with the root element.
  */
 class union_find {
- private:
+private:
   auto_array_ptr<t_index> parent;
   t_index nextparent;
 
- public:
+public:
   union_find(const t_index size)
       : parent(size > 0 ? 2 * size - 1 : 0, 0), nextparent(size) {}
 
@@ -462,10 +461,12 @@ static void MST_linkage_core(const t_index N, const t_float *const D,
 /* Functions for the update of the dissimilarity array */
 
 inline static void f_single(t_float *const b, const t_float a) {
-  if (*b > a) *b = a;
+  if (*b > a)
+    *b = a;
 }
 inline static void f_complete(t_float *const b, const t_float a) {
-  if (*b < a) *b = a;
+  if (*b < a)
+    *b = a;
 }
 inline static void f_average(t_float *const b, const t_float a, const t_float s,
                              const t_float t) {
@@ -586,7 +587,8 @@ static void NN_chain_core(const t_index N, t_float *const D,
   }
 
 #ifdef FE_INVALID
-  if (feclearexcept(FE_INVALID)) throw fenv_error();
+  if (feclearexcept(FE_INVALID))
+    throw fenv_error();
 #endif
 
   for (t_index j = 0; j < N - 1; ++j) {
@@ -649,105 +651,106 @@ static void NN_chain_core(const t_index N, t_float *const D,
     active_nodes.remove(idx1);
 
     switch (method) {
-      case METHOD_METR_SINGLE:
-        /*
-        Single linkage.
+    case METHOD_METR_SINGLE:
+      /*
+      Single linkage.
 
-        Characteristic: new distances are never longer than the old distances.
-        */
-        // Update the distance matrix in the range [start, idx1).
-        for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-          f_single(&D_(i, idx2), D_(i, idx1));
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; i < idx2; i = active_nodes.succ[i])
-          f_single(&D_(i, idx2), D_(idx1, i));
-        // Update the distance matrix in the range (idx2, N).
-        for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-          f_single(&D_(idx2, i), D_(idx1, i));
-        break;
+      Characteristic: new distances are never longer than the old distances.
+      */
+      // Update the distance matrix in the range [start, idx1).
+      for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
+        f_single(&D_(i, idx2), D_(i, idx1));
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; i < idx2; i = active_nodes.succ[i])
+        f_single(&D_(i, idx2), D_(idx1, i));
+      // Update the distance matrix in the range (idx2, N).
+      for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
+        f_single(&D_(idx2, i), D_(idx1, i));
+      break;
 
-      case METHOD_METR_COMPLETE:
-        /*
-        Complete linkage.
+    case METHOD_METR_COMPLETE:
+      /*
+      Complete linkage.
 
-        Characteristic: new distances are never shorter than the old distances.
-        */
-        // Update the distance matrix in the range [start, idx1).
-        for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-          f_complete(&D_(i, idx2), D_(i, idx1));
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; i < idx2; i = active_nodes.succ[i])
-          f_complete(&D_(i, idx2), D_(idx1, i));
-        // Update the distance matrix in the range (idx2, N).
-        for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-          f_complete(&D_(idx2, i), D_(idx1, i));
-        break;
+      Characteristic: new distances are never shorter than the old distances.
+      */
+      // Update the distance matrix in the range [start, idx1).
+      for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
+        f_complete(&D_(i, idx2), D_(i, idx1));
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; i < idx2; i = active_nodes.succ[i])
+        f_complete(&D_(i, idx2), D_(idx1, i));
+      // Update the distance matrix in the range (idx2, N).
+      for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
+        f_complete(&D_(idx2, i), D_(idx1, i));
+      break;
 
-      case METHOD_METR_AVERAGE: {
-        /*
-        Average linkage.
+    case METHOD_METR_AVERAGE: {
+      /*
+      Average linkage.
 
-        Shorter and longer distances can occur.
-        */
-        // Update the distance matrix in the range [start, idx1).
-        t_float s = size1 / (size1 + size2);
-        t_float t = size2 / (size1 + size2);
-        for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-          f_average(&D_(i, idx2), D_(i, idx1), s, t);
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; i < idx2; i = active_nodes.succ[i])
-          f_average(&D_(i, idx2), D_(idx1, i), s, t);
-        // Update the distance matrix in the range (idx2, N).
-        for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-          f_average(&D_(idx2, i), D_(idx1, i), s, t);
-        break;
-      }
+      Shorter and longer distances can occur.
+      */
+      // Update the distance matrix in the range [start, idx1).
+      t_float s = size1 / (size1 + size2);
+      t_float t = size2 / (size1 + size2);
+      for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
+        f_average(&D_(i, idx2), D_(i, idx1), s, t);
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; i < idx2; i = active_nodes.succ[i])
+        f_average(&D_(i, idx2), D_(idx1, i), s, t);
+      // Update the distance matrix in the range (idx2, N).
+      for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
+        f_average(&D_(idx2, i), D_(idx1, i), s, t);
+      break;
+    }
 
-      case METHOD_METR_WEIGHTED:
-        /*
-        Weighted linkage.
+    case METHOD_METR_WEIGHTED:
+      /*
+      Weighted linkage.
 
-        Shorter and longer distances can occur.
-        */
-        // Update the distance matrix in the range [start, idx1).
-        for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-          f_weighted(&D_(i, idx2), D_(i, idx1));
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; i < idx2; i = active_nodes.succ[i])
-          f_weighted(&D_(i, idx2), D_(idx1, i));
-        // Update the distance matrix in the range (idx2, N).
-        for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-          f_weighted(&D_(idx2, i), D_(idx1, i));
-        break;
+      Shorter and longer distances can occur.
+      */
+      // Update the distance matrix in the range [start, idx1).
+      for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
+        f_weighted(&D_(i, idx2), D_(i, idx1));
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; i < idx2; i = active_nodes.succ[i])
+        f_weighted(&D_(i, idx2), D_(idx1, i));
+      // Update the distance matrix in the range (idx2, N).
+      for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
+        f_weighted(&D_(idx2, i), D_(idx1, i));
+      break;
 
-      case METHOD_METR_WARD:
-        /*
-        Ward linkage.
+    case METHOD_METR_WARD:
+      /*
+      Ward linkage.
 
-        Shorter and longer distances can occur, not smaller than min(d1,d2)
-        but maybe bigger than max(d1,d2).
-        */
-        // Update the distance matrix in the range [start, idx1).
-        // t_float v = static_cast<t_float>(members[i]);
-        for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-          f_ward(&D_(i, idx2), D_(i, idx1), min, size1, size2,
-                 static_cast<t_float>(members[i]));
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; i < idx2; i = active_nodes.succ[i])
-          f_ward(&D_(i, idx2), D_(idx1, i), min, size1, size2,
-                 static_cast<t_float>(members[i]));
-        // Update the distance matrix in the range (idx2, N).
-        for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-          f_ward(&D_(idx2, i), D_(idx1, i), min, size1, size2,
-                 static_cast<t_float>(members[i]));
-        break;
+      Shorter and longer distances can occur, not smaller than min(d1,d2)
+      but maybe bigger than max(d1,d2).
+      */
+      // Update the distance matrix in the range [start, idx1).
+      // t_float v = static_cast<t_float>(members[i]);
+      for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
+        f_ward(&D_(i, idx2), D_(i, idx1), min, size1, size2,
+               static_cast<t_float>(members[i]));
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; i < idx2; i = active_nodes.succ[i])
+        f_ward(&D_(i, idx2), D_(idx1, i), min, size1, size2,
+               static_cast<t_float>(members[i]));
+      // Update the distance matrix in the range (idx2, N).
+      for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
+        f_ward(&D_(idx2, i), D_(idx1, i), min, size1, size2,
+               static_cast<t_float>(members[i]));
+      break;
 
-      default:
-        throw std::runtime_error(std::string("Invalid method."));
+    default:
+      throw std::runtime_error(std::string("Invalid method."));
     }
   }
 #ifdef FE_INVALID
-  if (fetestexcept(FE_INVALID)) throw fenv_error();
+  if (fetestexcept(FE_INVALID))
+    throw fenv_error();
 #endif
 }
 
@@ -773,7 +776,7 @@ class binary_min_heap {
 
   This implementation is not designed to handle NaN values.
   */
- private:
+private:
   t_float *const A;
   t_index size;
   auto_array_ptr<t_index> I;
@@ -785,22 +788,19 @@ class binary_min_heap {
   binary_min_heap(binary_min_heap const &);
   binary_min_heap &operator=(binary_min_heap const &);
 
- public:
+public:
   binary_min_heap(t_float *const A_, const t_index size_)
-      : A(A_),
-        size(size_),
-        I(size),
+      : A(A_), size(size_), I(size),
         R(size) {  // Allocate memory and initialize the lists I and R to the
                    // identity. This
     // does not make it a heap. Call heapify afterwards!
-    for (t_index i = 0; i < size; ++i) R[i] = I[i] = i;
+    for (t_index i = 0; i < size; ++i)
+      R[i] = I[i] = i;
   }
 
   binary_min_heap(t_float *const A_, const t_index size1, const t_index size2,
                   const t_index start)
-      : A(A_),
-        size(size1),
-        I(size1),
+      : A(A_), size(size1), I(size1),
         R(size2) {  // Allocate memory and initialize the lists I and R to the
                     // identity. This
     // does not make it a heap. Call heapify afterwards!
@@ -881,10 +881,11 @@ class binary_min_heap {
     update_geq_(R[idx]);
   }
 
- private:
+private:
   void update_leq_(t_index i) const {
     t_index j;
-    for (; (i > 0) && (H(i) < H(j = (i - 1) >> 1)); i = j) heap_swap(i, j);
+    for (; (i > 0) && (H(i) < H(j = (i - 1) >> 1)); i = j)
+      heap_swap(i, j);
   }
 
   void update_geq_(t_index i) const {
@@ -892,7 +893,8 @@ class binary_min_heap {
     for (; (j = 2 * i + 1) < size; i = j) {
       if (H(j) >= H(i)) {
         ++j;
-        if (j >= size || H(j) >= H(i)) break;
+        if (j >= size || H(j) >= H(i))
+          break;
       } else if (j + 1 < size && H(j + 1) < H(j))
         ++j;
       heap_swap(i, j);
@@ -972,7 +974,8 @@ static void generic_linkage(const t_index N, t_float *const D,
   nn_distances.heapify();
 
 #ifdef FE_INVALID
-  if (feclearexcept(FE_INVALID)) throw fenv_error();
+  if (feclearexcept(FE_INVALID))
+    throw fenv_error();
 #endif
 
   // Main loop: We have N-1 merging steps.
@@ -1051,267 +1054,272 @@ static void generic_linkage(const t_index N, t_float *const D,
 
     // Update the distance matrix
     switch (method) {
-      case METHOD_METR_SINGLE:
-        /*
-          Single linkage.
+    case METHOD_METR_SINGLE:
+      /*
+        Single linkage.
 
-          Characteristic: new distances are never longer than the old distances.
-        */
-        // Update the distance matrix in the range [start, idx1).
-        for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-          f_single(&D_(j, idx2), D_(j, idx1));
-          if (n_nghbr[j] == idx1) n_nghbr[j] = idx2;
-        }
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; j < idx2; j = active_nodes.succ[j]) {
-          f_single(&D_(j, idx2), D_(idx1, j));
-          // If the new value is below the old minimum in a row, update
-          // the mindist and n_nghbr arrays.
-          if (D_(j, idx2) < mindist[j]) {
-            nn_distances.update_leq(j, D_(j, idx2));
-            n_nghbr[j] = idx2;
-          }
-        }
-        // Update the distance matrix in the range (idx2, N).
-        // Recompute the minimum mindist[idx2] and n_nghbr[idx2].
-        if (idx2 < N_1) {
-          min = mindist[idx2];
-          for (j = active_nodes.succ[idx2]; j < N; j = active_nodes.succ[j]) {
-            f_single(&D_(idx2, j), D_(idx1, j));
-            if (D_(idx2, j) < min) {
-              n_nghbr[idx2] = j;
-              min = D_(idx2, j);
-            }
-          }
-          nn_distances.update_leq(idx2, min);
-        }
-        break;
-
-      case METHOD_METR_COMPLETE:
-        /*
-          Complete linkage.
-
-          Characteristic: new distances are never shorter than the old
-          distances.
-        */
-        // Update the distance matrix in the range [start, idx1).
-        for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-          f_complete(&D_(j, idx2), D_(j, idx1));
-          if (n_nghbr[j] == idx1) n_nghbr[j] = idx2;
-        }
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; j < idx2; j = active_nodes.succ[j])
-          f_complete(&D_(j, idx2), D_(idx1, j));
-        // Update the distance matrix in the range (idx2, N).
-        for (j = active_nodes.succ[idx2]; j < N; j = active_nodes.succ[j])
-          f_complete(&D_(idx2, j), D_(idx1, j));
-        break;
-
-      case METHOD_METR_AVERAGE: {
-        /*
-          Average linkage.
-
-          Shorter and longer distances can occur.
-        */
-        // Update the distance matrix in the range [start, idx1).
-        t_float s = size1 / (size1 + size2);
-        t_float t = size2 / (size1 + size2);
-        for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-          f_average(&D_(j, idx2), D_(j, idx1), s, t);
-          if (n_nghbr[j] == idx1) n_nghbr[j] = idx2;
-        }
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; j < idx2; j = active_nodes.succ[j]) {
-          f_average(&D_(j, idx2), D_(idx1, j), s, t);
-          if (D_(j, idx2) < mindist[j]) {
-            nn_distances.update_leq(j, D_(j, idx2));
-            n_nghbr[j] = idx2;
-          }
-        }
-        // Update the distance matrix in the range (idx2, N).
-        if (idx2 < N_1) {
-          n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
-          f_average(&D_(idx2, j), D_(idx1, j), s, t);
-          min = D_(idx2, j);
-          for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-            f_average(&D_(idx2, j), D_(idx1, j), s, t);
-            if (D_(idx2, j) < min) {
-              min = D_(idx2, j);
-              n_nghbr[idx2] = j;
-            }
-          }
-          nn_distances.update(idx2, min);
-        }
-        break;
+        Characteristic: new distances are never longer than the old distances.
+      */
+      // Update the distance matrix in the range [start, idx1).
+      for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
+        f_single(&D_(j, idx2), D_(j, idx1));
+        if (n_nghbr[j] == idx1)
+          n_nghbr[j] = idx2;
       }
-
-      case METHOD_METR_WEIGHTED:
-        /*
-          Weighted linkage.
-
-          Shorter and longer distances can occur.
-        */
-        // Update the distance matrix in the range [start, idx1).
-        for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-          f_weighted(&D_(j, idx2), D_(j, idx1));
-          if (n_nghbr[j] == idx1) n_nghbr[j] = idx2;
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; j < idx2; j = active_nodes.succ[j]) {
+        f_single(&D_(j, idx2), D_(idx1, j));
+        // If the new value is below the old minimum in a row, update
+        // the mindist and n_nghbr arrays.
+        if (D_(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D_(j, idx2));
+          n_nghbr[j] = idx2;
         }
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; j < idx2; j = active_nodes.succ[j]) {
-          f_weighted(&D_(j, idx2), D_(idx1, j));
-          if (D_(j, idx2) < mindist[j]) {
-            nn_distances.update_leq(j, D_(j, idx2));
-            n_nghbr[j] = idx2;
+      }
+      // Update the distance matrix in the range (idx2, N).
+      // Recompute the minimum mindist[idx2] and n_nghbr[idx2].
+      if (idx2 < N_1) {
+        min = mindist[idx2];
+        for (j = active_nodes.succ[idx2]; j < N; j = active_nodes.succ[j]) {
+          f_single(&D_(idx2, j), D_(idx1, j));
+          if (D_(idx2, j) < min) {
+            n_nghbr[idx2] = j;
+            min = D_(idx2, j);
           }
         }
-        // Update the distance matrix in the range (idx2, N).
-        if (idx2 < N_1) {
-          n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        nn_distances.update_leq(idx2, min);
+      }
+      break;
+
+    case METHOD_METR_COMPLETE:
+      /*
+        Complete linkage.
+
+        Characteristic: new distances are never shorter than the old distances.
+      */
+      // Update the distance matrix in the range [start, idx1).
+      for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
+        f_complete(&D_(j, idx2), D_(j, idx1));
+        if (n_nghbr[j] == idx1)
+          n_nghbr[j] = idx2;
+      }
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; j < idx2; j = active_nodes.succ[j])
+        f_complete(&D_(j, idx2), D_(idx1, j));
+      // Update the distance matrix in the range (idx2, N).
+      for (j = active_nodes.succ[idx2]; j < N; j = active_nodes.succ[j])
+        f_complete(&D_(idx2, j), D_(idx1, j));
+      break;
+
+    case METHOD_METR_AVERAGE: {
+      /*
+        Average linkage.
+
+        Shorter and longer distances can occur.
+      */
+      // Update the distance matrix in the range [start, idx1).
+      t_float s = size1 / (size1 + size2);
+      t_float t = size2 / (size1 + size2);
+      for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
+        f_average(&D_(j, idx2), D_(j, idx1), s, t);
+        if (n_nghbr[j] == idx1)
+          n_nghbr[j] = idx2;
+      }
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; j < idx2; j = active_nodes.succ[j]) {
+        f_average(&D_(j, idx2), D_(idx1, j), s, t);
+        if (D_(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D_(j, idx2));
+          n_nghbr[j] = idx2;
+        }
+      }
+      // Update the distance matrix in the range (idx2, N).
+      if (idx2 < N_1) {
+        n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        f_average(&D_(idx2, j), D_(idx1, j), s, t);
+        min = D_(idx2, j);
+        for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
+          f_average(&D_(idx2, j), D_(idx1, j), s, t);
+          if (D_(idx2, j) < min) {
+            min = D_(idx2, j);
+            n_nghbr[idx2] = j;
+          }
+        }
+        nn_distances.update(idx2, min);
+      }
+      break;
+    }
+
+    case METHOD_METR_WEIGHTED:
+      /*
+        Weighted linkage.
+
+        Shorter and longer distances can occur.
+      */
+      // Update the distance matrix in the range [start, idx1).
+      for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
+        f_weighted(&D_(j, idx2), D_(j, idx1));
+        if (n_nghbr[j] == idx1)
+          n_nghbr[j] = idx2;
+      }
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; j < idx2; j = active_nodes.succ[j]) {
+        f_weighted(&D_(j, idx2), D_(idx1, j));
+        if (D_(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D_(j, idx2));
+          n_nghbr[j] = idx2;
+        }
+      }
+      // Update the distance matrix in the range (idx2, N).
+      if (idx2 < N_1) {
+        n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        f_weighted(&D_(idx2, j), D_(idx1, j));
+        min = D_(idx2, j);
+        for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
           f_weighted(&D_(idx2, j), D_(idx1, j));
-          min = D_(idx2, j);
-          for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-            f_weighted(&D_(idx2, j), D_(idx1, j));
-            if (D_(idx2, j) < min) {
-              min = D_(idx2, j);
-              n_nghbr[idx2] = j;
-            }
-          }
-          nn_distances.update(idx2, min);
-        }
-        break;
-
-      case METHOD_METR_WARD:
-        /*
-          Ward linkage.
-
-          Shorter and longer distances can occur, not smaller than min(d1,d2)
-          but maybe bigger than max(d1,d2).
-        */
-        // Update the distance matrix in the range [start, idx1).
-        for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-          f_ward(&D_(j, idx2), D_(j, idx1), mindist[idx1], size1, size2,
-                 static_cast<t_float>(members[j]));
-          if (n_nghbr[j] == idx1) n_nghbr[j] = idx2;
-        }
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; j < idx2; j = active_nodes.succ[j]) {
-          f_ward(&D_(j, idx2), D_(idx1, j), mindist[idx1], size1, size2,
-                 static_cast<t_float>(members[j]));
-          if (D_(j, idx2) < mindist[j]) {
-            nn_distances.update_leq(j, D_(j, idx2));
-            n_nghbr[j] = idx2;
+          if (D_(idx2, j) < min) {
+            min = D_(idx2, j);
+            n_nghbr[idx2] = j;
           }
         }
-        // Update the distance matrix in the range (idx2, N).
-        if (idx2 < N_1) {
-          n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        nn_distances.update(idx2, min);
+      }
+      break;
+
+    case METHOD_METR_WARD:
+      /*
+        Ward linkage.
+
+        Shorter and longer distances can occur, not smaller than min(d1,d2)
+        but maybe bigger than max(d1,d2).
+      */
+      // Update the distance matrix in the range [start, idx1).
+      for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
+        f_ward(&D_(j, idx2), D_(j, idx1), mindist[idx1], size1, size2,
+               static_cast<t_float>(members[j]));
+        if (n_nghbr[j] == idx1)
+          n_nghbr[j] = idx2;
+      }
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; j < idx2; j = active_nodes.succ[j]) {
+        f_ward(&D_(j, idx2), D_(idx1, j), mindist[idx1], size1, size2,
+               static_cast<t_float>(members[j]));
+        if (D_(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D_(j, idx2));
+          n_nghbr[j] = idx2;
+        }
+      }
+      // Update the distance matrix in the range (idx2, N).
+      if (idx2 < N_1) {
+        n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        f_ward(&D_(idx2, j), D_(idx1, j), mindist[idx1], size1, size2,
+               static_cast<t_float>(members[j]));
+        min = D_(idx2, j);
+        for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
           f_ward(&D_(idx2, j), D_(idx1, j), mindist[idx1], size1, size2,
                  static_cast<t_float>(members[j]));
-          min = D_(idx2, j);
-          for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-            f_ward(&D_(idx2, j), D_(idx1, j), mindist[idx1], size1, size2,
-                   static_cast<t_float>(members[j]));
-            if (D_(idx2, j) < min) {
-              min = D_(idx2, j);
-              n_nghbr[idx2] = j;
-            }
-          }
-          nn_distances.update(idx2, min);
-        }
-        break;
-
-      case METHOD_METR_CENTROID: {
-        /*
-          Centroid linkage.
-
-          Shorter and longer distances can occur, not bigger than max(d1,d2)
-          but maybe smaller than min(d1,d2).
-        */
-        // Update the distance matrix in the range [start, idx1).
-        t_float s = size1 / (size1 + size2);
-        t_float t = size2 / (size1 + size2);
-        t_float stc = s * t * mindist[idx1];
-        for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-          f_centroid(&D_(j, idx2), D_(j, idx1), stc, s, t);
-          if (D_(j, idx2) < mindist[j]) {
-            nn_distances.update_leq(j, D_(j, idx2));
-            n_nghbr[j] = idx2;
-          } else if (n_nghbr[j] == idx1)
-            n_nghbr[j] = idx2;
-        }
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; j < idx2; j = active_nodes.succ[j]) {
-          f_centroid(&D_(j, idx2), D_(idx1, j), stc, s, t);
-          if (D_(j, idx2) < mindist[j]) {
-            nn_distances.update_leq(j, D_(j, idx2));
-            n_nghbr[j] = idx2;
+          if (D_(idx2, j) < min) {
+            min = D_(idx2, j);
+            n_nghbr[idx2] = j;
           }
         }
-        // Update the distance matrix in the range (idx2, N).
-        if (idx2 < N_1) {
-          n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        nn_distances.update(idx2, min);
+      }
+      break;
+
+    case METHOD_METR_CENTROID: {
+      /*
+        Centroid linkage.
+
+        Shorter and longer distances can occur, not bigger than max(d1,d2)
+        but maybe smaller than min(d1,d2).
+      */
+      // Update the distance matrix in the range [start, idx1).
+      t_float s = size1 / (size1 + size2);
+      t_float t = size2 / (size1 + size2);
+      t_float stc = s * t * mindist[idx1];
+      for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
+        f_centroid(&D_(j, idx2), D_(j, idx1), stc, s, t);
+        if (D_(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D_(j, idx2));
+          n_nghbr[j] = idx2;
+        } else if (n_nghbr[j] == idx1)
+          n_nghbr[j] = idx2;
+      }
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; j < idx2; j = active_nodes.succ[j]) {
+        f_centroid(&D_(j, idx2), D_(idx1, j), stc, s, t);
+        if (D_(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D_(j, idx2));
+          n_nghbr[j] = idx2;
+        }
+      }
+      // Update the distance matrix in the range (idx2, N).
+      if (idx2 < N_1) {
+        n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        f_centroid(&D_(idx2, j), D_(idx1, j), stc, s, t);
+        min = D_(idx2, j);
+        for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
           f_centroid(&D_(idx2, j), D_(idx1, j), stc, s, t);
-          min = D_(idx2, j);
-          for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-            f_centroid(&D_(idx2, j), D_(idx1, j), stc, s, t);
-            if (D_(idx2, j) < min) {
-              min = D_(idx2, j);
-              n_nghbr[idx2] = j;
-            }
+          if (D_(idx2, j) < min) {
+            min = D_(idx2, j);
+            n_nghbr[idx2] = j;
           }
-          nn_distances.update(idx2, min);
         }
-        break;
+        nn_distances.update(idx2, min);
       }
+      break;
+    }
 
-      case METHOD_METR_MEDIAN: {
-        /*
-          Median linkage.
+    case METHOD_METR_MEDIAN: {
+      /*
+        Median linkage.
 
-          Shorter and longer distances can occur, not bigger than max(d1,d2)
-          but maybe smaller than min(d1,d2).
-        */
-        // Update the distance matrix in the range [start, idx1).
-        t_float c_4 = mindist[idx1] * .25;
-        for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-          f_median(&D_(j, idx2), D_(j, idx1), c_4);
-          if (D_(j, idx2) < mindist[j]) {
-            nn_distances.update_leq(j, D_(j, idx2));
-            n_nghbr[j] = idx2;
-          } else if (n_nghbr[j] == idx1)
-            n_nghbr[j] = idx2;
+        Shorter and longer distances can occur, not bigger than max(d1,d2)
+        but maybe smaller than min(d1,d2).
+      */
+      // Update the distance matrix in the range [start, idx1).
+      t_float c_4 = mindist[idx1] * .25;
+      for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
+        f_median(&D_(j, idx2), D_(j, idx1), c_4);
+        if (D_(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D_(j, idx2));
+          n_nghbr[j] = idx2;
+        } else if (n_nghbr[j] == idx1)
+          n_nghbr[j] = idx2;
+      }
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; j < idx2; j = active_nodes.succ[j]) {
+        f_median(&D_(j, idx2), D_(idx1, j), c_4);
+        if (D_(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D_(j, idx2));
+          n_nghbr[j] = idx2;
         }
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; j < idx2; j = active_nodes.succ[j]) {
-          f_median(&D_(j, idx2), D_(idx1, j), c_4);
-          if (D_(j, idx2) < mindist[j]) {
-            nn_distances.update_leq(j, D_(j, idx2));
-            n_nghbr[j] = idx2;
-          }
-        }
-        // Update the distance matrix in the range (idx2, N).
-        if (idx2 < N_1) {
-          n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+      }
+      // Update the distance matrix in the range (idx2, N).
+      if (idx2 < N_1) {
+        n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        f_median(&D_(idx2, j), D_(idx1, j), c_4);
+        min = D_(idx2, j);
+        for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
           f_median(&D_(idx2, j), D_(idx1, j), c_4);
-          min = D_(idx2, j);
-          for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-            f_median(&D_(idx2, j), D_(idx1, j), c_4);
-            if (D_(idx2, j) < min) {
-              min = D_(idx2, j);
-              n_nghbr[idx2] = j;
-            }
+          if (D_(idx2, j) < min) {
+            min = D_(idx2, j);
+            n_nghbr[idx2] = j;
           }
-          nn_distances.update(idx2, min);
         }
-        break;
+        nn_distances.update(idx2, min);
       }
+      break;
+    }
 
-      default:
-        throw std::runtime_error(std::string("Invalid method."));
+    default:
+      throw std::runtime_error(std::string("Invalid method."));
     }
   }
 #ifdef FE_INVALID
-  if (fetestexcept(FE_INVALID)) throw fenv_error();
+  if (fetestexcept(FE_INVALID))
+    throw fenv_error();
 #endif
 }
 
@@ -1430,11 +1438,11 @@ static void generic_linkage_vector(const t_index N, t_dissimilarity &dist,
     for (idx = j = i + 1; j < N; ++j) {
       t_float tmp;
       switch (method) {
-        case METHOD_VECTOR_WARD:
-          tmp = dist.ward_initial(i, j);
-          break;
-        default:
-          tmp = dist.template sqeuclidean<true>(i, j);
+      case METHOD_VECTOR_WARD:
+        tmp = dist.ward_initial(i, j);
+        break;
+      default:
+        tmp = dist.template sqeuclidean<true>(i, j);
       }
       if (tmp < min) {
         min = tmp;
@@ -1442,11 +1450,11 @@ static void generic_linkage_vector(const t_index N, t_dissimilarity &dist,
       }
     }
     switch (method) {
-      case METHOD_VECTOR_WARD:
-        mindist[i] = t_dissimilarity::ward_initial_conversion(min);
-        break;
-      default:
-        mindist[i] = min;
+    case METHOD_VECTOR_WARD:
+      mindist[i] = t_dissimilarity::ward_initial_conversion(min);
+      break;
+    default:
+      mindist[i] = min;
     }
     n_nghbr[i] = idx;
   }
@@ -1463,25 +1471,25 @@ static void generic_linkage_vector(const t_index N, t_dissimilarity &dist,
       // Recompute the minimum mindist[idx1] and n_nghbr[idx1].
       n_nghbr[idx1] = j = active_nodes.succ[idx1];  // exists, maximally N-1
       switch (method) {
-        case METHOD_VECTOR_WARD:
-          min = dist.ward(idx1, j);
-          for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-            t_float const tmp = dist.ward(idx1, j);
-            if (tmp < min) {
-              min = tmp;
-              n_nghbr[idx1] = j;
-            }
+      case METHOD_VECTOR_WARD:
+        min = dist.ward(idx1, j);
+        for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
+          t_float const tmp = dist.ward(idx1, j);
+          if (tmp < min) {
+            min = tmp;
+            n_nghbr[idx1] = j;
           }
-          break;
-        default:
-          min = dist.template sqeuclidean<true>(idx1, j);
-          for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-            t_float const tmp = dist.template sqeuclidean<true>(idx1, j);
-            if (tmp < min) {
-              min = tmp;
-              n_nghbr[idx1] = j;
-            }
+        }
+        break;
+      default:
+        min = dist.template sqeuclidean<true>(idx1, j);
+        for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
+          t_float const tmp = dist.template sqeuclidean<true>(idx1, j);
+          if (tmp < min) {
+            min = tmp;
+            n_nghbr[idx1] = j;
           }
+        }
       }
       /* Update the heap with the new true minimum and search for the (possibly
          different) minimal entry. */
@@ -1499,15 +1507,15 @@ static void generic_linkage_vector(const t_index N, t_dissimilarity &dist,
     Z2.append(node1, node2, mindist[idx1]);
 
     switch (method) {
-      case METHOD_VECTOR_WARD:
-      case METHOD_VECTOR_CENTROID:
-        dist.merge_inplace(idx1, idx2);
-        break;
-      case METHOD_VECTOR_MEDIAN:
-        dist.merge_inplace_weighted(idx1, idx2);
-        break;
-      default:
-        throw std::runtime_error(std::string("Invalid method."));
+    case METHOD_VECTOR_WARD:
+    case METHOD_VECTOR_CENTROID:
+      dist.merge_inplace(idx1, idx2);
+      break;
+    case METHOD_VECTOR_MEDIAN:
+      dist.merge_inplace_weighted(idx1, idx2);
+      break;
+    default:
+      throw std::runtime_error(std::string("Invalid method."));
     }
 
     // Index idx2 now represents the new (merged) node with label N+i.
@@ -1517,72 +1525,72 @@ static void generic_linkage_vector(const t_index N, t_dissimilarity &dist,
 
     // Update the distance matrix
     switch (method) {
-      case METHOD_VECTOR_WARD:
-        /*
-          Ward linkage.
+    case METHOD_VECTOR_WARD:
+      /*
+        Ward linkage.
 
-          Shorter and longer distances can occur, not smaller than min(d1,d2)
-          but maybe bigger than max(d1,d2).
-        */
-        // Update the distance matrix in the range [start, idx1).
-        for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-          if (n_nghbr[j] == idx2) {
-            n_nghbr[j] = idx1;  // invalidate
+        Shorter and longer distances can occur, not smaller than min(d1,d2)
+        but maybe bigger than max(d1,d2).
+      */
+      // Update the distance matrix in the range [start, idx1).
+      for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
+        if (n_nghbr[j] == idx2) {
+          n_nghbr[j] = idx1;  // invalidate
+        }
+      }
+      // Update the distance matrix in the range (idx1, idx2).
+      for (; j < idx2; j = active_nodes.succ[j]) {
+        t_float const tmp = dist.ward(j, idx2);
+        if (tmp < mindist[j]) {
+          nn_distances.update_leq(j, tmp);
+          n_nghbr[j] = idx2;
+        } else if (n_nghbr[j] == idx2) {
+          n_nghbr[j] = idx1;  // invalidate
+        }
+      }
+      // Find the nearest neighbor for idx2.
+      if (idx2 < N_1) {
+        n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        min = dist.ward(idx2, j);
+        for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
+          t_float const tmp = dist.ward(idx2, j);
+          if (tmp < min) {
+            min = tmp;
+            n_nghbr[idx2] = j;
           }
         }
-        // Update the distance matrix in the range (idx1, idx2).
-        for (; j < idx2; j = active_nodes.succ[j]) {
-          t_float const tmp = dist.ward(j, idx2);
-          if (tmp < mindist[j]) {
-            nn_distances.update_leq(j, tmp);
-            n_nghbr[j] = idx2;
-          } else if (n_nghbr[j] == idx2) {
-            n_nghbr[j] = idx1;  // invalidate
-          }
-        }
-        // Find the nearest neighbor for idx2.
-        if (idx2 < N_1) {
-          n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
-          min = dist.ward(idx2, j);
-          for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-            t_float const tmp = dist.ward(idx2, j);
-            if (tmp < min) {
-              min = tmp;
-              n_nghbr[idx2] = j;
-            }
-          }
-          nn_distances.update(idx2, min);
-        }
-        break;
+        nn_distances.update(idx2, min);
+      }
+      break;
 
-      default:
-        /*
-          Centroid and median linkage.
+    default:
+      /*
+        Centroid and median linkage.
 
-          Shorter and longer distances can occur, not bigger than max(d1,d2)
-          but maybe smaller than min(d1,d2).
-        */
-        for (j = active_nodes.start; j < idx2; j = active_nodes.succ[j]) {
-          t_float const tmp = dist.template sqeuclidean<true>(j, idx2);
-          if (tmp < mindist[j]) {
-            nn_distances.update_leq(j, tmp);
-            n_nghbr[j] = idx2;
-          } else if (n_nghbr[j] == idx2)
-            n_nghbr[j] = idx1;  // invalidate
-        }
-        // Find the nearest neighbor for idx2.
-        if (idx2 < N_1) {
-          n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
-          min = dist.template sqeuclidean<true>(idx2, j);
-          for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-            t_float const tmp = dist.template sqeuclidean<true>(idx2, j);
-            if (tmp < min) {
-              min = tmp;
-              n_nghbr[idx2] = j;
-            }
+        Shorter and longer distances can occur, not bigger than max(d1,d2)
+        but maybe smaller than min(d1,d2).
+      */
+      for (j = active_nodes.start; j < idx2; j = active_nodes.succ[j]) {
+        t_float const tmp = dist.template sqeuclidean<true>(j, idx2);
+        if (tmp < mindist[j]) {
+          nn_distances.update_leq(j, tmp);
+          n_nghbr[j] = idx2;
+        } else if (n_nghbr[j] == idx2)
+          n_nghbr[j] = idx1;  // invalidate
+      }
+      // Find the nearest neighbor for idx2.
+      if (idx2 < N_1) {
+        n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
+        min = dist.template sqeuclidean<true>(idx2, j);
+        for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
+          t_float const tmp = dist.template sqeuclidean<true>(idx2, j);
+          if (tmp < min) {
+            min = tmp;
+            n_nghbr[idx2] = j;
           }
-          nn_distances.update(idx2, min);
         }
+        nn_distances.update(idx2, min);
+      }
     }
   }
 }
@@ -1624,11 +1632,11 @@ static void generic_linkage_vector_alternative(const t_index N,
     for (idx = j = 0; j < i; ++j) {
       t_float tmp;
       switch (method) {
-        case METHOD_VECTOR_WARD:
-          tmp = dist.ward_initial(i, j);
-          break;
-        default:
-          tmp = dist.template sqeuclidean<true>(i, j);
+      case METHOD_VECTOR_WARD:
+        tmp = dist.ward_initial(i, j);
+        break;
+      default:
+        tmp = dist.template sqeuclidean<true>(i, j);
       }
       if (tmp < min) {
         min = tmp;
@@ -1636,11 +1644,11 @@ static void generic_linkage_vector_alternative(const t_index N,
       }
     }
     switch (method) {
-      case METHOD_VECTOR_WARD:
-        mindist[i] = t_dissimilarity::ward_initial_conversion(min);
-        break;
-      default:
-        mindist[i] = min;
+    case METHOD_VECTOR_WARD:
+      mindist[i] = t_dissimilarity::ward_initial_conversion(min);
+      break;
+    default:
+      mindist[i] = min;
     }
     n_nghbr[i] = idx;
   }
@@ -1675,25 +1683,25 @@ static void generic_linkage_vector_alternative(const t_index N,
       // Recompute the minimum mindist[idx1] and n_nghbr[idx1].
       n_nghbr[idx1] = j = active_nodes.start;
       switch (method) {
-        case METHOD_VECTOR_WARD:
-          min = dist.ward_extended(idx1, j);
-          for (j = active_nodes.succ[j]; j < idx1; j = active_nodes.succ[j]) {
-            t_float tmp = dist.ward_extended(idx1, j);
-            if (tmp < min) {
-              min = tmp;
-              n_nghbr[idx1] = j;
-            }
+      case METHOD_VECTOR_WARD:
+        min = dist.ward_extended(idx1, j);
+        for (j = active_nodes.succ[j]; j < idx1; j = active_nodes.succ[j]) {
+          t_float tmp = dist.ward_extended(idx1, j);
+          if (tmp < min) {
+            min = tmp;
+            n_nghbr[idx1] = j;
           }
-          break;
-        default:
-          min = dist.sqeuclidean_extended(idx1, j);
-          for (j = active_nodes.succ[j]; j < idx1; j = active_nodes.succ[j]) {
-            t_float const tmp = dist.sqeuclidean_extended(idx1, j);
-            if (tmp < min) {
-              min = tmp;
-              n_nghbr[idx1] = j;
-            }
+        }
+        break;
+      default:
+        min = dist.sqeuclidean_extended(idx1, j);
+        for (j = active_nodes.succ[j]; j < idx1; j = active_nodes.succ[j]) {
+          t_float const tmp = dist.sqeuclidean_extended(idx1, j);
+          if (tmp < min) {
+            min = tmp;
+            n_nghbr[idx1] = j;
           }
+        }
       }
       /* Update the heap with the new true minimum and search for the (possibly
          different) minimal entry. */
@@ -1709,17 +1717,17 @@ static void generic_linkage_vector_alternative(const t_index N,
 
     if (i < 2 * N_1) {
       switch (method) {
-        case METHOD_VECTOR_WARD:
-        case METHOD_VECTOR_CENTROID:
-          dist.merge(idx1, idx2, i);
-          break;
+      case METHOD_VECTOR_WARD:
+      case METHOD_VECTOR_CENTROID:
+        dist.merge(idx1, idx2, i);
+        break;
 
-        case METHOD_VECTOR_MEDIAN:
-          dist.merge_weighted(idx1, idx2, i);
-          break;
+      case METHOD_VECTOR_MEDIAN:
+        dist.merge_weighted(idx1, idx2, i);
+        break;
 
-        default:
-          throw std::runtime_error(std::string("Invalid method."));
+      default:
+        throw std::runtime_error(std::string("Invalid method."));
       }
 
       n_nghbr[i] = active_nodes.start;
