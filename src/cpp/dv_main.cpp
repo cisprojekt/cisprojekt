@@ -118,8 +118,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
     case 3:
       resultMDS = calculateMDSglimmer(nPoints, distMatMDS);
       break;
-    default:
-      printf("no valid scaling algorithm was chosen");
+      --default : printf("no valid scaling algorithm was chosen");
       break;
     }
 
