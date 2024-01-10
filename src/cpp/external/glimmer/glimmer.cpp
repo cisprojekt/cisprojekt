@@ -640,6 +640,5 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
     XUpdated(it_1, 1) = embedding[(it_1 * n_embedding_dims)];
     XUpdated(it_1, 2) = embedding[(it_1 * n_embedding_dims + 1)];
   }
-}
-return XUpdated;
+  return XUpdated;
 }
