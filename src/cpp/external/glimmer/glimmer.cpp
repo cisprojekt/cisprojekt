@@ -45,10 +45,6 @@ using Eigen::MatrixXd;
         DATA STRUCTURES
 */
 
-struct _INDEXTYPE INDEXTYPE;
-
-struct _VECTYPE VECTYPE;
-
 /*
         GLOBALS
 */
@@ -378,7 +374,7 @@ int terminate(INDEXTYPE *idx_set, int size) {
         Compute Chalmers' an iteration of force directed simulation on subset of
    size 'size' holding fixedsize fixed
 */
-void force_directed(int size, int fixedsize, float *distmat) {
+void force_directed(int size, int fixedsize, MatrixXd distanceMatrix) {
   // initialize index sets
   if (iteration == stop_iteration) {
     for (int i = 0; i < size; i++) {
@@ -421,7 +417,7 @@ void force_directed(int size, int fixedsize, float *distmat) {
       int idx = g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].index;
 
       g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].highd =
-          (float)distmat[i * N + idx];  // i*N-akk+idx
+          (float)distanceMatrix(i, idx);  // i*N-akk+idx
       // printf("init embed\n");
       // printf("%d\n",akk);
       // printf("%d\n",i*N-akk+idx);
@@ -600,7 +596,7 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
     //	if( !strcmp( argv[4], "chalm" ) ) {
     g_chalmers = 1;
     for (int i = 0; i < N; i++) {
-      force_directed(N, 0, distmat);
+      force_directed(N, 0, distanceMatrix);
       //		}
     }
   }
@@ -610,9 +606,9 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
       // move the points
       if (g_interpolating)
         force_directed(g_heir[g_current_level], g_heir[g_current_level + 1],
-                       distmat);
+                       distanceMatrix);
       else
-        force_directed(g_heir[g_current_level], 0, distmat);
+        force_directed(g_heir[g_current_level], 0, distanceMatrix);
 
       // check the termination condition
 

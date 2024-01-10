@@ -149,7 +149,7 @@ int idxcomp(const void *a, const void *b);
 float max(float a, float b);
 float min(float a, float b);
 int terminate(INDEXTYPE *idx_set, int size);
-void force_directed(int size, int fixedsize, float *distmat);
+void force_directed(int size, int fixedsize, MatrixXd distanceMatrix);
 void init_embedding(float *embedding);
 int fill_level_count(int input, int *h);
 
