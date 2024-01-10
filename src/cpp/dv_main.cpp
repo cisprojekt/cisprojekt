@@ -1,8 +1,5 @@
 // Copyright [year] <Copyright Owner>
 #include "src/cpp/dv_main.h"
-#include "src/cpp/distmat/distmat.h"
-#include "src/cpp/external/hclust/fastcluster.h"
-#include "src/cpp/scaling/scaling.h"
 #include <string>
 #include <vector>
 
@@ -98,7 +95,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
 
     // Calculate distance matrix and apply SMACOF algorithm for MDS
     MatrixXd distMatMDS = distanceMatrix(pointMatrix);
-    MatrixXd resultMDS = calculateMDS(distMatMDS, maxIterations);
+    MatrixXd resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
 
     // Overwrite points with the new configuration
     for (int i = 0; i < nPoints; i++) {
