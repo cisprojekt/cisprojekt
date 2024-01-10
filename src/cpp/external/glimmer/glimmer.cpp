@@ -5,6 +5,7 @@
 //
 
 // structs are not defined in glimmer.cpp but in scaling.h
+#include <Eigen/Dense>
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -38,11 +39,12 @@
 #define FREENESS (0.85f)
 #define DELTATIME (0.3f)
 
-/*
-        DATA STRUCTURES
-*/
+using Eigen::MatrixXd
+    /*
+            DATA STRUCTURES
+    */
 
-struct _INDEXTYPE INDEXTYPE;
+    struct _INDEXTYPE INDEXTYPE;
 
 struct _VECTYPE VECTYPE;
 
@@ -554,26 +556,26 @@ int fill_level_count(int input, int *h) {
 /*
         main function
 */
-MatrixXd calculateMDSglimmer() {
-  float N_float = sqrt(line_num);
-  N = (int)N_float;
+MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
 
   // float* distmat = new float[line_num];           --> convert to MatrixXd
   // distmat
-
-  fp = fopen("distmat_full.csv", "r");
-  if (fp == NULL) {
-    printf("ERROR cannot open %s\n", "distmat.csv");
-    exit(0);
-  }
-
+  MatrixXd XUpdated(N, 2);
   int skip = 0;
   int k = 0;
+  double max_dist = 0;
 
+  for (int it_1 = 0; it_1 < N; it_1++) {
+    for (int it_2 = 0; it_2 < N; it_2++) {
+      if (distanceMatrix(it_1, it_2) > max_dist) {
+        max_dist = distanceMatrix(it_1, it_2);
+      }
+    }
+  }
   // max_dist = biggest distance in distancematrix
 
   for (int r; r < line_num; r++) {
-    distmat[r] /= max_dist;
+    distanceMatrix /= max_dist;
   }
   // begin timing -------------------------------------BEGIN TIMING
   clock_t start_time1 = clock();
@@ -633,13 +635,13 @@ MatrixXd calculateMDSglimmer() {
 
   clock_t start_time2 = clock();
 
-  printf("Anzahl Punkte: %d\nbenötigte Zeit %f\n", N,
+  // printf("Anzahl Punkte: %d\nbenötigte Zeit %f\n", N,
          static_cast<float>(start_time2 - start_time1) / CLOCKS_PER_SEC);
-  printf("stop_iteration %d\n", stop_iteration);
-
-  if (strcmp(argv[1], "NONE")) {
-    outputCSV(argv[1], g_embed);
-  }
-  // quit
-  return 0;
+         // printf("stop_iteration %d\n", stop_iteration);
+         for (int it_1 = 0; it_1 < N; it_1++) {
+           for (int it_1 = 0; it_1 < N; it_1++) {
+             XUpdated(i, j) = embedding[(i * n_embedding_dims) + j]
+           }
+         }
+         return XUpdated;
 }

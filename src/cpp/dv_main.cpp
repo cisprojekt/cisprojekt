@@ -10,7 +10,7 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
                                double *distMat, double *height, int *merge,
                                int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
-                               double *resultPoints) {
+                               int calcScalingMethod, double *resultPoints) {
   // Split the long string into smaller strings
   // and put them in a vector
   std::string inputString(inputStringChar);
@@ -28,7 +28,21 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
   calculateMDSglimmer()
   calculateMDSscikit()
   */
-  MatrixXd resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+
+  switch (calcScalingMethod) {
+  case 1:
+    MatrixXd resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+    break;
+  case 2:
+    MatrixXd resultMDS = calculateMDSscikit(distMatMDS, maxIterations);
+    break;
+  case 3:
+    MatrixXd resultMDS = calculateMDSglimmer(distMatMDS, maxIterations);
+    break;
+  default:
+    printf("no valid scaling algorithm was chosen");
+    break;
+  }
 
   // Overwrite points with the new configuration
   for (int i = 0; i < nStrings; i++) {
@@ -73,7 +87,8 @@ EMSCRIPTEN_KEEPALIVE
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
-                              int calcDistMethod) {
+                              int calcDistMethod, int calcScalingMethod,
+                              bool isSpherical) {
   /**
    * Two different types of distance matrices exist:
    * (1) reduced condensed distance matrix
@@ -94,8 +109,22 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
     }
 
     // Calculate distance matrix and apply SMACOF algorithm for MDS
-    MatrixXd distMatMDS = distanceMatrix(pointMatrix);
-    MatrixXd resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+    MatrixXd distMatMDS = distanceMatrix(pointMatrix, isSpherical);
+
+    switch (calcScalingMethod) {
+    case 1:
+      MatrixXd resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+      break;
+    case 2:
+      MatrixXd resultMDS = calculateMDSscikit(distMatMDS, maxIterations);
+      break;
+    case 3:
+      MatrixXd resultMDS = calculateMDSglimmer(N, distMatMDS);
+      break;
+    default:
+      printf("no valid scaling algorithm was chosen");
+      break;
+    }
 
     // Overwrite points with the new configuration
     for (int i = 0; i < nPoints; i++) {

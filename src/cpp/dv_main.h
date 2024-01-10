@@ -3,6 +3,19 @@
 
 // Copyright [year] <Copyright Owner>
 
+// clang-format off
+
+/**
+ *   ____ _    _   _ ____ _____ _____ ____  ___ _   _  ____ 
+ *  / ___| |  | | | / ___|_   _| ____|  _ \|_ _| \ | |/ ___|
+ * | |   | |  | | | \___ \ | | |  _| | |_) || ||  \| | |  _ 
+ * | |___| |__| |_| |___) || | | |___|  _ < | || |\  | |_| |
+ *  \____|_____\___/|____/ |_| |_____|_| \_\___|_| \_|\____|
+ *                                                          
+ */
+
+// clang-format on
+
 #include <emscripten.h>
 #include <float.h>
 #include <math.h>
@@ -28,7 +41,7 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
                                double *distMat, double *height, int *merge,
                                int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
-                               double *resultPoints);
+                               int calcScalingMethod, double *resultPoints);
 
 /**
  * @brief Webassembly function, will apply multidimensional scaling and
@@ -46,6 +59,7 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
-                              int calcDistMethod);
+                              int calcDistMethod, int calcScalingMethod,
+                              bool isSpherical);
 
 #endif  // SRC_CPP_CLUSTERING_H_

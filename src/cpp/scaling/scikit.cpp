@@ -9,11 +9,12 @@
 #include <Eigen/Dense>
 #include <iostream>
 
-// full distance-matrix needed!
+using Eigen::MatrixXd
+    // full distance-matrix needed!
 
-int n = 0;
+    int n = 0;
 
-double scikit_mds_single(double* dissimilarities, double* x, double* x_inter,
+double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
                          int n_samples, bool init = false, bool metric = true,
                          int n_components = 2, int max_iter = 1000,
                          bool verbose = 0, double eps = 1e-5,
@@ -37,8 +38,8 @@ double scikit_mds_single(double* dissimilarities, double* x, double* x_inter,
     x_inter[9] = -1.0;
   }
   double old_stress = 1e15;
-  double* disparities = new double[n_samples * n_samples];
-  double* dis = new double[n_samples * n_samples];
+  double *disparities = new double[n_samples * n_samples];
+  double *dis = new double[n_samples * n_samples];
   double stress = 0;
   // isotonic regression
   for (int it = 0; it < max_iter; it++) {
@@ -129,7 +130,7 @@ double scikit_mds_single(double* dissimilarities, double* x, double* x_inter,
   delete dis;
   return stress;
 }
-void scikit_mds_multi(double* dissimilarities, double* x, double* x_inter,
+void scikit_mds_multi(double *dissimilarities, double *x, double *x_inter,
                       int n_iterations, int n_samples, bool init = false,
                       bool metric = true, int n_components = 2,
                       int max_iter = 1000, bool verbose = 0, double eps = 1e-5,
@@ -149,9 +150,9 @@ void scikit_mds_multi(double* dissimilarities, double* x, double* x_inter,
   }
 }
 
-void outputCSV(double* embedding) {
+void outputCSV(double *embedding) {
   // open the file
-  FILE* fp = NULL;
+  FILE *fp = NULL;
   if ((fp = fopen("scikit_result.csv", "w")) == NULL) {
     printf("ERROR: Can't open points output file %s\n", "scikit_result.csv");
     exit(0);
@@ -164,7 +165,8 @@ void outputCSV(double* embedding) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < 2; j++) {
       fprintf(fp, "%f", embedding[2 * i + j]);
-      if (j < 1) fprintf(fp, ",");
+      if (j < 1)
+        fprintf(fp, ",");
     }
     fprintf(fp, "\n");
   }
@@ -173,62 +175,15 @@ void outputCSV(double* embedding) {
   fclose(fp);
 }
 
-int calculateMDSscikit(void) {
-  char line[65536];  // line of input buffer
-  char item[512];    // single number string
-
-  FILE* fp = fopen("distmat_full.csv", "r");
-  if (fp == NULL) {
-    printf("ERROR cannot open %s\n", "distmat_full.csv");
-    exit(0);
-  }
-
-  // get dataset statistics
-  int line_num = 0;
-
-  while (fgets(line, 65536, fp) != NULL) {
-    // count the number of points (for every line)
-    line_num++;
-  }
-
-  fclose(fp);
-  float n_float = sqrt(line_num);
-  n = (int)n_float;
-
-  double* distmat = new double[line_num];
-
-  fp = fopen("distmat_full.csv", "r");
-  if (fp == NULL) {
-    printf("ERROR cannot open %s\n", "distmat_full.csv");
-    exit(0);
-  }
-
-  int k = 0;
-
-  while (fgets(line, 65536, fp) != NULL) {
-    int done = 0;
-    int i = 0;
-    int j = 0;
-    while (!done) {
-      // parse character data
-
-      if (line[i] == '\n' || line[i] == '\0') {
-        item[j] = '\0';
-        distmat[k++] = (double)atof(item);
-        done++;
-      } else if (line[i] != ' ') {
-        item[j++] = line[i];
-      }
-      i++;
-    }
-  }
+MatrixXd calculateMDSscikit(int N, MatrixXd distanceMatrix) {
 
   // distmat = delta
-  double* x_inter = new double[2 * n];
+  MatrixXd XUpdated(N, 2);
+  double *x_inter = new double[2 * n];
   // for (int g = 0; g < 2*n; g++) {
   // x_inter[g] = 0.1*g;
   //}
-  double* x = new double[2 * n];
+  double *x = new double[2 * n];
   int n_iterations = 2;
   bool init = false;
   bool metric = true;
@@ -243,7 +198,10 @@ int calculateMDSscikit(void) {
   scikit_mds_multi(distmat, x, x_inter, n_iterations, n_samples, init, metric,
                    n_components, max_iter, verbose, eps, random_state,
                    normalized_stress);
-  outputCSV(x);
+  for (int it_1; it_1 < 2 * N; it_1++) {
+    XUpdated(it_1, 1) = x[2 * it_1];
+    XUpdated(it_1, 2) = x[2 * it_1 + 1];
+  }
 
-  return 0;
+  return XUpdated;
 }

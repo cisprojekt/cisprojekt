@@ -197,6 +197,7 @@ function dealwithrun() {
   let punktdata = "";
   let matchflag = true;
   let functionFlag = getfunctionflag();
+  let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
   let d_function_value = functionFlag;
 
   let dataColumnsDict = getDataColumns(d_function_value);
@@ -237,7 +238,7 @@ function dealwithrun() {
         alert(
           `All numflag values must be valid numbers. number "${
             number + 1
-          }" in line ${i}, column ${flagIdxName[0] + 1} was invalid`,
+          }" in line ${i}, column ${flagIdxName[0] + 1} was invalid`
         );
       }
       assert(!isNaN(number), "All numflag values must be valid numbers");
@@ -299,7 +300,13 @@ function dealwithrun() {
   if (matchflag) {
     hideprepera();
     showresult();
-    initializeMap(points_array, type, nonnumflags_array, numflags_array);
+    initializeMap(
+      points_array,
+      type,
+      nonnumflags_array,
+      numflags_array,
+      scalingMethod
+    );
   } else {
     alert("Input data dosen't match the distance function");
     return false;
@@ -341,7 +348,7 @@ function showDropdowns() {
   // Show the dropdown container corresponding to the selected function
   if (selectedFunction !== "noChoice") {
     var selectedContainer = document.getElementById(
-      selectedFunction + "-dropdowns",
+      selectedFunction + "-dropdowns"
     );
     var nonnumflagsContainer = document.getElementById("Flags-dropdowns");
     var numflagsContainer = document.getElementById("NumericalFlags-dropdowns");

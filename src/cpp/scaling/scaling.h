@@ -1,9 +1,18 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-// SMACOF functions
+// clang-format off
 
-//
+/**
+ *  ____   ____    _    _     ___ _   _  ____
+ * / ___| / ___|  / \  | |   |_ _| \ | |/ ___|
+ * \___ \| |     / _ \ | |    | ||  \| | |  _
+ *  ___) | |___ / ___ \| |___ | || |\  | |_| |
+ * |____/ \____/_/   \_\_____|___|_| \_|\____|
+ *
+ */
+
+// clang-format on
 
 /**
  * @brief Calculate weights matrix, entry is 1 if (dis)similarity is present,
@@ -112,9 +121,7 @@ void scikit_mds_multi(double *dissimilarities, double *x, double *x_inter,
                       int n_components, int max_iter, bool verbose, double eps,
                       int random_state, bool normalized_stress);
 
-void outputscikit(double *embedding);
-
-int calculateMDSscikit(void);
+MatrixXd calculateMDSscikit(int N, MatrixXd distanceMatrix);
 
 // Glimmer functions
 
@@ -129,7 +136,7 @@ typedef struct _VECTYPE {
   float value;
 } VECTYPE;
 
-int calculateMDSglimmer(void);
+MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix);
 int myrand(void);
 int distcomp(const void *a, const void *b);
 int idxcomp(const void *a, const void *b);

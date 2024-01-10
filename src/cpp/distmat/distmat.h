@@ -1,12 +1,25 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+// clang-format off
+
+/**
+ *  ____ ___ ____ _____ __  __    _  _____ 
+ * |  _ \_ _/ ___|_   _|  \/  |  / \|_   _|
+ * | | | | |\___ \ | | | |\/| | / _ \ | |  
+ * | |_| | | ___) || | | |  | |/ ___ \| |  
+ * |____/___|____/ |_| |_|  |_/_/   \_\_|  
+ *                                         
+ */
+
+// clang-format on
+
 /**
  * @brief Calculate a square distance matrix for points
  * @param points Points in Euclidean space
  * @return distMat Distance Matrix
  */
-MatrixXd distanceMatrix(MatrixXd points);
+MatrixXd distanceMatrix(MatrixXd points, bool isSperical = false);
 
 /**
  * @brief Calculate a square distance matrix for strings
@@ -32,14 +45,17 @@ double euclideanDistance(VectorXd pointA, VectorXd pointB);
 double tanimotoDistance(std::string fingerprintA, std::string fingerprintB);
 
 extern "C" {
-double calculateEuclideanDistance(double* vector1, double* vector2,
+double calculateEuclideanDistance(double *vector1, double *vector2,
                                   int string_length);
 
-double* calculateEuclideanDistanceMatrix(double* array, int num_points,
+double *calculateEuclideanDistanceMatrix(double *array, int num_points,
                                          int dimension);
 
-int calculateHammingDistance(char* str1, char* str2, int string_length);
+int calculateHammingDistance(char *str1, char *str2, int string_length);
 
-int* calculateHammingDistanceMatrix(char** array, int num_strings,
+int *calculateHammingDistanceMatrix(char **array, int num_strings,
                                     int string_length);
 }
+
+double toRadians(double degree);
+double haversine(double lat1, double lon1, double lat2, double lon2);
