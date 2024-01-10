@@ -158,7 +158,7 @@ function isInChI(txt_inhalt, matchflag) {}
 function flag_preset(){
   let preset_flag = document.createElement("select");
   let first_flag = document.createElement("option");
-  let flag_list = ["name", "distance information", "numerical additional information", "non-numericial additional information"];
+  let flag_list = ["name", "distance information", "non-numerical flags", "numericial flags"];
   
   first_flag.value = "noChoice";
   first_flag.text = "choose a flag";
@@ -166,7 +166,7 @@ function flag_preset(){
   for(let i = 0; i<4;i++){
     let flag = flag_list[i];
     let _option = document.createElement("option");
-    _option.value = flag;
+    _option.value = i+1;
     _option.text = flag;
     preset_flag.appendChild(_option);
   }
