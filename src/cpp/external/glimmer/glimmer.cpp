@@ -5,6 +5,7 @@
 //
 
 // structs are not defined in glimmer.cpp but in scaling.h
+// #include "src/cpp/scaling/scaling.h"
 #include <Eigen/Dense>
 #include <float.h>
 #include <math.h>
@@ -39,12 +40,12 @@
 #define FREENESS (0.85f)
 #define DELTATIME (0.3f)
 
-using Eigen::MatrixXd
-    /*
-            DATA STRUCTURES
-    */
+using Eigen::MatrixXd;
+/*
+        DATA STRUCTURES
+*/
 
-    struct _INDEXTYPE INDEXTYPE;
+struct _INDEXTYPE INDEXTYPE;
 
 struct _VECTYPE VECTYPE;
 
