@@ -4,6 +4,7 @@
 //				Stephen Ingram (sfingram@cs.ubc.ca) 02/08
 //
 
+// structs are not defined in glimmer.cpp but in scaling.h
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -41,16 +42,9 @@
         DATA STRUCTURES
 */
 
-typedef struct _INDEXTYPE {
-  int index;    // index of the other point
-  float highd;  // high dimensional distance
-  float lowd;   // low dimensional distance
-} INDEXTYPE;
+struct _INDEXTYPE INDEXTYPE;
 
-typedef struct _VECTYPE {
-  int index;
-  float value;
-} VECTYPE;
+struct _VECTYPE VECTYPE;
 
 /*
         GLOBALS
@@ -156,7 +150,8 @@ void outputCSV(const char *filename, float *embedding) {
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < n_embedding_dims; j++) {
       fprintf(fp, "%f", embedding[(i * n_embedding_dims) + j]);
-      if (j < n_embedding_dims - 1) fprintf(fp, ",");
+      if (j < n_embedding_dims - 1)
+        fprintf(fp, ",");
     }
     fprintf(fp, "\n");
   }
@@ -315,7 +310,8 @@ i+=n_original_dims ) {
 int distcomp(const void *a, const void *b) {
   const INDEXTYPE *da = (const INDEXTYPE *)a;
   const INDEXTYPE *db = (const INDEXTYPE *)b;
-  if (da->highd == db->highd) return 0;
+  if (da->highd == db->highd)
+    return 0;
   return (da->highd - db->highd) < 0.f ? -1 : 1;
 }
 int idxcomp(const void *a, const void *b) {
@@ -550,7 +546,8 @@ int fill_level_count(int input, int *h) {
   // printf("h[%d]=%d\n",levels,input);
   h[levels] = input;
   levels++;
-  if (input <= MIN_SET_SIZE) return levels;
+  if (input <= MIN_SET_SIZE)
+    return levels;
   return fill_level_count(input / DEC_FACTOR, h);
 }
 

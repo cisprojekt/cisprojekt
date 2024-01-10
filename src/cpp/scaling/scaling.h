@@ -118,6 +118,17 @@ int calculateMDSscikit(void);
 
 // Glimmer functions
 
+typedef struct _INDEXTYPE {
+  int index;    // index of the other point
+  float highd;  // high dimensional distance
+  float lowd;   // low dimensional distance
+} INDEXTYPE;
+
+typedef struct _VECTYPE {
+  int index;
+  float value;
+} VECTYPE;
+
 int calculateMDSglimmer(void);
 int myrand(void);
 int distcomp(const void *a, const void *b);
