@@ -2,6 +2,8 @@
 #ifndef SRC_CPP_SCALING_SCALING_H_
 #define SRC_CPP_SCALING_SCALING_H_
 
+#include <Eigen/Dense>
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
