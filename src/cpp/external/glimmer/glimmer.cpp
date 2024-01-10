@@ -554,10 +554,11 @@ int fill_level_count(int input, int *h) {
 /*
         main function
 */
-MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
+MatrixXd calculateMDSglimmer(int num_p, MatrixXd distanceMatrix) {
 
   // float* distmat = new float[line_num];           --> convert to MatrixXd
   // distmat
+  N = num_p;
   MatrixXd XUpdated(N, 2);
   int skip = 0;
   int k = 0;
