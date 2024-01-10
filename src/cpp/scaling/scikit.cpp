@@ -9,10 +9,10 @@
 #include <Eigen/Dense>
 #include <iostream>
 
-using Eigen::MatrixXd
-    // full distance-matrix needed!
+using Eigen::MatrixXd;
+// full distance-matrix needed!
 
-    int n = 0;
+int n = 0;
 
 double scikit_mds_single(MatrixXd dissimilarities, double *x, double *x_inter,
                          int n_samples, bool init = false, bool metric = true,
@@ -52,7 +52,7 @@ double scikit_mds_single(MatrixXd dissimilarities, double *x, double *x_inter,
     }
     if (metric) {
       for (int i = 0; i < n_samples; i++) {
-        for (int i = 0; i < n_samples; j++) {
+        for (int j = 0; j < n_samples; j++) {
           disparities[i * n_samples + j] = dissimilarities(i, j);
         }
       }
