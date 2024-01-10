@@ -5,7 +5,7 @@
 //
 
 // structs are not defined in glimmer.cpp but in scaling.h
-// #include "src/cpp/scaling/scaling.h"
+#include "src/cpp/scaling/scaling.h"
 #include <Eigen/Dense>
 #include <float.h>
 #include <math.h>
