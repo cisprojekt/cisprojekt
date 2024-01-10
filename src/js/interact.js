@@ -10,19 +10,19 @@ function showprepare() {
   prepareObj.style.display = "block";
 }
 
-function hideresult(){
+function hideresult() {
   let resultObj = document.getElementById("result");
   let switchbutton = document.getElementById("switchbtn");
-  resultObj.style.display='none';
-  if(switchbutton.innerHTML == "Full Screen"){
-      mapWindows.style.transform = "scale(1)";
-      mapWindows.style.left = "0px";
-      mapWindows.style.top = "10px";
-      clusterBox.style.display = "none";
-      switchbutton.innerHTML = "Exit Full Screen";
+  resultObj.style.display = "none";
+  if (switchbutton.innerHTML == "Full Screen") {
+    mapWindows.style.transform = "scale(1)";
+    mapWindows.style.left = "0px";
+    mapWindows.style.top = "10px";
+    clusterBox.style.display = "none";
+    switchbutton.innerHTML = "Exit Full Screen";
   }
   return 0;
-};
+}
 
 function showresult() {
   let resultObj = document.getElementById("result");
@@ -67,62 +67,62 @@ function getfunctionflag() {
 }
 
 /*When text-area not empty, will read the inhalt and check if the first line is the title line */
-function getTitleLine(InputFlag = "coord"){
+function getTitleLine(InputFlag = "coord") {
   console.log("trying to get the title Title line from", InputFlag, "data");
   let inhalt = document.getElementById("text_box").value;
-  let lines = inhalt.split('\n');
-  let firstline = lines[0].split(',');
+  let lines = inhalt.split("\n");
+  let firstline = lines[0].split(",");
   let titleline = new Array();
   console.log("first line is:", firstline);
   let dimension = firstline.length;
   let havetitle = new Boolean(false);
   //check if the first line is title line
-  switch (InputFlag){
-      case 'coord':
-          for(let m = 0; m < dimension; m++){
-              if(parseFloat(firstline[m])){
-                  continue;
-              }
-              else{
-                  
-                  havetitle = true;
-                  break;
-              }
-          }
+  switch (InputFlag) {
+    case "coord":
+      for (let m = 0; m < dimension; m++) {
+        if (parseFloat(firstline[m])) {
+          continue;
+        } else {
+          havetitle = true;
           break;
-      case 'molecur':
-          break;
-      default:
-          havetitle = false;
-          break;         
+        }
+      }
+      break;
+    case "molecur":
+      break;
+    default:
+      havetitle = false;
+      break;
   }
 
   //if no titleline detected, then use the default title
-  if(havetitle == true){
-      console.log("title line detected");
-      titleline = firstline;
-  }
-  else{
-      console.log("using default title");
-      titleline = Array.from({length: dimension}, (v, x) => x+1);
+  if (havetitle == true) {
+    console.log("title line detected");
+    titleline = firstline;
+  } else {
+    console.log("using default title");
+    titleline = Array.from({ length: dimension }, (v, x) => x + 1);
   }
   console.log(titleline);
   return titleline;
 }
 
 /*Creat the drop-down Menu accroding to the title line */
-function CreateColFlagSelector(idx=0,titleline){
-  console.log("creating the ColFlag selector accroding to the titleline", titleline);
+function CreateColFlagSelector(idx = 0, titleline) {
+  console.log(
+    "creating the ColFlag selector accroding to the titleline",
+    titleline
+  );
   let ColFlagMenu = document.createElement("select");
   let firstOption = document.createElement("option");
   let dimension = titleline.length;
   firstOption.value = "noColFlag";
   firstOption.text = "select a colum flag";
-  for(let i = 0; i < dimension; i++){
-      let flagOption = document.createElement("option");
-      flagOption.value = titleline[i];
-      flagOption.text = titleline[i];
-      ColFlagMenu.appendChild(flagOption);
+  for (let i = 0; i < dimension; i++) {
+    let flagOption = document.createElement("option");
+    flagOption.value = titleline[i];
+    flagOption.text = titleline[i];
+    ColFlagMenu.appendChild(flagOption);
   }
   ColFlagMenu.options[idx].selected = true;
   return ColFlagMenu;
@@ -155,45 +155,50 @@ function isSequence(txt_inhalt, matchflag) {}
 function isInChI(txt_inhalt, matchflag) {}
 
 //choos flags for each colum
-function flag_preset(){
+function flag_preset() {
   let preset_flag = document.createElement("select");
   let first_flag = document.createElement("option");
-  let flag_list = ["name", "distance information", "non-numerical flags", "numericial flags"];
-  
+  let flag_list = [
+    "name",
+    "distance information",
+    "non-numerical flags",
+    "numericial flags",
+  ];
+
   first_flag.value = "noChoice";
   first_flag.text = "choose a flag";
   preset_flag.appendChild(first_flag);
-  for(let i = 0; i<4;i++){
+  for (let i = 0; i < 4; i++) {
     let flag = flag_list[i];
     let _option = document.createElement("option");
-    _option.value = i+1;
+    _option.value = i + 1;
     _option.text = flag;
     preset_flag.appendChild(_option);
   }
-  return preset_flag
+  return preset_flag;
 }
-function ColFlagCheck(){
+function ColFlagCheck() {
   document.getElementById("checkFlagArea").style.display = "";
-  let titleline = getTitleLine(InputFlag = "coord");
+  let titleline = getTitleLine((InputFlag = "coord"));
   let checkContainer = document.getElementById("CheckContainer");
   let checklist = document.getElementById("checkTable");
   let dimension = titleline.length;
-  let rows = checklist.getElementsByTagName('tr');
-  while(rows.length > 1){
-      checklist.deleteRow(-1);
+  let rows = checklist.getElementsByTagName("tr");
+  while (rows.length > 1) {
+    checklist.deleteRow(-1);
   }
 
-  for(let d = 1; d < dimension+1; d++){
-      console.log(d+" Cloumn");
-      let _check_tr = checklist.insertRow();
-      let cell_1 = _check_tr.insertCell(0);
-      let cell_2 = _check_tr.insertCell(1);
-      let cell_3 = _check_tr.insertCell(2);
-      let ColFlagSelector = CreateColFlagSelector(d-1, titleline);
-      let flag_menu = flag_preset();
-      cell_1.textContent = 'the '+(d)+' Colum is:';
-      cell_2.appendChild(ColFlagSelector);
-      cell_3.appendChild(flag_menu);
+  for (let d = 1; d < dimension + 1; d++) {
+    console.log(d + " Cloumn");
+    let _check_tr = checklist.insertRow();
+    let cell_1 = _check_tr.insertCell(0);
+    let cell_2 = _check_tr.insertCell(1);
+    let cell_3 = _check_tr.insertCell(2);
+    let ColFlagSelector = CreateColFlagSelector(d - 1, titleline);
+    let flag_menu = flag_preset();
+    cell_1.textContent = "the " + d + " Colum is:";
+    cell_2.appendChild(ColFlagSelector);
+    cell_3.appendChild(flag_menu);
   }
   checkContainer.appendChild(checklist);
 }
@@ -336,7 +341,7 @@ function dealwithrun() {
       }
       //initialize array with pointers to the strings as Uint8Arrays
       const string_array = nucleotides.map(
-        (str) => new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
+        (str) => new Uint8Array(str.split("").map((c) => c.charCodeAt(0)))
       );
       //allocate memory for each string in the array
       const charPtrs = string_array.map((chars) => {
@@ -346,7 +351,7 @@ function dealwithrun() {
       });
       //allocate memory for the array of pointers
       const ptrBuf = Module._malloc(
-        charPtrs.length * Int32Array.BYTES_PER_ELEMENT,
+        charPtrs.length * Int32Array.BYTES_PER_ELEMENT
       );
 
       // Copy the array of pointers to the allocated memory
@@ -358,14 +363,14 @@ function dealwithrun() {
         "calculateHammingDistanceMatrix",
         "number",
         ["number", "number", "number"],
-        [ptrBuf, nucleotides.length, nucleotides[0].length],
+        [ptrBuf, nucleotides.length, nucleotides[0].length]
       );
 
       //create a typed array from the pointer containing the distmat as flattened array
       let hamdistmat = new Int32Array(
         Module.HEAP32.buffer,
         resultPtr2,
-        (nucleotides.length * (nucleotides.length + 1)) / 2,
+        (nucleotides.length * (nucleotides.length + 1)) / 2
       );
 
       for (
@@ -428,7 +433,7 @@ function showDropdowns() {
   // Show the dropdown container corresponding to the selected function
   if (selectedFunction !== "noChoice") {
     var selectedContainer = document.getElementById(
-      selectedFunction + "-dropdowns",
+      selectedFunction + "-dropdowns"
     );
     var flagsContainer = document.getElementById("Flags-dropdowns");
     if (selectedContainer) {
