@@ -175,10 +175,10 @@ void outputCSV(double *embedding) {
   fclose(fp);
 }
 
-MatrixXd calculateMDSscikit(int N, MatrixXd distanceMatrix) {
+MatrixXd calculateMDSscikit(int n, MatrixXd distanceMatrix) {
 
   // distmat = delta
-  MatrixXd XUpdated(N, 2);
+  MatrixXd XUpdated(n, 2);
   double *x_inter = new double[2 * n];
   // for (int g = 0; g < 2*n; g++) {
   // x_inter[g] = 0.1*g;
@@ -198,7 +198,7 @@ MatrixXd calculateMDSscikit(int N, MatrixXd distanceMatrix) {
   scikit_mds_multi(distmat, x, x_inter, n_iterations, n_samples, init, metric,
                    n_components, max_iter, verbose, eps, random_state,
                    normalized_stress);
-  for (int it_1; it_1 < 2 * N; it_1++) {
+  for (int it_1; it_1 < 2 * n; it_1++) {
     XUpdated(it_1, 1) = x[2 * it_1];
     XUpdated(it_1, 2) = x[2 * it_1 + 1];
   }
