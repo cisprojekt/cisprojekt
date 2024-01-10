@@ -580,8 +580,8 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
   g_levels = fill_level_count(N, g_heir);
   g_current_level = g_levels - 1;
 
-  float *embedding = NULL;
-  embedding = (float *)malloc(sizeof(float) * n_embedding_dims * N);
+  // float *embedding = NULL;
+  // embedding = (float *)malloc(sizeof(float) * n_embedding_dims * N);
   g_embed = (float *)malloc(sizeof(float) * n_embedding_dims * N);
   g_vel = (float *)calloc(n_embedding_dims * N, sizeof(float));
   g_force = (float *)calloc(n_embedding_dims * N, sizeof(float));
@@ -592,6 +592,10 @@ MatrixXd calculateMDSglimmer(int N, MatrixXd distanceMatrix) {
   srand((unsigned)(time(&t)));
   // initialize embedding
   init_embedding(g_embed);
+  printf("init_embedding\n");
+  for (int i = 0; i < 2 * N; i++) {
+  printf("%f"),g_embed[i]);
+  }
   int chalm = 0;
   if (chalm == 1) {
     //	if( !strcmp( argv[4], "chalm" ) ) {
