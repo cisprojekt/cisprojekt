@@ -1,6 +1,4 @@
 // Copyright [year] <Copyright Owner>
-#include "src/cpp/dv_main.h"
-
 #include <emscripten.h>
 
 #include <Eigen/Dense>
@@ -10,6 +8,7 @@
 #include <random>
 
 #include "./fastcluster.h"
+#include "src/cpp/dv_main.h"
 
 using Eigen::MatrixXd;
 
@@ -177,4 +176,3 @@ MatrixXd createRandomPoints(int n, int m) {
 
   return points;
 }
-

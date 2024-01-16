@@ -1,24 +1,26 @@
 // Copyright [year] <Copyright Owner>
 #include "src/cpp/dv_main.h"
 
-#include "./clustering/fastcluster.h"
-#include "./scaling/scaling.h"
-#include "./distmat/distmat.h"
+#include <string>
+#include <vector>
 
-#include "./scaling/glimmer.cpp"
-#include "./scaling/scikit.cpp"
-#include "./scaling/smacof.cpp"
-#include "./clustering/fastcluster.cpp"
-#include "./distancematrix/distmat.cpp"
+// #include "./clustering/fastcluster.cpp"
+#include "./clustering/fastcluster.h"
+// #include "./distancematrix/distmat.cpp"
+#include "./distmat/distmat.h"
+// #include "./scaling/glimmer.cpp"
+#include "./scaling/scaling.h"
+// #include "./scaling/scikit.cpp"
+// #include "./scaling/smacof.cpp"
 
 using Eigen::MatrixXd;
 
 EMSCRIPTEN_KEEPALIVE
-extern "C" void clusterStrings(char* inputStringChar, double* lengthOfString,
-                               double* distMat, double* height, int* merge,
-                               int* labels, int nStrings, int maxIterations,
+extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
+                               double *distMat, double *height, int *merge,
+                               int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
-                               double* resultPoints) {
+                               double *resultPoints) {
   // Split the long string into smaller strings
   // and put them in a vector
   std::string inputString(inputStringChar);
@@ -63,7 +65,7 @@ extern "C" void clusterStrings(char* inputStringChar, double* lengthOfString,
   }
 
   // For each zoomlevel calculate a labels assignment
-  int* oneLabel = new int[nStrings];
+  int *oneLabel = new int[nStrings];
   for (int i = 0; i < zoomLevels; i++) {
     cutree_cdist(nStrings, merge, height, (i + 1) * maxHeight / zoomLevels,
                  oneLabel);
@@ -74,8 +76,8 @@ extern "C" void clusterStrings(char* inputStringChar, double* lengthOfString,
 }
 
 EMSCRIPTEN_KEEPALIVE
-extern "C" void clusterPoints(double* points, int dimension, double* distMat,
-                              double* height, int* merge, int* labels,
+extern "C" void clusterPoints(double *points, int dimension, double *distMat,
+                              double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
                               int calcDistMethod) {
   /**
@@ -119,7 +121,7 @@ extern "C" void clusterPoints(double* points, int dimension, double* distMat,
 
     // Calculate condensed distance matrix
   } else {
-    double* distMatMDS =
+    double *distMatMDS =
         calculateEuclideanDistanceMatrix(points, nPoints, dimension);
   }
 
@@ -136,7 +138,7 @@ extern "C" void clusterPoints(double* points, int dimension, double* distMat,
   }
 
   // For each zoomlevel calculate a labels assignment
-  int* oneLabel = new int[nPoints];
+  int *oneLabel = new int[nPoints];
   for (int i = 0; i < zoomLevels; i++) {
     cutree_cdist(nPoints, merge, height, (i + 1) * maxHeight / zoomLevels,
                  oneLabel);

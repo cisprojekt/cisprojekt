@@ -1,5 +1,5 @@
 // Copyright [year] <Copyright Owner>
-#include "src/cpp/dv_main.h"
+#include "src/cpp/distmat/distmat.h"
 
 #include <emscripten.h>
 
@@ -9,10 +9,10 @@
 #include <map>
 #include <random>
 
-#include "./fastcluster.h"
+#include "src/cpp/clustering/fastcluster.h"
+#include "src/cpp/dv_main.h"
 
 using Eigen::MatrixXd;
-
 
 MatrixXd distanceMatrix(MatrixXd points) {
   int n = points.rows();
@@ -59,7 +59,7 @@ double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
 
 extern "C" {
 EMSCRIPTEN_KEEPALIVE
-double calculateEuclideanDistance(double* vector1, double* vector2,
+double calculateEuclideanDistance(double *vector1, double *vector2,
                                   int string_length) {
   double sumOfSquares = 0.0;
   for (size_t i = 0; i < string_length; i++) {
@@ -72,9 +72,9 @@ double calculateEuclideanDistance(double* vector1, double* vector2,
 }
 
 EMSCRIPTEN_KEEPALIVE
-double* calculateEuclideanDistanceMatrix(double* array, int num_points,
+double *calculateEuclideanDistanceMatrix(double *array, int num_points,
                                          int dimension) {
-  double** distanceArray = new double*[num_points];
+  double **distanceArray = new double *[num_points];
 
   for (size_t i = 0; i < num_points; ++i) {
     distanceArray[i] = new double[num_points];
@@ -88,7 +88,7 @@ double* calculateEuclideanDistanceMatrix(double* array, int num_points,
     }
   }
   // flatten the array
-  double* flatArray = new double[num_points * (num_points + 1) / 2];
+  double *flatArray = new double[num_points * (num_points + 1) / 2];
   int index = 0;
   for (size_t i = 0; i < num_points; i++) {
     for (size_t j = 0; j < num_points; j++) {
@@ -106,7 +106,7 @@ double* calculateEuclideanDistanceMatrix(double* array, int num_points,
 }
 
 EMSCRIPTEN_KEEPALIVE
-int calculateHammingDistance(char* str1, char* str2, int string_length) {
+int calculateHammingDistance(char *str1, char *str2, int string_length) {
   int distance = 0;
   for (size_t i = 0; i < string_length; i++) {
     if (str1[i] != str2[i]) {
@@ -118,9 +118,9 @@ int calculateHammingDistance(char* str1, char* str2, int string_length) {
 }
 
 EMSCRIPTEN_KEEPALIVE
-int* calculateHammingDistanceMatrix(char** array, int num_strings,
+int *calculateHammingDistanceMatrix(char **array, int num_strings,
                                     int string_length) {
-  int** distanceArray = new int*[num_strings];
+  int **distanceArray = new int *[num_strings];
 
   for (size_t i = 0; i < num_strings; ++i) {
     distanceArray[i] = new int[i + 1];
@@ -133,7 +133,7 @@ int* calculateHammingDistanceMatrix(char** array, int num_strings,
     }
   }
   // flatten the array
-  int* flatArray = new int[num_strings * (num_strings + 1) / 2];
+  int *flatArray = new int[num_strings * (num_strings + 1) / 2];
   int index = 0;
   for (size_t i = 0; i < num_strings; i++) {
     for (size_t j = 0; j < i + 1; j++) {
