@@ -158,7 +158,7 @@ function getDataColumns(d_function_value) {
 
         // Populate the dataColumns object with the selectId as key and selectedValue as value
         // e.g., dataColumns["x"] = 0, that is the 0th column is the x-column
-        dataColumns[selectId] = selectedValue;
+        dataColumns["test123"] = selectedValue;
       }
     });
   }
@@ -243,7 +243,7 @@ function dealwithrun() {
         alert(
           `All numflag values must be valid numbers. number "${
             number + 1
-          }" in line ${i}, column ${flagIdxName[0] + 1} was invalid`
+          }" in line ${i}, column ${flagIdxName[0] + 1} was invalid`,
         );
       }
       assert(!isNaN(number), "All numflag values must be valid numbers");
@@ -290,7 +290,7 @@ function dealwithrun() {
       //substitute names with flags
       type = "tanimotoFingerprints";
       console.log("function as Tani");
-      column = dataColumnsDict["tanimoto-fingerprint"];
+      column = dataColumnsDict["test123"];
       for (let i = 1; i < lines.length; i++) {
         let line = lines[i].split(",");
         points_array.push(line[column]);
@@ -311,7 +311,7 @@ function dealwithrun() {
       type,
       nonnumflags_array,
       numflags_array,
-      scalingMethod
+      scalingMethod,
     );
   } else {
     alert("Input data dosen't match the distance function");
@@ -358,7 +358,7 @@ function showDropdowns() {
   // Show the dropdown container corresponding to the selected function
   if (selectedFunction !== "noChoice") {
     var selectedContainer = document.getElementById(
-      selectedFunction + "-dropdowns"
+      selectedFunction + "-dropdowns",
     );
     var nonnumflagsContainer = document.getElementById("Flags-dropdowns");
     var numflagsContainer = document.getElementById("NumericalFlags-dropdowns");
