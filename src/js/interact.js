@@ -12,7 +12,16 @@ function showprepare() {
 
 function hideresult() {
   let resultObj = document.getElementById("result");
+  let switchbutton = document.getElementById("switchbtn");
   resultObj.style.display = "none";
+  if (switchbutton.innerHTML == "Full Screen") {
+    mapWindows.style.transform = "scale(1)";
+    mapWindows.style.left = "0px";
+    mapWindows.style.top = "10px";
+    clusterBox.style.display = "none";
+    switchbutton.innerHTML = "Exit Full Screen";
+  }
+  return 0;
 }
 
 function showresult() {
@@ -57,6 +66,68 @@ function getfunctionflag() {
   return funcFlag;
 }
 
+/*When text-area not empty, will read the inhalt and check if the first line is the title line */
+function getTitleLine(InputFlag = "coord") {
+  console.log("trying to get the title Title line from", InputFlag, "data");
+  let inhalt = document.getElementById("text_box").value;
+  let lines = inhalt.split("\n");
+  let firstline = lines[0].split(",");
+  let titleline = new Array();
+  console.log("first line is:", firstline);
+  let dimension = firstline.length;
+  let havetitle = new Boolean(false);
+  //check if the first line is title line
+  switch (InputFlag) {
+    case "coord":
+      for (let m = 0; m < dimension; m++) {
+        if (parseFloat(firstline[m])) {
+          continue;
+        } else {
+          havetitle = true;
+          break;
+        }
+      }
+      break;
+    case "molecur":
+      break;
+    default:
+      havetitle = false;
+      break;
+  }
+
+  //if no titleline detected, then use the default title
+  if (havetitle == true) {
+    console.log("title line detected");
+    titleline = firstline;
+  } else {
+    console.log("using default title");
+    titleline = Array.from({ length: dimension }, (v, x) => x + 1);
+  }
+  console.log(titleline);
+  return titleline;
+}
+
+/*Creat the drop-down Menu accroding to the title line */
+function CreateColFlagSelector(idx = 0, titleline) {
+  console.log(
+    "creating the ColFlag selector accroding to the titleline",
+    titleline,
+  );
+  let ColFlagMenu = document.createElement("select");
+  let firstOption = document.createElement("option");
+  let dimension = titleline.length;
+  firstOption.value = "noColFlag";
+  firstOption.text = "select a colum flag";
+  for (let i = 0; i < dimension; i++) {
+    let flagOption = document.createElement("option");
+    flagOption.value = titleline[i];
+    flagOption.text = titleline[i];
+    ColFlagMenu.appendChild(flagOption);
+  }
+  ColFlagMenu.options[idx].selected = true;
+  return ColFlagMenu;
+}
+
 /** This will check the first line and delete the axises */
 function isCoordindat(txt_inhalt) {
   let coorindat = [];
@@ -82,6 +153,62 @@ function isCoordindat(txt_inhalt) {
 function isSequence(txt_inhalt, matchflag) {}
 
 function isInChI(txt_inhalt, matchflag) {}
+
+//choos flags for each colum
+function flag_preset() {
+  let preset_flag = document.createElement("select");
+  let first_flag = document.createElement("option");
+  let flag_list = [
+    "name",
+    "distance information",
+    "non-numerical flags",
+    "numericial flags",
+  ];
+
+  first_flag.value = "noChoice";
+  first_flag.text = "choose a flag";
+  preset_flag.appendChild(first_flag);
+  for (let i = 0; i < 4; i++) {
+    let flag = flag_list[i];
+    let _option = document.createElement("option");
+    _option.value = i + 1;
+    _option.text = flag;
+    preset_flag.appendChild(_option);
+  }
+  return preset_flag;
+}
+function ColFlagCheck() {
+  document.getElementById("checkFlagArea").style.display = "";
+  let titleline = getTitleLine((InputFlag = "coord"));
+  let checkContainer = document.getElementById("CheckContainer");
+  let checklist = document.getElementById("checkTable");
+  let dimension = titleline.length;
+  let rows = checklist.getElementsByTagName("tr");
+  while (rows.length > 1) {
+    checklist.deleteRow(-1);
+  }
+
+  let guide_info = document.getElementById("flag_guide");
+  guide_info.innerHTML =
+    dimension +
+    " Columns are detected in your file, \
+  please choose for every column that you want to ues, one of the following flags: </br> \
+  name(1), distance information(2), non-numerical flags(3), numericial flags(4)";
+
+  for (let d = 1; d < dimension + 1; d++) {
+    console.log(d + " Cloumn");
+    let _check_tr = checklist.insertRow();
+    let cell_1 = _check_tr.insertCell(0);
+    let cell_2 = _check_tr.insertCell(1);
+    let cell_3 = _check_tr.insertCell(2);
+    let ColFlagSelector = CreateColFlagSelector(d - 1, titleline);
+    let flag_menu = flag_preset();
+    cell_1.textContent = "the " + d + " Colum is:";
+    cell_2.appendChild(ColFlagSelector);
+    cell_3.appendChild(flag_menu);
+  }
+  checkContainer.appendChild(checklist);
+}
 
 /* Fullscreen in-Place */
 
@@ -288,6 +415,12 @@ function deletedatenandfunc() {
   let weep = confirm("Are you sure to weep all the data and choosen function?");
   if (weep) {
     document.getElementById("text_box").value = "";
+    document.getElementById("flag_guide").innerHTML = "";
+    document.getElementById("checkFlagArea").style.display = "none";
+    document.getElementById("DataType").selectedIndex = 0;
+    document
+      .getElementById("D_function")
+      .setAttribute("style", "display: none");
   }
 }
 
@@ -297,6 +430,7 @@ function back2input() {
 }
 
 /*+++++++++++++++++++++++ function for sdropdowns ++++++++++++++++++++ */
+/*
 function showDropdowns() {
   var selectedFunction = document.getElementById("D_function").value;
   var csvInput = document.getElementById("text_box").value;
@@ -354,7 +488,7 @@ function showDropdowns() {
     }
   }
 }
-
+*/
 // Add a new dimension to the Euclidean dropdowns
 function addDimension() {
   // Get the dropdown container
@@ -409,4 +543,78 @@ function addFlag() {
 
   // Call the function to populate the dropdown
   showDropdowns();
+}
+
+function selectDataType() {
+  let data_type = document.getElementById("DataType").value;
+  let fun_slector = document.getElementById(D_function);
+  let distance_func_list = new Array();
+
+  switch (data_type) {
+    case "noChoice":
+      fun_slector.style.display = "none";
+      break;
+    case "Seq":
+      distance_func_list = ["Here is an example", "Hamming"];
+      break;
+    case "ChemInfo":
+      distance_func_list = ["Here is an example", "Tanimoto"];
+      break;
+    case "Euclidean":
+      distance_func_list = ["Here is an example", "Eculidean"];
+      break;
+    default:
+      fun_slector.style.display = "none";
+      break;
+  }
+  return distance_func_list;
+}
+
+function changedistancefunclist(distance_func_list) {
+  console.log("c menu");
+  let fun_slector = document.getElementById("D_function");
+  while (fun_slector.children.length > 1) {
+    fun_slector.removeChild(-1);
+    n = fun_slector.children.length;
+  }
+
+  let func_dic = {
+    "Here is an example": "Here is an example",
+    Hamming: "Hamming Distance",
+    Tanimoto: "Tanimoto Coefficient",
+    Eculidean: "Eculidean Distance",
+  };
+
+  for (let i = 0; i < distance_func_list.length; i++) {
+    let fun_obt = document.createElement("option");
+    fun_obt.value = distance_func_list[i];
+    fun_obt.text = func_dic[distance_func_list[i]];
+    fun_slector.appendChild(fun_obt);
+  }
+  fun_slector.style.display = "";
+}
+
+function selectDataType() {
+  let data_type = document.getElementById("DataType").value;
+  let fun_slector = document.getElementById(D_function);
+  let distance_func_list = new Array();
+
+  switch (data_type) {
+    case "noChoice":
+      fun_slector.style.display = "none";
+      break;
+    case "Seq":
+      distance_func_list = ["Here is an example", "Hamming"];
+      break;
+    case "ChemInfo":
+      distance_func_list = ["Here is an example", "Tanimoto"];
+      break;
+    case "Euclidean":
+      distance_func_list = ["Here is an example", "Eculidean"];
+      break;
+    default:
+      fun_slector.style.display = "none";
+      break;
+  }
+  return distance_func_list;
 }
