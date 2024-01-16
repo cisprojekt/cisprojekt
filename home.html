@@ -3,43 +3,41 @@
   <head>
     <meta charset="utf-8" />
     <mate name="viewport" content="width=device-width" />
-    <title>Data Visualizer</title>
-    <link href="style/generalstyle.css" rel="stylesheet" />
+    <title>SCOUT.</title>
     <link href="style/actionstyle.css" rel="stylesheet" />
-    <script src="src/js/mainscript.js" defer></script>
+    <link href="style/homestyle.css" rel="stylesheet" />
+    <script src="script/mainscript.js" defer></script>
+    <script src="script/interact.js" defer></script>
   </head>
-
-  <body>
-    <header>
-      <h1>Data Visualizer</h1>
-      <p id="welcome">Welcome!</p>
-    </header>
-    <main>
-      <div id="introduction_text">
-        <h2>Intruduction</h2>
-        <p id="usecase">
-          Welcome to the Data Visualizer tool. This tool allows you to upload
-          data in CSV format, define functions, and visualize the results.
-          Follow the instructions below to get started:
-        </p>
-        <ol>
-          <li>Click "Add Data" to upload a CSV file with your data.</li>
-          <li>Type or edit your custom functions in the textarea provided.</li>
-          <li>Choose a functions for visualization.</li>
-          <li>Click "Run" to execute the selected function on your data.</li>
-          <li>Use "Delete All" to clear the function input field.</li>
-        </ol>
-      </div>
-      <div style="text-align: center">
-        <button id="start" onclick="location.replace('main.html')">
-          Get started!
-        </button>
-      </div>
-    </main>
-  </body>
-
-  <footer>
-    <h2>Thanks to:</h2>
-    <p id="stuff">...</p>
-  </footer>
 </html>
+<body>
+  <div class="header">
+    <nav>
+      <div class="logo">
+        <span>SCOUT.</span>
+      </div>
+      <ul>
+        <li><a href="impressum.html">Impressum</a></li>
+        <li><a href="manual.html">Manual</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="content">
+    <h1>
+      SCOUT - <br />
+      Similarity Clustering <br />and Overview Unveiling Tool.
+    </h1>
+    <h2>Intruduction</h2>
+    <p>
+      Welcome to the SCOUT. This tool allows you to upload data in CSV format,
+      cluster the data according to individual distance information and
+      visualize the results. Learn more from our Manual!
+    </p>
+    <div class="links">
+      <a href="index.html" class="btn">Get Started!</a>
+    </div>
+  </div>
+  <main>
+    <div style="text-align: center"></div>
+  </main>
+</body>
