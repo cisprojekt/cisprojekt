@@ -44,3 +44,21 @@ button {
   cursor: pointer;
   border-color: transparent;
 }
+
+body.dark-mode {
+  background-color: black;
+  color: white;
+}
+
+header.dark-mode {
+  background-color: #634c6a;
+}
+
+main.dark-mode,
+footer.dark-mode {
+  background-color: #333;
+}
+
+button.dark-mode {
+  background-color: #6c6ea0;
+}
