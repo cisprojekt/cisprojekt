@@ -1,0 +1,49 @@
+button:hover {
+  background-color: rgb(149, 220, 236);
+  transition-duration: 0.2s;
+  box-shadow: 0 4px 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+  background-color: rgb(149, 220, 236);
+  transition-duration: 0.2s;
+  box-shadow: 0 4px 4px 4px rgba(0, 0, 0, 0.1);
+}
+button:active {
+  transform: translateY(3px);
+}
+
+button#deleAllButton {
+  background-color: #e8c9c9;
+  color: black;
+}
+button#deleAllButton:hover {
+  background-color: #db9e9e;
+}
+
+button#runFuncButton {
+  background-color: #a1bfa3;
+}
+button#runFuncButton:hover {
+  background-color: rgb(172, 227, 181);
+}
+
+button.dark-mode:hover {
+  background-color: #7db4c9;
+}
+
+button#deleAllButton.dark-mode {
+  background-color: #8a6d6d;
+}
+
+button#deleAllButton.dark-mode:hover {
+  background-color: #675050;
+}
+
+button#runFuncButton.dark-mode {
+  background-color: #6f8a71;
+}
+
+button#runFuncButton.dark-mode:hover {
+  background-color: #475a48;
+}
