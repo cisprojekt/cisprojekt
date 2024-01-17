@@ -1,4 +1,6 @@
-function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
+function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
+  //minor change
+
   //initialize
   var data = [];
   var y_coord = 0;
@@ -9,21 +11,49 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   const width = 1330;
   const height = 750;
 
-  var help_var = 1;
-  var button_zoom_level_old = 0.0; //starting var button_zoom_level -1 so that the if case in Event handler is taken and thus the points get loaded
+  //var x_offset= 5; //not needed at the moment
+  //var y_offset= 5; //not needed at the moment
+
   var currentZoomLevel = 1.0;
-  var button_zoom_level = 1.0; // starting layer of points which are generated
+
   var x_axis_width = width; // length of x-axis in pixels
   var x_max = 15; //initial domain shown on x axis starting with 0
 
   var y_axis_width = height; // length of y-axis in pixels
   var y_max = 15; //initial domain shown on y axis starting with 0
 
+  //var mouseCoords = [0,0] // array for storing mouse coords from event listener
+
   var info_height = 30; // gives fixed size to all info svgs
   var info_width = 300; // gives fixed size to all info svgs
 
   var newDomainX = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
   var newDomainY = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
+
+  // #### code for generating data points ####
+
+  // Function to generate a scaled y coordinate in pixels
+  function generate_y() {
+    var max_y_value = y_max;
+    var y_coord = 0;
+    y_coord = Math.random() * max_y_value; //+ y_offset is now obsolete, because points get scaled by scaling func y() anyway
+    return y_coord;
+  }
+
+  // Function to generate a scaled x coordinate in pixels
+  function generate_x() {
+    var max_x_value = x_max;
+    var x_coord = 0;
+    x_coord = Math.random() * max_x_value; //+ x_offset is now obsolete, because points get scaled by scaling func x() anyway
+    return x_coord;
+  }
+
+  //fill data array
+  for (let i = 0; i < 100; i++) {
+    y_coord = generate_y();
+    x_coord = generate_x();
+    data.push([i, x_coord, y_coord]);
+  }
 
   //transformation function from pixel to coordinates
   function coordFromPixels(x_coord, y_coord) {
@@ -65,13 +95,13 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   // Declare the y (vertical position) scale.
   const y = d3
     .scaleLinear()
-    .domain([-y_max, y_max]) //initial domain shown on y axis
+    .domain([-y_max, y_max]) //initial domain shown on y axis [0,...]
     .range([-y_axis_width, y_axis_width]); // //length of axis in pixel on reference svg
 
   // Declare the x (horizontal position) scale.
   const x = d3
     .scaleLinear()
-    .domain([-x_max, x_max]) //initial domain shown on x axis
+    .domain([-x_max, x_max]) //initial domain shown on x axis [0,...]
     .range([-x_axis_width, x_axis_width]); //length of axis in pixel on reference svg
 
   // #### remaining code: creating svgs and handeling zoom ####
@@ -96,10 +126,20 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     });
 
   // Add the x-axis.
-  var xAxis = svg.append("g").call(d3.axisBottom(x));
+  var xAxis = svg
+    .append("g")
+    //.attr("transform", "translate(0,30)")
+    //.attr("x", 0) //.attr() of x and y replaces .attr("transform", "translate(x,y)") because of known bug for various browsers
+    //.attr("y",y_offset)
+    .call(d3.axisBottom(x));
 
   // Add the y-axis.
-  var yAxis = svg.append("g").call(d3.axisRight(y));
+  var yAxis = svg
+    .append("g")
+    //.attr("transform", "translate(0,30)")
+    //.attr("x", 0) //.attr() of x and y replaces .attr("transform", "translate(x,y)") because of known bug for various browsers
+    //.attr("y",y_offset)
+    .call(d3.axisRight(y));
 
   // Add a tooltip div. Here we define the general feature of the tooltip: stuff that do not depend on the data point.
   // Its opacity is set to 0: we don't see it by default.
@@ -110,6 +150,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .append("svg")
     .attr("width", 50)
     .attr("height", 50);
+  //.style("pointer-events", "none"); // deactivates the possiblity to interact with the svg at all; doesnt work
 
   var tooltip = d3
     .select("#chartContainer")
@@ -123,47 +164,50 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .style("padding", "0px")
     .style("position", "absolute");
 
-  // Create a zoom behavior function
-  var zoom = d3
-    .zoom()
-    .scaleExtent([1, zoomLevels - 5])
-    .on("zoom", handleZoom);
-
-  // Add (initial) circles to plot
+  // Add dots to plot
   svg
     .selectAll("circle")
     .data(getAverages(1))
     .enter()
     .append("circle")
     .attr("cx", function (d) {
-      return d.x;
-    })
+      return x(d[1]);
+    }) //function x determines the linear scaling factor relativ to the x-axis as defined above
     .attr("cy", function (d) {
-      return d.y;
-    })
-    .attr("r", function (d) {
-      return d.r * 1;
-    })
+      return y(d[2]);
+    }) //function y determines the linear scaling factor relativ to the y-axis as defined above
+    .attr("r", 5)
     .style("fill", "#0000ff")
     .style("fill-opacity", 0.5)
-    .on("click", function (event, d) {
+    .on("mouseover", function (event, d) {
+      // A function that change this tooltip when the user hover a point.
+      // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
       console.log(event);
-      d3.select(this).style("fill", "red");
+      tooltip.transition().duration(0).style("opacity", 0.9);
+      tooltip
+        .html("x: " + d[1].toFixed(3) + " y: " + d[2].toFixed(3))
+        .style("left", event.pageX + "px")
+        .style("top", event.pageY - 28 + "px");
+      tooltip.transition().duration(2500).style("opacity", 0);
     });
+  /* .on("mouseleave", function(event) {
+            // A function that change this tooltip when the leaves a point: just need to set opacity to 0 again
+            console.log(event)
+            tooltip.transition()
+                .duration(1)
+                .style("opacity", 0);
+        }); */
+
+  // Create a zoom behavior function
+  var zoom = d3
+    .zoom()
+    .scaleExtent([1, zoomLevels - 5])
+    .on("zoom", handleZoom);
 
   // Define the event handler function for zoom
   function handleZoom(event) {
     //variable to store current zoom level
     currentZoomLevel = event.transform.k;
-
-    // Apply the transform to the desired element
-    //button_change_layer_in.attr("transform", event.transform);
-    //button_change_layer_out.attr("transform", event.transform);
-
-    if (help_var == 1) {
-      button_zoom_level_old = 0; //starting var button_zoom_level -1 so that the if case in Event handler is taken and thus the points get loaded
-      help_var += 1;
-    }
     infoZoom.select("text").text("Zoom: " + currentZoomLevel.toFixed(5));
 
     //Enable the rescaling of the axes
@@ -190,52 +234,39 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       );
     infoScalingY
       .select("text")
-      .text("z_n: " + button_zoom_level + ", z_o: " + button_zoom_level_old);
+      .text(
+        "Ymin: " +
+          newDomainY[0].toFixed(3) +
+          ", Ymax: " +
+          newDomainY[1].toFixed(3),
+      );
 
-    //button_zoom_level_old +=1;
-    //let averages = getAverages(button_zoom_level);
-    var circles = svg.selectAll("circle");
+    // gives and draws new position of drawn circles
+    svg.selectAll("circle");
+    //.attr('cx', function(d) {return newX(d[1])})
+    //.attr('cy', function(d) {return newY(d[2])});
 
-    // if case for determining if new points need to be loaded
-    if (button_zoom_level_old !== button_zoom_level) {
-      //let averages = getAverages(button_zoom_level);
-      let averages = getAverages(button_zoom_level);
-      var circles = svg.selectAll("circle").data(averages);
+    let averages = getAverages(currentZoomLevel);
 
-      button_zoom_level_old = button_zoom_level;
-      //button_zoom_level_old = 1 + button_zoom_level_old;
+    var circles = svg.selectAll("circle").data(averages);
 
-      circles.exit().remove();
+    circles.exit().remove();
 
-      circles
-        .enter()
-        .append("circle")
-        .merge(circles)
-        .attr("r", function (d) {
-          return d.r * 1;
-        })
+    circles
+      .enter()
+      .append("circle")
+      .merge(circles)
+      .attr("r", function (d) {
+        return d.r * 2;
+      })
 
-        .attr("cx", function (d) {
-          return d.x;
-        })
-        .attr("cy", function (d) {
-          return d.y;
-        })
-        .style("fill", "#0000ff")
-        .style("fill-opacity", 0.5)
-        .attr("transform", event.transform)
-        .on("click", function (event, d) {
-          console.log(event);
-          d3.select(this).style("fill", "red");
-        });
-    } else {
-      circles
-        .attr("transform", event.transform)
-        .on("click", function (event, d) {
-          console.log(event);
-          d3.select(this).style("fill", "red");
-        });
-    }
+      .attr("cx", function (d) {
+        return d.x;
+      })
+      .attr("cy", function (d) {
+        return d.y;
+      })
+      .attr("transform", event.transform);
   }
 
   // Append a new SVG element to the existing SVG
@@ -264,7 +295,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .append("text")
     .attr("x", 5)
     .attr("y", 20)
-    .text("z_n:" + button_zoom_level + "z_o: " + button_zoom_level_old); // toFixed(x) rounds to x decimal places
+    .text("Zoom:" + currentZoomLevel.toFixed(5)); // toFixed(x) rounds to x decimal places
 
   // Append a new SVG element to the existing SVG
   var infoMouse = svg
@@ -344,7 +375,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .append("text")
     .attr("x", 5)
     .attr("y", 20)
-    .text("z_n: " + button_zoom_level + ", z_o: " + button_zoom_level_old);
+    .text("Ymin: " + 0 + ", Ymax: " + y_max);
 
   //create html button element and append it to svg
   var button_reset_embed = svg
@@ -373,93 +404,6 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       svg.call(zoom.transform, d3.zoomIdentity); // d3.zoomIdentity conviniently resets all changes to zoom behaviour
     });
 
-  function updateCanvasOnButtonClick(event) {
-    button_zoom_level_old = button_zoom_level;
-
-    console.log(button_zoom_level_old);
-    console.log(button_zoom_level);
-
-    var circles = svg.selectAll("circle");
-
-    let averages = getAverages(button_zoom_level);
-    var circles = svg.selectAll("circle").data(averages);
-
-    circles.exit().remove();
-    circles
-      .enter()
-      .append("circle")
-      .merge(circles)
-      .attr("r", function (d) {
-        return d.r * 1;
-      })
-      .attr("cx", function (d) {
-        return d.x;
-      })
-      .attr("cy", function (d) {
-        return d.y;
-      })
-      .style("fill", "#0000ff")
-      .style("fill-opacity", 0.5)
-      //.attr("transform", event.transform)
-      .on("click", function (event, d) {
-        console.log(event);
-        d3.select(this).style("fill", "red");
-      });
-  }
-
-  //create html button element and append it to svg
-  var button_change_layer_in_embed = svg
-    .append("foreignObject")
-    .attr("x", width - 200)
-    .attr("y", height - 120)
-    .attr("width", 200)
-    .attr("height", 60)
-    .style("opacity", 0.9);
-
-  var button_change_layer_in = button_change_layer_in_embed
-    .append("xhtml:button")
-    .text("-")
-    .style("color", "white")
-    .style("background-color", "#0080ff")
-    .on("mouseover", function () {
-      // Change the color of the button when hovered over
-      d3.select(this).style("background-color", "#3b9dff"); // Change the background color
-    })
-    .on("mouseout", function () {
-      // Change the color of the button back to its original color when the mouse moves out
-      d3.select(this).style("background-color", "#0080ff"); // Change the background color back to blue
-    })
-    .on("click", function (event) {
-      button_zoom_level -= 1;
-      updateCanvasOnButtonClick(event);
-    });
-
-  var button_change_layer_out_embed = svg
-    .append("foreignObject")
-    .attr("x", width - 200)
-    .attr("y", height - 180)
-    .attr("width", 200)
-    .attr("height", 60)
-    .style("opacity", 0.9);
-
-  var button_change_layer_out = button_change_layer_out_embed
-    .append("xhtml:button")
-    .text("+")
-    .style("color", "white")
-    .style("background-color", "#0080ff")
-    .on("mouseover", function () {
-      // Change the color of the button when hovered over
-      d3.select(this).style("background-color", "#3b9dff"); // Change the background color
-    })
-    .on("mouseout", function () {
-      // Change the color of the button back to its original color when the mouse moves out
-      d3.select(this).style("background-color", "#0080ff"); // Change the background color back to blue
-    })
-    .on("click", function (event) {
-      button_zoom_level += 1;
-      updateCanvasOnButtonClick(event);
-    });
-
-  // Attach the zoom behavior to the SVG element and disable zoom
-  d3.select("svg").call(zoom).on("dblclick.zoom", null);
+  // Attach the zoom behavior to the SVG element
+  svg.call(zoom);
 }
