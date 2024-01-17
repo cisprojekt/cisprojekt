@@ -21,7 +21,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   var y_max = 15; //initial domain shown on y axis starting with 0
 
   var info_height = 30; // gives fixed size to all info svgs
-  var info_width = 300; // gives fixed size to all info svgs
+  var info_width = 150; // gives fixed size to all info svgs
 
   var newDomainX = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
   var newDomainY = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
@@ -86,14 +86,14 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .on("mousemove", function (event) {
       var mouseCoords = d3.pointer(event);
       var invertedCoords = d3.zoomTransform(this).invert(mouseCoords); // calculating the true mouse coordinates accounting für zoom and drag on a svg
-      infoMouse
+      /* infoMouse
         .select("text")
         .text(
           "Mouse coordinates: " +
             x.invert(invertedCoords[0]).toFixed(3) +
             ", " +
             y.invert(invertedCoords[1]).toFixed(3),
-        ); // .invert() accounts for the changes in scaling on the axis
+        ); // .invert() accounts for the changes in scaling on the axis */
     });
 
   // Add the x-axis.
@@ -149,6 +149,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .style("fill-opacity", 0.5)
     .on("click", function (event, d) {
       console.log(event);
+      svg.selectAll("circle").on("click", null);
       d3.select(this).style("fill", "red");
     });
 
@@ -167,7 +168,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       button_zoom_level_old = 0; //starting var button_zoom_level -1 so that the if case in Event handler is taken and thus the points get loaded
       help_var += 1;
     } */
-    infoZoom.select("text").text("Zoom: " + currentZoomLevel.toFixed(5));
+    //infoZoom.select("text").text("Zoom: " + currentZoomLevel.toFixed(5));
 
     //Enable the rescaling of the axes
     var newX = event.transform.rescaleX(x);
@@ -181,21 +182,12 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     xAxis.call(d3.axisBottom(newX));
     yAxis.call(d3.axisRight(newY));
 
-    //attach the dynamic text of Coords to InfoScalingText svg
-    //scaled with .ToFixed() method to shorten the whole float
-    infoScalingX
+    infoHierarchyLevel
       .select("text")
-      .text(
-        "Xmin: " +
-          newDomainX[0].toFixed(3) +
-          ", Xmax: " +
-          newDomainX[1].toFixed(3),
-      );
-    infoScalingY
-      .select("text")
-      .text("z_n: " + button_zoom_level + ", z_o: " + button_zoom_level_old);
+      .text("hierarchy level: " + button_zoom_level);
 
     //button_zoom_level_old +=1;
+
     //let averages = getAverages(button_zoom_level);
     var circles = svg.selectAll("circle");
 
@@ -234,6 +226,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
         .attr("transform", event.transform)
         .on("click", function (event, d) {
           console.log(event);
+          svg.selectAll("circle").on("click", null);
           d3.select(this).style("fill", "red");
         });
     } else {
@@ -241,23 +234,24 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
         .attr("transform", event.transform)
         .on("click", function (event, d) {
           console.log(event);
+          svg.selectAll("circle").on("click", null);
           d3.select(this).style("fill", "red");
         });
     }
   }
 
   // Append a new SVG element to the existing SVG
-  var infoZoom = svg
+  var infoHierarchyLevel = svg
     .append("svg")
     .attr("width", info_width)
     .attr("height", info_height)
     .style("background-color", "white")
-    .attr("x", 1030) //.attr() of x and y replaces .attr("transform", "translate(x,y)") because of known bug for various browsers
-    .attr("y", 15)
-    .style("opacity", 0.5);
+    .attr("x", width - 200) //.attr() of x and y replaces .attr("transform", "translate(x,y)") because of known bug for various browsers
+    .attr("y", 30)
+    .style("opacity", 1);
 
   //frame for infoZoom SVG
-  infoZoom
+  infoHierarchyLevel
     .append("rect")
     .attr("x", 0)
     .attr("y", 0)
@@ -265,94 +259,14 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .attr("height", info_height)
     .style("fill", "white")
     .style("stroke", "black")
-    .style("stroke-width", "1px");
+    .style("stroke-width", "2px");
 
   //appends text area to Zoom SVG
-  var InfoZoomText = infoZoom
+  var infoHierarchyLevelText = infoHierarchyLevel
     .append("text")
     .attr("x", 5)
     .attr("y", 20)
-    .text("z_n:" + button_zoom_level + "z_o: " + button_zoom_level_old); // toFixed(x) rounds to x decimal places
-
-  // Append a new SVG element to the existing SVG
-  var infoMouse = svg
-    .append("svg")
-    .attr("width", info_width)
-    .attr("height", info_height)
-    .style("background-color", "white")
-    .attr("x", 1030) //.attr() of x and y replaces .attr("transform", "translate(x,y)") because of known bug for various browsers
-    .attr("y", 45)
-    .style("opacity", 0.5);
-
-  //frame for infoMouse SVG
-  infoMouse
-    .append("rect")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("width", info_width)
-    .attr("height", info_height)
-    .style("fill", "white")
-    .style("stroke", "black")
-    .style("stroke-width", "1px");
-
-  //appends text area to MouseInfo SVG
-  var InfoMouseText = infoMouse.append("text").attr("x", 5).attr("y", 20);
-
-  // Append a new SVG element to the existing SVG
-  var infoScalingX = svg
-    .append("svg")
-    .attr("width", info_width)
-    .attr("height", info_height)
-    .style("background-color", "white")
-    .attr("x", 1030) //.attr() of x and y replaces .attr("transform", "translate(x,y)") because of known bug for various browsers
-    .attr("y", 75)
-    .style("opacity", 0.5);
-
-  //frame for infoMouse SVG
-  infoScalingX
-    .append("rect")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("width", info_width)
-    .attr("height", info_height)
-    .style("fill", "white")
-    .style("stroke", "black")
-    .style("stroke-width", "1px");
-
-  //appends text area to MouseInfo SVG
-  var InfoScaling_X_Text = infoScalingX
-    .append("text")
-    .attr("x", 5)
-    .attr("y", 20)
-    .text("Xmin: " + 0 + ", Xmax: " + x_max);
-
-  // Append a new SVG element to the existing SVG
-  var infoScalingY = svg
-    .append("svg")
-    .attr("width", info_width)
-    .attr("height", info_height)
-    .style("background-color", "white")
-    .attr("x", 1030) //.attr() of x and y replaces .attr("transform", "translate(x,y)") because of known bug for various browsers
-    .attr("y", 105)
-    .style("opacity", 0.5);
-
-  //frame for infoMouse SVG
-  infoScalingY
-    .append("rect")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("width", info_width)
-    .attr("height", info_height)
-    .style("fill", "white")
-    .style("stroke", "black")
-    .style("stroke-width", "1px");
-
-  //appends text area to MouseInfo SVG
-  var InfoScaling_Y_Text = infoScalingY
-    .append("text")
-    .attr("x", 5)
-    .attr("y", 20)
-    .text("z_n: " + button_zoom_level + ", z_o: " + button_zoom_level_old);
+    .text("hierarchy level: " + button_zoom_level);
 
   //create html button element and append it to svg
   var button_reset_embed = svg
@@ -435,7 +349,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   // Attach the zoom behavior to the SVG element and change zoom on double click so that it is not possible to zoom in further but handleZoom is still called
   d3.select("svg")
     .call(zoom)
-    .on("dblclick.zoom", function (event) {
+    .on("click.zoom", function (event) {
       // Get the current transform
       //transform = event.transform; // variable is already set in handleZoom and just creates errors here
       // Define the scale factor for the minimal zoom
@@ -446,4 +360,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
         .duration(0)
         .call(zoom.transform, transform.scale(scaleFactor));
     });
+
+  // Attach the zoom behavior to the SVG element and disable zoom on double click
+  d3.select("svg").call(zoom).on("dblclick.zoom", null);
 }
