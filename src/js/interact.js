@@ -158,7 +158,7 @@ function getDataColumns(d_function_value) {
 
         // Populate the dataColumns object with the selectId as key and selectedValue as value
         // e.g., dataColumns["x"] = 0, that is the 0th column is the x-column
-        dataColumns["test123"] = selectedValue;
+        dataColumns[d_function_value] = selectedValue;
       }
     });
   }
@@ -290,7 +290,7 @@ function dealwithrun() {
       //substitute names with flags
       type = "tanimotoFingerprints";
       console.log("function as Tani");
-      column = dataColumnsDict["test123"];
+      column = dataColumnsDict["Tanimoto"];
       for (let i = 1; i < lines.length; i++) {
         let line = lines[i].split(",");
         points_array.push(line[column]);
