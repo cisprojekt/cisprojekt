@@ -38,6 +38,7 @@ async function initializeMap(
 
     for (let i = 0; i < n * dim; i++) {
       points[i] = parseFloat(flatInputPoints[i]);
+	  console.log(flatInputPoints[i]);
     }
 
     // Heaps which wasm uses
