@@ -61,7 +61,7 @@ void cutree_cdist(int n, const int* merge, double* height, double cdist, int* la
 //   0 = ok
 //   1 = invalid method
 //
-int hclust_fast(int n, double* distmat, int method, int* merge, double* height);
+int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double* height);
 enum hclust_fast_methods {
   // single link with the minimum spanning tree algorithm (Rohlf, 1973)
   HCLUST_METHOD_SINGLE = 0,

@@ -43,7 +43,7 @@ async function initializeMap(
     // Heaps which wasm uses
     let pointsBuf = Module._malloc(n * dim * Float64Array.BYTES_PER_ELEMENT);
     let distMatBuf = Module._malloc(
-      ((n * (n - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT
+      (n * n) * Float64Array.BYTES_PER_ELEMENT
     );
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
@@ -71,6 +71,7 @@ async function initializeMap(
         "number",
         "number",
         "number",
+        "number",
       ],
       [
         pointsBuf,
@@ -85,9 +86,10 @@ async function initializeMap(
         1,
         scalingMethod,
         isSperical,
+        1,
       ]
     );
-
+    console.log("Clustering finished");
     // Copy results into js array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
@@ -167,7 +169,7 @@ async function initializeMap(
     );
     let lengthOfStringBuf = Module._malloc(n * Int32Array.BYTES_PER_ELEMENT);
     let distMatBuf = Module._malloc(
-      ((n * (n - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT
+      (n * n) * Float64Array.BYTES_PER_ELEMENT
     );
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
@@ -203,6 +205,7 @@ async function initializeMap(
         "number",
         "number",
         "number",
+        "number",
       ],
       [
         stringOnHeap,
@@ -216,6 +219,7 @@ async function initializeMap(
         zoomLevels,
         1,
         resultPointsBuf,
+        1
       ]
     );
 

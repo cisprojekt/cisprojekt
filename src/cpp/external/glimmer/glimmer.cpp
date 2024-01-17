@@ -5,7 +5,7 @@
 //
 
 // structs are not defined in glimmer.cpp but in scaling.h
-#include "src/cpp/scaling/scaling.h"
+#include "../../scaling/scaling.h"
 #include <Eigen/Dense>
 #include <float.h>
 #include <iostream>
@@ -375,7 +375,7 @@ int terminate(INDEXTYPE *idx_set, int size) {
         Compute Chalmers' an iteration of force directed simulation on subset of
    size 'size' holding fixedsize fixed
 */
-void force_directed(int size, int fixedsize, MatrixXd distanceMatrix) {
+void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix) {
   // initialize index sets
   if (iteration == stop_iteration) {
     for (int i = 0; i < size; i++) {
@@ -554,7 +554,7 @@ int fill_level_count(int input, int *h) {
 /*
         main function
 */
-MatrixXd calculateMDSglimmer(int num_p, MatrixXd distanceMatrix) {
+MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix) {
 
   // float* distmat = new float[line_num];           --> convert to MatrixXd
   // distmat
@@ -565,7 +565,7 @@ MatrixXd calculateMDSglimmer(int num_p, MatrixXd distanceMatrix) {
   double max_dist = 0;
 
   for (int it_1 = 0; it_1 < N; it_1++) {
-    for (int it_2 = 0; it_2 < N; it_2++) {
+    for (int it_2 = it_1; it_2 < N; it_2++) {
       if (distanceMatrix(it_1, it_2) > max_dist) {
         max_dist = distanceMatrix(it_1, it_2);
       }
@@ -573,7 +573,7 @@ MatrixXd calculateMDSglimmer(int num_p, MatrixXd distanceMatrix) {
   }
   // max_dist = biggest distance in distancematrix
 
-  distanceMatrix /= max_dist;
+  distanceMatrix.array() /= max_dist;
 
   // begin timing -------------------------------------BEGIN TIMING
   clock_t start_time1 = clock();
@@ -594,10 +594,10 @@ MatrixXd calculateMDSglimmer(int num_p, MatrixXd distanceMatrix) {
   srand((unsigned)(time(&t)));
   // initialize embedding
   init_embedding(g_embed);
-  std::cout << "init_embedding" << std::endl;
-  for (int i = 0; i < 2 * N; i++) {
-    std::cout << g_embed[i] << std::endl;
-  }
+  //std::cout << "init_embedding" << std::endl;
+  //for (int i = 0; i < 2 * N; i++) {
+  //  std::cout << g_embed[i] << std::endl;
+  //}
   int chalm = 0;
   if (chalm == 1) {
     //	if( !strcmp( argv[4], "chalm" ) ) {

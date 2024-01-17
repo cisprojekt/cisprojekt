@@ -7,8 +7,8 @@
 #include <map>
 #include <random>
 
-#include "src/cpp/dv_main.h"
-#include "src/cpp/external/hclust/fastcluster.h"
+#include "../dv_main.h"
+#include "../external/hclust/fastcluster.h"
 
 using Eigen::MatrixXd;
 

@@ -30,9 +30,9 @@
 #include <map>
 #include <random>
 
-#include "src/cpp/distmat/distmat.h"
-#include "src/cpp/external/hclust/fastcluster.h"
-#include "src/cpp/scaling/scaling.h"
+#include "distmat/distmat.h"
+#include "external/hclust/fastcluster.h"
+#include "scaling/scaling.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -41,7 +41,7 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
                                double *distMat, double *height, int *merge,
                                int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
-                               int calcScalingMethod, double *resultPoints);
+                               int calcScalingMethod, double *resultPoints, int calcClusterMethod = 1);
 
 /**
  * @brief Webassembly function, will apply multidimensional scaling and
@@ -59,7 +59,7 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
-                              int calcDistMethod, int calcScalingMethod,
-                              bool isSpherical);
+                              int calcDistMethod, int calcScalingMethod, 
+                              bool isSpherical, int calcClusterMethod = 1);
 
 #endif  // SRC_CPP_DV_MAIN_H_

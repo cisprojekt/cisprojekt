@@ -10,6 +10,8 @@
 
 #include <vector>
 #include <algorithm>
+#include <iostream>
+#include <Eigen/Dense>
 
 #include "fastcluster.h"
 
@@ -129,17 +131,21 @@ void cutree_cdist(int n, const int* merge, double* height, double cdist, int* la
 //   0 = ok
 //   1 = invalid method
 //
-int hclust_fast(int n, double* distmat, int method, int* merge, double* height) {
+int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double* height) {
   
   // call appropriate culstering function
+  std::cout << "initialize hclust_fast" << std::endl;
   cluster_result Z2(n-1);
+  std::cout << "initialize cluster_result" << std::endl;
   if (method == HCLUST_METHOD_SINGLE) {
     // single link
     MST_linkage_core(n, distmat, Z2);
   }
   else if (method == HCLUST_METHOD_COMPLETE) {
     // complete link
+    std::cout << "initialize complete_link" << std::endl;
     NN_chain_core<METHOD_METR_COMPLETE, t_float>(n, distmat, NULL, Z2);
+    std::cout << "finish complete_link" << std::endl;
   }
   else if (method == HCLUST_METHOD_AVERAGE) {
     // best average distance

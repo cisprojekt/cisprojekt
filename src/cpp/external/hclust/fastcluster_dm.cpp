@@ -61,6 +61,7 @@
 #include <limits>     // for std::numeric_limits<...>::infinity()
 #include <stdexcept>  // for std::runtime_error
 #include <string>     // for std::string
+#include <iostream>
 
 #include <cfloat>  // also for DBL_MAX, DBL_MIN
 #ifndef DBL_MANT_DIG
@@ -322,10 +323,10 @@ public:
 // Indexing functions
 // D is the upper triangular part of a symmetric (NxN)-matrix
 // We require r_ < c_ !
-#define D_(r_, c_)                                                             \
-  (D[(static_cast<std::ptrdiff_t>(2 * N - 3 - (r_)) * (r_) >> 1) + (c_)-1])
+  //#define D_(r_, c_)                                                             \
+  //  (D[(static_cast<std::ptrdiff_t>(2 * N - 3 - (r_)) * (r_) >> 1) + (c_)-1])
 // Z is an ((N-1)x4)-array
-#define Z_(_r, _c) (Z[(_r) * 4 + (_c)])
+  //#define Z_(_r, _c) (Z[(_r) * 4 + (_c)])
 
 /*
   Lookup function for a union-find data structure.
@@ -372,7 +373,7 @@ class nan_error {};
 class fenv_error {};
 #endif
 
-static void MST_linkage_core(const t_index N, const t_float *const D,
+static void MST_linkage_core(const t_index N, Eigen::MatrixXd &D,
                              cluster_result &Z2) {
   /*
       N: integer, number of data points
@@ -396,7 +397,7 @@ static void MST_linkage_core(const t_index N, const t_float *const D,
   idx2 = 1;
   min = std::numeric_limits<t_float>::infinity();
   for (i = 1; i < N; ++i) {
-    d[i] = D[i - 1];
+    d[i] = D(0,i - 1);
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -419,7 +420,7 @@ static void MST_linkage_core(const t_index N, const t_float *const D,
     idx2 = active_nodes.succ[0];
     min = d[idx2];
     for (i = idx2; i < prev_node; i = active_nodes.succ[i]) {
-      t_float tmp = D_(i, prev_node);
+      t_float tmp = D(i, prev_node);
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -437,7 +438,7 @@ static void MST_linkage_core(const t_index N, const t_float *const D,
       }
     }
     for (; i < N; i = active_nodes.succ[i]) {
-      t_float tmp = D_(prev_node, i);
+      t_float tmp = D(prev_node, i);
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -460,23 +461,24 @@ static void MST_linkage_core(const t_index N, const t_float *const D,
 
 /* Functions for the update of the dissimilarity array */
 
-inline static void f_single(t_float *const b, const t_float a) {
-  if (*b > a)
-    *b = a;
+inline static void f_single(Eigen::MatrixXd &D, const t_float a, int i, int j) {
+  if (D(i,j) > a)
+    D(i,j) = a;
 }
-inline static void f_complete(t_float *const b, const t_float a) {
-  if (*b < a)
-    *b = a;
+inline static void f_complete(Eigen::MatrixXd &D, const t_float a, int i, int j) {
+  if (D(i,j) < a)
+    D(i,j) = a;
 }
-inline static void f_average(t_float *const b, const t_float a, const t_float s,
+inline static void f_average(Eigen::MatrixXd &D, const t_float a, int i, int j, const t_float s,
                              const t_float t) {
-  *b = s * a + t * (*b);
+  t_float k = t * D(i,j);
+  D(i,j) = s * a + k;
 #ifndef FE_INVALID
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
-  if (fc_isnan(*b)) {
+  if (fc_isnan(D(i,j))) {
     throw(nan_error());
   }
 #if HAVE_DIAGNOSTIC
@@ -484,14 +486,15 @@ inline static void f_average(t_float *const b, const t_float a, const t_float s,
 #endif
 #endif
 }
-inline static void f_weighted(t_float *const b, const t_float a) {
-  *b = (a + *b) * .5;
+inline static void f_weighted(Eigen::MatrixXd &D, const t_float a, int i, int j) {
+  t_float k = a + D(i,j);
+  D(i,j) = k * .5;
 #ifndef FE_INVALID
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
-  if (fc_isnan(*b)) {
+  if (fc_isnan(D(i,j))) {
     throw(nan_error());
   }
 #if HAVE_DIAGNOSTIC
@@ -499,16 +502,17 @@ inline static void f_weighted(t_float *const b, const t_float a) {
 #endif
 #endif
 }
-inline static void f_ward(t_float *const b, const t_float a, const t_float c,
+inline static void f_ward(Eigen::MatrixXd &D, const t_float a, int i, int j, const t_float c,
                           const t_float s, const t_float t, const t_float v) {
-  *b = ((v + s) * a - v * c + (v + t) * (*b)) / (s + t + v);
+  t_float k = (v + t) * D(i,j);
+  D(i,j) = ((v + s) * a - v * c + k) / (s + t + v);
 //*b = a+(*b)-(t*a+s*(*b)+v*c)/(s+t+v);
 #ifndef FE_INVALID
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
-  if (fc_isnan(*b)) {
+  if (fc_isnan(D(i,j))) {
     throw(nan_error());
   }
 #if HAVE_DIAGNOSTIC
@@ -516,12 +520,13 @@ inline static void f_ward(t_float *const b, const t_float a, const t_float c,
 #endif
 #endif
 }
-inline static void f_centroid(t_float *const b, const t_float a,
+inline static void f_centroid(Eigen::MatrixXd &D, const t_float a, int i, int j,
                               const t_float stc, const t_float s,
                               const t_float t) {
-  *b = s * a - stc + t * (*b);
+  t_float k = t * D(i,j);
+  D(i,j) = s * a - stc + k;
 #ifndef FE_INVALID
-  if (fc_isnan(*b)) {
+  if (fc_isnan(D(i,j))) {
     throw(nan_error());
   }
 #if HAVE_DIAGNOSTIC
@@ -529,15 +534,16 @@ inline static void f_centroid(t_float *const b, const t_float a,
 #endif
 #endif
 }
-inline static void f_median(t_float *const b, const t_float a,
+inline static void f_median(Eigen::MatrixXd &D, const t_float a, int i, int j,
                             const t_float c_4) {
-  *b = (a + (*b)) * .5 - c_4;
+  t_float k = a + D(i,j);
+  D(i,j) = k * .5 - c_4;
 #ifndef FE_INVALID
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
-  if (fc_isnan(*b)) {
+  if (fc_isnan(D(i,j))) {
     throw(nan_error());
   }
 #if HAVE_DIAGNOSTIC
@@ -547,7 +553,7 @@ inline static void f_median(t_float *const b, const t_float a,
 }
 
 template <method_codes method, typename t_members>
-static void NN_chain_core(const t_index N, t_float *const D,
+static void NN_chain_core(const t_index N, Eigen::MatrixXd &D,
                           t_members *const members, cluster_result &Z2) {
   /*
       N: integer
@@ -571,36 +577,36 @@ static void NN_chain_core(const t_index N, t_float *const D,
   doubly_linked_list active_nodes(N);
 
   t_float min;
-
-  for (t_float const *DD = D;
-       DD != D + (static_cast<std::ptrdiff_t>(N) * (N - 1) >> 1); ++DD) {
+  std::cout << "Fehlercheck" << std::endl;
+  for (int it_1 = 0; it_1 < N; it_1++) {
+    for (int it_2 = 0; it_2 < N; it_2++) {
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
-    if (fc_isnan(*DD)) {
+    if (fc_isnan(D(it_1,it_2))) {
       throw(nan_error());
     }
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic pop
 #endif
   }
-
+}
 #ifdef FE_INVALID
   if (feclearexcept(FE_INVALID))
     throw fenv_error();
 #endif
-
+  std::cout << "Fehlercheck beendet" << std::endl;
   for (t_index j = 0; j < N - 1; ++j) {
     if (NN_chain_tip <= 3) {
       NN_chain[0] = idx1 = active_nodes.start;
       NN_chain_tip = 1;
 
       idx2 = active_nodes.succ[idx1];
-      min = D_(idx1, idx2);
+      min = D(idx1, idx2);
       for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i]) {
-        if (D_(idx1, i) < min) {
-          min = D_(idx1, i);
+        if (D(idx1, i) < min) {
+          min = D(idx1, i);
           idx2 = i;
         }
       }
@@ -609,21 +615,21 @@ static void NN_chain_core(const t_index N, t_float *const D,
       NN_chain_tip -= 3;
       idx1 = NN_chain[NN_chain_tip - 1];
       idx2 = NN_chain[NN_chain_tip];
-      min = idx1 < idx2 ? D_(idx1, idx2) : D_(idx2, idx1);
+      min = idx1 < idx2 ? D(idx1, idx2) : D(idx2, idx1);
     }  // a: idx1   b: idx2
 
     do {
       NN_chain[NN_chain_tip] = idx2;
 
       for (i = active_nodes.start; i < idx2; i = active_nodes.succ[i]) {
-        if (D_(i, idx2) < min) {
-          min = D_(i, idx2);
+        if (D(i, idx2) < min) {
+          min = D(i, idx2);
           idx1 = i;
         }
       }
       for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i]) {
-        if (D_(idx2, i) < min) {
-          min = D_(idx2, i);
+        if (D(idx2, i) < min) {
+          min = D(idx2, i);
           idx1 = i;
         }
       }
@@ -659,13 +665,13 @@ static void NN_chain_core(const t_index N, t_float *const D,
       */
       // Update the distance matrix in the range [start, idx1).
       for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-        f_single(&D_(i, idx2), D_(i, idx1));
+        f_single(D, D(i, idx1),i,idx2);
       // Update the distance matrix in the range (idx1, idx2).
       for (; i < idx2; i = active_nodes.succ[i])
-        f_single(&D_(i, idx2), D_(idx1, i));
+        f_single(D, D(idx1, i),i,idx2);
       // Update the distance matrix in the range (idx2, N).
       for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-        f_single(&D_(idx2, i), D_(idx1, i));
+        f_single(D, D(idx1, i),idx2,i);
       break;
 
     case METHOD_METR_COMPLETE:
@@ -676,13 +682,13 @@ static void NN_chain_core(const t_index N, t_float *const D,
       */
       // Update the distance matrix in the range [start, idx1).
       for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-        f_complete(&D_(i, idx2), D_(i, idx1));
+        f_complete(D, D(i, idx1),i,idx2);
       // Update the distance matrix in the range (idx1, idx2).
       for (; i < idx2; i = active_nodes.succ[i])
-        f_complete(&D_(i, idx2), D_(idx1, i));
+        f_complete(D, D(idx1, i),i,idx2);
       // Update the distance matrix in the range (idx2, N).
       for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-        f_complete(&D_(idx2, i), D_(idx1, i));
+        f_complete(D, D(idx1, i),idx2,i);
       break;
 
     case METHOD_METR_AVERAGE: {
@@ -695,13 +701,13 @@ static void NN_chain_core(const t_index N, t_float *const D,
       t_float s = size1 / (size1 + size2);
       t_float t = size2 / (size1 + size2);
       for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-        f_average(&D_(i, idx2), D_(i, idx1), s, t);
+        f_average(D, D(i, idx1),i,idx2, s, t);
       // Update the distance matrix in the range (idx1, idx2).
       for (; i < idx2; i = active_nodes.succ[i])
-        f_average(&D_(i, idx2), D_(idx1, i), s, t);
+        f_average(D, D(idx1, i),i,idx2, s, t);
       // Update the distance matrix in the range (idx2, N).
       for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-        f_average(&D_(idx2, i), D_(idx1, i), s, t);
+        f_average(D, D(idx1, i),idx2,i, s, t);
       break;
     }
 
@@ -713,13 +719,13 @@ static void NN_chain_core(const t_index N, t_float *const D,
       */
       // Update the distance matrix in the range [start, idx1).
       for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-        f_weighted(&D_(i, idx2), D_(i, idx1));
+        f_weighted(D, D(i, idx1),i,idx2);
       // Update the distance matrix in the range (idx1, idx2).
       for (; i < idx2; i = active_nodes.succ[i])
-        f_weighted(&D_(i, idx2), D_(idx1, i));
+        f_weighted(D, D(idx1, i),i,idx2);
       // Update the distance matrix in the range (idx2, N).
       for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-        f_weighted(&D_(idx2, i), D_(idx1, i));
+        f_weighted(D, D(idx1, i),idx2,i);
       break;
 
     case METHOD_METR_WARD:
@@ -732,15 +738,15 @@ static void NN_chain_core(const t_index N, t_float *const D,
       // Update the distance matrix in the range [start, idx1).
       // t_float v = static_cast<t_float>(members[i]);
       for (i = active_nodes.start; i < idx1; i = active_nodes.succ[i])
-        f_ward(&D_(i, idx2), D_(i, idx1), min, size1, size2,
+        f_ward(D, D(i, idx1),i,idx2, min, size1, size2,
                static_cast<t_float>(members[i]));
       // Update the distance matrix in the range (idx1, idx2).
       for (; i < idx2; i = active_nodes.succ[i])
-        f_ward(&D_(i, idx2), D_(idx1, i), min, size1, size2,
+        f_ward(D, D(idx1, i),i,idx2, min, size1, size2,
                static_cast<t_float>(members[i]));
       // Update the distance matrix in the range (idx2, N).
       for (i = active_nodes.succ[idx2]; i < N; i = active_nodes.succ[i])
-        f_ward(&D_(idx2, i), D_(idx1, i), min, size1, size2,
+        f_ward(D, D(idx1, i),idx2,i, min, size1, size2,
                static_cast<t_float>(members[i]));
       break;
 
@@ -914,7 +920,7 @@ private:
 };
 
 template <method_codes method, typename t_members>
-static void generic_linkage(const t_index N, t_float *const D,
+static void generic_linkage(const t_index N, Eigen::MatrixXd &D,
                             t_members *const members, cluster_result &Z2) {
   /*
     N: integer, number of data points
@@ -948,18 +954,17 @@ static void generic_linkage(const t_index N, t_float *const D,
   // Initialize the minimal distances:
   // Find the nearest neighbor of each point.
   // n_nghbr[i] = argmin_{j>i} D(i,j) for i in range(N-1)
-  t_float const *DD = D;
   for (i = 0; i < N_1; ++i) {
     min = std::numeric_limits<t_float>::infinity();
-    for (idx = j = i + 1; j < N; ++j, ++DD) {
+    for (idx = j = i + 1; j < N; ++j) {
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
-      if (*DD < min) {
-        min = *DD;
+      if (D(i,j) < min) {
+        min = D(i,j);
         idx = j;
-      } else if (fc_isnan(*DD))
+      } else if (fc_isnan(D(i,j)))
         throw(nan_error());
     }
 #if HAVE_DIAGNOSTIC
@@ -1015,13 +1020,13 @@ static void generic_linkage(const t_index N, t_float *const D,
     */
     idx1 = nn_distances.argmin();
     if (method != METHOD_METR_SINGLE) {
-      while (mindist[idx1] < D_(idx1, n_nghbr[idx1])) {
+      while (mindist[idx1] < D(idx1, n_nghbr[idx1])) {
         // Recompute the minimum mindist[idx1] and n_nghbr[idx1].
         n_nghbr[idx1] = j = active_nodes.succ[idx1];  // exists, maximally N-1
-        min = D_(idx1, j);
+        min = D(idx1, j);
         for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-          if (D_(idx1, j) < min) {
-            min = D_(idx1, j);
+          if (D(idx1, j) < min) {
+            min = D(idx1, j);
             n_nghbr[idx1] = j;
           }
         }
@@ -1062,17 +1067,17 @@ static void generic_linkage(const t_index N, t_float *const D,
       */
       // Update the distance matrix in the range [start, idx1).
       for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-        f_single(&D_(j, idx2), D_(j, idx1));
+        f_single(D, D(j, idx1),j,idx2);
         if (n_nghbr[j] == idx1)
           n_nghbr[j] = idx2;
       }
       // Update the distance matrix in the range (idx1, idx2).
       for (; j < idx2; j = active_nodes.succ[j]) {
-        f_single(&D_(j, idx2), D_(idx1, j));
+        f_single(D, D(idx1, j),j,idx2);
         // If the new value is below the old minimum in a row, update
         // the mindist and n_nghbr arrays.
-        if (D_(j, idx2) < mindist[j]) {
-          nn_distances.update_leq(j, D_(j, idx2));
+        if (D(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D(j, idx2));
           n_nghbr[j] = idx2;
         }
       }
@@ -1081,10 +1086,10 @@ static void generic_linkage(const t_index N, t_float *const D,
       if (idx2 < N_1) {
         min = mindist[idx2];
         for (j = active_nodes.succ[idx2]; j < N; j = active_nodes.succ[j]) {
-          f_single(&D_(idx2, j), D_(idx1, j));
-          if (D_(idx2, j) < min) {
+          f_single(D, D(idx1, j),idx2,j);
+          if (D(idx2, j) < min) {
             n_nghbr[idx2] = j;
-            min = D_(idx2, j);
+            min = D(idx2, j);
           }
         }
         nn_distances.update_leq(idx2, min);
@@ -1099,16 +1104,16 @@ static void generic_linkage(const t_index N, t_float *const D,
       */
       // Update the distance matrix in the range [start, idx1).
       for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-        f_complete(&D_(j, idx2), D_(j, idx1));
+        f_complete(D, D(j, idx1),j,idx2);
         if (n_nghbr[j] == idx1)
           n_nghbr[j] = idx2;
       }
       // Update the distance matrix in the range (idx1, idx2).
       for (; j < idx2; j = active_nodes.succ[j])
-        f_complete(&D_(j, idx2), D_(idx1, j));
+        f_complete(D, D(idx1, j),j,idx2);
       // Update the distance matrix in the range (idx2, N).
       for (j = active_nodes.succ[idx2]; j < N; j = active_nodes.succ[j])
-        f_complete(&D_(idx2, j), D_(idx1, j));
+        f_complete(D, D(idx1, j),idx2,j);
       break;
 
     case METHOD_METR_AVERAGE: {
@@ -1121,27 +1126,27 @@ static void generic_linkage(const t_index N, t_float *const D,
       t_float s = size1 / (size1 + size2);
       t_float t = size2 / (size1 + size2);
       for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-        f_average(&D_(j, idx2), D_(j, idx1), s, t);
+        f_average(D, D(j, idx1),j,idx2, s, t);
         if (n_nghbr[j] == idx1)
           n_nghbr[j] = idx2;
       }
       // Update the distance matrix in the range (idx1, idx2).
       for (; j < idx2; j = active_nodes.succ[j]) {
-        f_average(&D_(j, idx2), D_(idx1, j), s, t);
-        if (D_(j, idx2) < mindist[j]) {
-          nn_distances.update_leq(j, D_(j, idx2));
+        f_average(D, D(idx1, j),j,idx2, s, t);
+        if (D(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D(j, idx2));
           n_nghbr[j] = idx2;
         }
       }
       // Update the distance matrix in the range (idx2, N).
       if (idx2 < N_1) {
         n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
-        f_average(&D_(idx2, j), D_(idx1, j), s, t);
-        min = D_(idx2, j);
+        f_average(D, D(idx1, j),idx2,j, s, t);
+        min = D(idx2, j);
         for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-          f_average(&D_(idx2, j), D_(idx1, j), s, t);
-          if (D_(idx2, j) < min) {
-            min = D_(idx2, j);
+          f_average(D, D(idx1, j),idx2,j, s, t);
+          if (D(idx2, j) < min) {
+            min = D(idx2, j);
             n_nghbr[idx2] = j;
           }
         }
@@ -1158,27 +1163,27 @@ static void generic_linkage(const t_index N, t_float *const D,
       */
       // Update the distance matrix in the range [start, idx1).
       for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-        f_weighted(&D_(j, idx2), D_(j, idx1));
+        f_weighted(D, D(j, idx1),j,idx2);
         if (n_nghbr[j] == idx1)
           n_nghbr[j] = idx2;
       }
       // Update the distance matrix in the range (idx1, idx2).
       for (; j < idx2; j = active_nodes.succ[j]) {
-        f_weighted(&D_(j, idx2), D_(idx1, j));
-        if (D_(j, idx2) < mindist[j]) {
-          nn_distances.update_leq(j, D_(j, idx2));
+        f_weighted(D, D(idx1, j),j,idx2);
+        if (D(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D(j, idx2));
           n_nghbr[j] = idx2;
         }
       }
       // Update the distance matrix in the range (idx2, N).
       if (idx2 < N_1) {
         n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
-        f_weighted(&D_(idx2, j), D_(idx1, j));
-        min = D_(idx2, j);
+        f_weighted(D, D(idx1, j),idx2,j);
+        min = D(idx2, j);
         for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-          f_weighted(&D_(idx2, j), D_(idx1, j));
-          if (D_(idx2, j) < min) {
-            min = D_(idx2, j);
+          f_weighted(D, D(idx1, j),idx2,j);
+          if (D(idx2, j) < min) {
+            min = D(idx2, j);
             n_nghbr[idx2] = j;
           }
         }
@@ -1195,31 +1200,31 @@ static void generic_linkage(const t_index N, t_float *const D,
       */
       // Update the distance matrix in the range [start, idx1).
       for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-        f_ward(&D_(j, idx2), D_(j, idx1), mindist[idx1], size1, size2,
+        f_ward(D, D(j, idx1),j,idx2, mindist[idx1], size1, size2,
                static_cast<t_float>(members[j]));
         if (n_nghbr[j] == idx1)
           n_nghbr[j] = idx2;
       }
       // Update the distance matrix in the range (idx1, idx2).
       for (; j < idx2; j = active_nodes.succ[j]) {
-        f_ward(&D_(j, idx2), D_(idx1, j), mindist[idx1], size1, size2,
+        f_ward(D, D(idx1, j),j,idx2, mindist[idx1], size1, size2,
                static_cast<t_float>(members[j]));
-        if (D_(j, idx2) < mindist[j]) {
-          nn_distances.update_leq(j, D_(j, idx2));
+        if (D(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D(j, idx2));
           n_nghbr[j] = idx2;
         }
       }
       // Update the distance matrix in the range (idx2, N).
       if (idx2 < N_1) {
         n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
-        f_ward(&D_(idx2, j), D_(idx1, j), mindist[idx1], size1, size2,
+        f_ward(D, D(idx1, j),idx2,j, mindist[idx1], size1, size2,
                static_cast<t_float>(members[j]));
-        min = D_(idx2, j);
+        min = D(idx2, j);
         for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-          f_ward(&D_(idx2, j), D_(idx1, j), mindist[idx1], size1, size2,
+          f_ward(D, D(idx1, j),idx2,j, mindist[idx1], size1, size2,
                  static_cast<t_float>(members[j]));
-          if (D_(idx2, j) < min) {
-            min = D_(idx2, j);
+          if (D(idx2, j) < min) {
+            min = D(idx2, j);
             n_nghbr[idx2] = j;
           }
         }
@@ -1239,30 +1244,30 @@ static void generic_linkage(const t_index N, t_float *const D,
       t_float t = size2 / (size1 + size2);
       t_float stc = s * t * mindist[idx1];
       for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-        f_centroid(&D_(j, idx2), D_(j, idx1), stc, s, t);
-        if (D_(j, idx2) < mindist[j]) {
-          nn_distances.update_leq(j, D_(j, idx2));
+        f_centroid(D, D(j, idx1),j,idx2, stc, s, t);
+        if (D(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D(j, idx2));
           n_nghbr[j] = idx2;
         } else if (n_nghbr[j] == idx1)
           n_nghbr[j] = idx2;
       }
       // Update the distance matrix in the range (idx1, idx2).
       for (; j < idx2; j = active_nodes.succ[j]) {
-        f_centroid(&D_(j, idx2), D_(idx1, j), stc, s, t);
-        if (D_(j, idx2) < mindist[j]) {
-          nn_distances.update_leq(j, D_(j, idx2));
+        f_centroid(D, D(idx1, j),j,idx2, stc, s, t);
+        if (D(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D(j, idx2));
           n_nghbr[j] = idx2;
         }
       }
       // Update the distance matrix in the range (idx2, N).
       if (idx2 < N_1) {
         n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
-        f_centroid(&D_(idx2, j), D_(idx1, j), stc, s, t);
-        min = D_(idx2, j);
+        f_centroid(D, D(idx1, j),idx2,j, stc, s, t);
+        min = D(idx2, j);
         for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-          f_centroid(&D_(idx2, j), D_(idx1, j), stc, s, t);
-          if (D_(idx2, j) < min) {
-            min = D_(idx2, j);
+          f_centroid(D, D(idx1, j),idx2,j, stc, s, t);
+          if (D(idx2, j) < min) {
+            min = D(idx2, j);
             n_nghbr[idx2] = j;
           }
         }
@@ -1281,30 +1286,30 @@ static void generic_linkage(const t_index N, t_float *const D,
       // Update the distance matrix in the range [start, idx1).
       t_float c_4 = mindist[idx1] * .25;
       for (j = active_nodes.start; j < idx1; j = active_nodes.succ[j]) {
-        f_median(&D_(j, idx2), D_(j, idx1), c_4);
-        if (D_(j, idx2) < mindist[j]) {
-          nn_distances.update_leq(j, D_(j, idx2));
+        f_median(D, D(j, idx1),j,idx2, c_4);
+        if (D(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D(j, idx2));
           n_nghbr[j] = idx2;
         } else if (n_nghbr[j] == idx1)
           n_nghbr[j] = idx2;
       }
       // Update the distance matrix in the range (idx1, idx2).
       for (; j < idx2; j = active_nodes.succ[j]) {
-        f_median(&D_(j, idx2), D_(idx1, j), c_4);
-        if (D_(j, idx2) < mindist[j]) {
-          nn_distances.update_leq(j, D_(j, idx2));
+        f_median(D, D(idx1, j),j,idx2, c_4);
+        if (D(j, idx2) < mindist[j]) {
+          nn_distances.update_leq(j, D(j, idx2));
           n_nghbr[j] = idx2;
         }
       }
       // Update the distance matrix in the range (idx2, N).
       if (idx2 < N_1) {
         n_nghbr[idx2] = j = active_nodes.succ[idx2];  // exists, maximally N-1
-        f_median(&D_(idx2, j), D_(idx1, j), c_4);
-        min = D_(idx2, j);
+        f_median(D, D(idx1, j),idx2,j, c_4);
+        min = D(idx2, j);
         for (j = active_nodes.succ[j]; j < N; j = active_nodes.succ[j]) {
-          f_median(&D_(idx2, j), D_(idx1, j), c_4);
-          if (D_(idx2, j) < min) {
-            min = D_(idx2, j);
+          f_median(D, D(idx1, j),idx2,j, c_4);
+          if (D(idx2, j) < min) {
+            min = D(idx2, j);
             n_nghbr[idx2] = j;
           }
         }

@@ -1,5 +1,5 @@
 // Copyright [year] <Copyright Owner>
-#include "src/cpp/dv_main.h"
+#include "dv_main.h"
 #include <string>
 #include <vector>
 
@@ -10,7 +10,7 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
                                double *distMat, double *height, int *merge,
                                int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
-                               int calcScalingMethod, double *resultPoints) {
+                               int calcScalingMethod, double *resultPoints, int calcClusterMethod) {
   // Split the long string into smaller strings
   // and put them in a vector
   std::string inputString(inputStringChar);
@@ -21,7 +21,7 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
     stringVector[i] = tempString;
     startLength += lengthOfString[i];
   }
-
+ 
   // For now we assume the input are fingerprints, not SMILES
   MatrixXd distMatMDS = distanceMatrix(stringVector);
   MatrixXd resultMDS;
@@ -40,14 +40,14 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
     printf("no valid scaling algorithm was chosen");
     break;
   }
-
+  std::cout << "Scaling finished" << std::endl;
   // Overwrite points with the new configuration
   for (int i = 0; i < nStrings; i++) {
     for (int j = 0; j < 2; j++) {
       resultPoints[i * 2 + j] = resultMDS(i, j);
     }
   }
-
+/*
   // Create condensed distance matrix to work with hclust-cpp
   int k = 0;
   for (int i = 0; i < nStrings; i++) {
@@ -56,9 +56,9 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
       k++;
     }
   }
-
+*/
   // Do the clustering
-  hclust_fast(nStrings, distMat, HCLUST_METHOD_COMPLETE, merge, height);
+  hclust_fast(nStrings, distMatMDS, calcClusterMethod, merge, height);
 
   // Find maximum distance in order to create good cuts of dendrogram
   // TODO(Jonas): Check if its always last element
@@ -85,7 +85,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
                               int calcDistMethod, int calcScalingMethod,
-                              bool isSpherical) {
+                              bool isSpherical, int calcClusterMethod) {
   /**
    * Two different types of distance matrices exist:
    * (1) reduced condensed distance matrix
@@ -95,7 +95,6 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
    */
 
   // Calculate full distance matrix
-  // For MDS using SMACOF
   if (calcDistMethod == 1) {
     // Move points into matrix
     MatrixXd pointMatrix(nPoints, dimension);
@@ -104,9 +103,11 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
         pointMatrix(i, j) = points[i * dimension + j];
       }
     }
-
+    
+    std::cout << "pointmatrix initialized" << std::endl;
     // Calculate distance matrix and apply SMACOF algorithm for MDS
     MatrixXd distMatMDS = distanceMatrix(pointMatrix, isSpherical);
+    std::cout << "distancematrix calculated" << std::endl;
     MatrixXd resultMDS;
     switch (calcScalingMethod) {
     case 1:
@@ -122,14 +123,14 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
       printf("no valid scaling algorithm was chosen");
       break;
     }
-
+    std::cout << "scaling finished" << std::endl;
     // Overwrite points with the new configuration
     for (int i = 0; i < nPoints; i++) {
       for (int j = 0; j < dimension; j++) {
         points[i * dimension + j] = resultMDS(i, j);
       }
     }
-
+/*
     // Create condensed distance matrix to work with hclust-cpp
     int k = 0;
     for (int i = 0; i < nPoints; i++) {
@@ -144,9 +145,11 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
     double *distMatMDS =
         calculateEuclideanDistanceMatrix(points, nPoints, dimension);
   }
-
+*/
   // Do the clustering
-  hclust_fast(nPoints, distMat, HCLUST_METHOD_COMPLETE, merge, height);
+  std::cout << "start clustering" << std::endl;
+  hclust_fast(nPoints, distMatMDS, HCLUST_METHOD_COMPLETE, merge, height);
+  std::cout << "clustering finished" << std::endl;
 
   // Find maximum distance in order to create good cuts of dendrogram
   // TODO(Jonas): Check if its always last element
@@ -156,7 +159,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
       maxHeight = height[i];
     }
   }
-
+  std::cout << "maxheight calculated" << std::endl;
   // For each zoomlevel calculate a labels assignment
   int *oneLabel = new int[nPoints];
   for (int i = 0; i < zoomLevels; i++) {
@@ -164,6 +167,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                  oneLabel);
     std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
   }
-
+  std::cout << "tree cut" << std::endl;
   delete[] oneLabel;
+}
 }

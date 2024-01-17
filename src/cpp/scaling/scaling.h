@@ -2,7 +2,7 @@
 #ifndef SRC_CPP_SCALING_SCALING_H_
 #define SRC_CPP_SCALING_SCALING_H_
 
-#include "src/cpp/distmat/distmat.h"
+//#include "../distmat/distmat.h"
 #include <Eigen/Dense>
 
 using Eigen::MatrixXd;
@@ -118,17 +118,17 @@ MatrixXd createRandomPoints(int n, int m);
 // full distance-matrix needed!
 
 // Scikit functions
-double scikit_mds_single(MatrixXd dissimilarities, double *x, double *x_inter,
+double scikit_mds_single(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
                          int n_samples, bool init, bool metric,
                          int n_components, int max_iter, bool verbose,
                          double eps, int random_state, bool normalized_stress);
 
-void scikit_mds_multi(MatrixXd dissimilarities, double *x, double *x_inter,
+void scikit_mds_multi(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
                       int n_iterations, int n_samples, bool init, bool metric,
                       int n_components, int max_iter, bool verbose, double eps,
                       int random_state, bool normalized_stress);
 
-MatrixXd calculateMDSscikit(int N, MatrixXd distanceMatrix);
+MatrixXd calculateMDSscikit(int N, MatrixXd &distanceMatrix);
 
 // Glimmer functions
 
@@ -143,14 +143,14 @@ typedef struct _VECTYPE {
   float value;
 } VECTYPE;
 
-MatrixXd calculateMDSglimmer(int num_p, MatrixXd distanceMatrix);
+MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix);
 int myrand(void);
 int distcomp(const void *a, const void *b);
 int idxcomp(const void *a, const void *b);
 float max(float a, float b);
 float min(float a, float b);
 int terminate(INDEXTYPE *idx_set, int size);
-void force_directed(int size, int fixedsize, MatrixXd distanceMatrix);
+void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix);
 void init_embedding(float *embedding);
 int fill_level_count(int input, int *h);
 
