@@ -9,7 +9,7 @@ async function initializeMap(
   type,
   nonnumflags_array,
   numflags_array,
-  scalingMethod
+  scalingMethod,
 ) {
   await wasmReady; // Make sure module is loaded
   console.log("Starting Clustering Program");
@@ -42,13 +42,11 @@ async function initializeMap(
 
     // Heaps which wasm uses
     let pointsBuf = Module._malloc(n * dim * Float64Array.BYTES_PER_ELEMENT);
-    let distMatBuf = Module._malloc(
-      (n * n) * Float64Array.BYTES_PER_ELEMENT
-    );
+    let distMatBuf = Module._malloc(n * n * Float64Array.BYTES_PER_ELEMENT);
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
     let labelsBuf = Module._malloc(
-      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT
+      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
 
     // Move input points into heap
@@ -87,21 +85,21 @@ async function initializeMap(
         scalingMethod,
         isSperical,
         1,
-      ]
+      ],
     );
     console.log("Clustering finished");
     // Copy results into js array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
         labelsBuf / Int32Array.BYTES_PER_ELEMENT,
-        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels
-      )
+        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels,
+      ),
     );
     let pointsResult = new Float64Array(
       Module.HEAPF64.subarray(
         pointsBuf / Float64Array.BYTES_PER_ELEMENT,
-        pointsBuf / Float64Array.BYTES_PER_ELEMENT + n * dim
-      )
+        pointsBuf / Float64Array.BYTES_PER_ELEMENT + n * dim,
+      ),
     );
 
     // Move points into array for map
@@ -129,7 +127,7 @@ async function initializeMap(
       labelsResult,
       n,
       numflags_array,
-      nonnumflags_array
+      nonnumflags_array,
     );
     // -----------------------------------------------------------------
     // -----------------------------------------------------------------
@@ -165,28 +163,26 @@ async function initializeMap(
 
     // Heaps which wasm uses
     let resultPointsBuf = Module._malloc(
-      n * 2 * Float64Array.BYTES_PER_ELEMENT
+      n * 2 * Float64Array.BYTES_PER_ELEMENT,
     );
     let lengthOfStringBuf = Module._malloc(n * Int32Array.BYTES_PER_ELEMENT);
-    let distMatBuf = Module._malloc(
-      (n * n) * Float64Array.BYTES_PER_ELEMENT
-    );
+    let distMatBuf = Module._malloc(n * n * Float64Array.BYTES_PER_ELEMENT);
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
     let labelsBuf = Module._malloc(
-      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT
+      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
 
     // Dont know what this does
     Module.HEAPF64.set(
       resultPoints,
-      resultPointsBuf / resultPoints.BYTES_PER_ELEMENT
+      resultPointsBuf / resultPoints.BYTES_PER_ELEMENT,
     );
 
     // Move length of string into heap
     Module.HEAPF64.set(
       lengthOfString,
-      lengthOfStringBuf / lengthOfString.BYTES_PER_ELEMENT
+      lengthOfStringBuf / lengthOfString.BYTES_PER_ELEMENT,
     );
 
     // Actual function call to cluster
@@ -219,22 +215,22 @@ async function initializeMap(
         zoomLevels,
         1,
         resultPointsBuf,
-        1
-      ]
+        1,
+      ],
     );
 
     // Copy results into js array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
         labelsBuf / Int32Array.BYTES_PER_ELEMENT,
-        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels
-      )
+        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels,
+      ),
     );
     let pointsResult = new Float64Array(
       Module.HEAPF64.subarray(
         resultPointsBuf / Float64Array.BYTES_PER_ELEMENT,
-        resultPointsBuf / Float64Array.BYTES_PER_ELEMENT + n * 2
-      )
+        resultPointsBuf / Float64Array.BYTES_PER_ELEMENT + n * 2,
+      ),
     );
 
     // Create array for map
@@ -261,7 +257,7 @@ async function initializeMap(
       labelsResult,
       n,
       numflags_array,
-      nonnumflags_array
+      nonnumflags_array,
     );
     // -----------------------------------------------------------------
 
@@ -278,7 +274,7 @@ class Cluster {
     numflagSums = [],
     numflagAverages = [],
     numflagMins = [],
-    numflagMaxs = []
+    numflagMaxs = [],
   ) {
     // label is the label of the cluster corresponding to the label in the labelsResult array
     this.label = label;
@@ -311,7 +307,7 @@ function getClusterInfo(
   labelsResult,
   n,
   numflags_array,
-  nonnumflags_array
+  nonnumflags_array,
 ) {
   // Create an array for each Zoomlevel which contais the info of the clusters
   var clusterInfos = new Array(zoom);
@@ -355,8 +351,8 @@ function getClusterInfo(
             (numflagSums = new Array(numNumColumns).fill(0)),
             (numflagAverages = new Array(numNumColumns).fill(0)),
             (numflagMins = new Array(numNumColumns).fill(Infinity)),
-            (numflagMaxs = new Array(numNumColumns).fill(-Infinity))
-          )
+            (numflagMaxs = new Array(numNumColumns).fill(-Infinity)),
+          ),
       );
 
     // Count the number of points in each cluster
@@ -418,7 +414,7 @@ function getClusterInfo(
       }
     }
     console.log(
-      "-----------------------------------------------------------------"
+      "-----------------------------------------------------------------",
     );
     console.log(clusters);
     clusterInfos[i] = clusters;
