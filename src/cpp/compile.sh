@@ -14,7 +14,7 @@ echo -e "project_root: ${ORANGE}$PROJECT_ROOT${NC}\n"
 
 # Use variables to compile
 #em++ -o ../../build/clustering.js --no-entry dv_main.cpp -I "$EIGEN_PATH" -I "$PROJECT_ROOT" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_clusterPoints', '_clusterStrings']" -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s ALLOW_MEMORY_GROWTH
-em++ --verbose -o ../../build/clustering.js --no-entry dv_main.cpp ./external/hclust/fastcluster.cpp ./external/glimmer/glimmer.cpp ./distmat/distmat.cpp ./scaling/scikit.cpp ./scaling/smacof.cpp -I "$EIGEN_PATH" -I "$PROJECT_ROOT" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_clusterPoints', '_clusterStrings']" -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s ALLOW_MEMORY_GROWTH -s NO_DISABLE_EXCEPTION_CATCHING
+em++ -o ../../build/clustering.js --no-entry dv_main.cpp ./external/hclust/fastcluster.cpp ./distmat/distmat.cpp ./scaling/scikit.cpp ./scaling/smacof.cpp ./external/glimmer/glimmer.cpp -I "$EIGEN_PATH" -I "$PROJECT_ROOT" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_clusterPoints', '_clusterStrings']" -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s ALLOW_MEMORY_GROWTH
 
 # Check if compilation successful
 if [ $? -eq 0 ]

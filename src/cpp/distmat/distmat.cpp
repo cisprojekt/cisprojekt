@@ -160,8 +160,10 @@ int *calculateHammingDistanceMatrix(char **array, int num_strings,
 double toRadians(double degree) { return degree * (M_PI / 180.0); }
 
 double haversine(double lat1, double lon1, double lat2, double lon2) {
+
   double EarthRadiusKm = 6371.0;
   // Convert latitude and longitude from degrees to radians
+
   lat1 = toRadians(lat1);
   lon1 = toRadians(lon1);
   lat2 = toRadians(lat2);
@@ -172,9 +174,9 @@ double haversine(double lat1, double lon1, double lat2, double lon2) {
   double dlon = lon2 - lon1;
 
   // Haversine formula
-  double a = sin(dlat / 2) * sin(dlat / 2) +
-             cos(lat1) * cos(lat2) * sin(dlon / 2) * sin(dlon / 2);
-  double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+  double a = std::sin(dlat / 2) * std::sin(dlat / 2) +
+             std::cos(lat1) * std::cos(lat2) * std::sin(dlon / 2) * std::sin(dlon / 2);
+  double c = 2 * std::atan2(sqrt(a), sqrt(1 - a));
   double distance = EarthRadiusKm * c;
 
   return distance;

@@ -38,6 +38,7 @@ async function initializeMap(
 
     for (let i = 0; i < n * dim; i++) {
       points[i] = parseFloat(flatInputPoints[i]);
+	  console.log(flatInputPoints[i]);
     }
 
     // Heaps which wasm uses
@@ -135,7 +136,7 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos);
   } else if (type == "tanimotoFingerprints") {
     // For fingerprints input
 
@@ -214,6 +215,7 @@ async function initializeMap(
         maxIterations,
         zoomLevels,
         1,
+        scalingMethod,
         resultPointsBuf,
         1,
       ],
@@ -262,7 +264,7 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos);
   }
 }
 
