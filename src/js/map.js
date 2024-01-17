@@ -9,7 +9,8 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   const width = 1330;
   const height = 750;
 
-  var help_var = 1;
+  //var help_var = 1;
+  var transform = 0; //variable to store current event.transform from handleZoom
   var button_zoom_level_old = 0.0; //starting var button_zoom_level -1 so that the if case in Event handler is taken and thus the points get loaded
   var currentZoomLevel = 1.0;
   var button_zoom_level = 1.0; // starting layer of points which are generated
@@ -77,7 +78,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   // #### remaining code: creating svgs and handeling zoom ####
 
   //initialize svg
-  const svg = d3
+  var svg = d3
     .select("#chartContainer")
     .append("svg")
     .attr("width", width)
@@ -156,14 +157,16 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     //variable to store current zoom level
     currentZoomLevel = event.transform.k;
 
+    transform = event.transform;
+
     // Apply the transform to the desired element
     //button_change_layer_in.attr("transform", event.transform);
     //button_change_layer_out.attr("transform", event.transform);
 
-    if (help_var == 1) {
+    /* if (help_var == 1) {
       button_zoom_level_old = 0; //starting var button_zoom_level -1 so that the if case in Event handler is taken and thus the points get loaded
       help_var += 1;
-    }
+    } */
     infoZoom.select("text").text("Zoom: " + currentZoomLevel.toFixed(5));
 
     //Enable the rescaling of the axes
@@ -204,6 +207,11 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
 
       button_zoom_level_old = button_zoom_level;
       //button_zoom_level_old = 1 + button_zoom_level_old;
+
+      console.log(
+        "button_zoom_level_old in handleZoom " + button_zoom_level_old,
+      );
+      console.log("button_zoom_level in handleZoom " + button_zoom_level);
 
       circles.exit().remove();
 
@@ -373,40 +381,6 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       svg.call(zoom.transform, d3.zoomIdentity); // d3.zoomIdentity conviniently resets all changes to zoom behaviour
     });
 
-  function updateCanvasOnButtonClick(event) {
-    button_zoom_level_old = button_zoom_level;
-
-    console.log(button_zoom_level_old);
-    console.log(button_zoom_level);
-
-    var circles = svg.selectAll("circle");
-
-    let averages = getAverages(button_zoom_level);
-    var circles = svg.selectAll("circle").data(averages);
-
-    circles.exit().remove();
-    circles
-      .enter()
-      .append("circle")
-      .merge(circles)
-      .attr("r", function (d) {
-        return d.r * 1;
-      })
-      .attr("cx", function (d) {
-        return d.x;
-      })
-      .attr("cy", function (d) {
-        return d.y;
-      })
-      .style("fill", "#0000ff")
-      .style("fill-opacity", 0.5)
-      //.attr("transform", event.transform)
-      .on("click", function (event, d) {
-        console.log(event);
-        d3.select(this).style("fill", "red");
-      });
-  }
-
   //create html button element and append it to svg
   var button_change_layer_in_embed = svg
     .append("foreignObject")
@@ -429,9 +403,8 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       // Change the color of the button back to its original color when the mouse moves out
       d3.select(this).style("background-color", "#0080ff"); // Change the background color back to blue
     })
-    .on("click", function (event) {
+    .on("click", function () {
       button_zoom_level -= 1;
-      updateCanvasOnButtonClick(event);
     });
 
   var button_change_layer_out_embed = svg
@@ -455,11 +428,22 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       // Change the color of the button back to its original color when the mouse moves out
       d3.select(this).style("background-color", "#0080ff"); // Change the background color back to blue
     })
-    .on("click", function (event) {
+    .on("click", function () {
       button_zoom_level += 1;
-      updateCanvasOnButtonClick(event);
     });
 
-  // Attach the zoom behavior to the SVG element and disable zoom
-  d3.select("svg").call(zoom).on("dblclick.zoom", null);
+  // Attach the zoom behavior to the SVG element and change zoom on double click so that it is not possible to zoom in further but handleZoom is still called
+  d3.select("svg")
+    .call(zoom)
+    .on("dblclick.zoom", function (event) {
+      // Get the current transform
+      //transform = event.transform; // variable is already set in handleZoom and just creates errors here
+      // Define the scale factor for the minimal zoom
+      var scaleFactor = 1;
+      // Apply the minimal zoom by a specific value
+      svg
+        .transition()
+        .duration(0)
+        .call(zoom.transform, transform.scale(scaleFactor));
+    });
 }
