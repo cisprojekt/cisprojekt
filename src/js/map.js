@@ -232,11 +232,24 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     } else {
       circles
         .attr("transform", event.transform)
-        .on("click", function (event, d) {
+        /*.on("click", function (event, d) {
           console.log(event);
           svg.selectAll("circle").on("click", null);
           d3.select(this).style("fill", "red");
-        });
+        });*/
+        .on("click", function (event, d) {
+          var nextColor = d3.select(this).style("fill")  //gets color of selected Circle
+          d3.select(this).style("fill", "red")
+         
+          if (nextColor == "rgb(0, 0, 255)"){
+            d3.select(this).style("fill", "red")
+          }
+          else{
+            d3.select(this).style("fill", "rgb(0, 0, 255)")
+            
+          }
+          
+      });
     }
   }
 
