@@ -54,6 +54,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
         x: sums[label].x / sums[label].count,
         y: sums[label].y / sums[label].count,
         r: sums[label].count,
+        l: label,
       });
     }
 
@@ -145,6 +146,10 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .attr("r", function (d) {
       return d.r * 1;
     })
+    //save the label of the point
+    .attr("data-id", function (d) {
+      return d.l;
+    })
     .style("fill", "#0000ff")
     .style("fill-opacity", 0.5)
     .on("click", function (event, d) {
@@ -153,8 +158,14 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       d3.select(this).style("fill", "red");
     });
 
+  // we create a variable to store the label of the previous selected point
+  // for some reason this has to be a global variable, otherwise it does not work
+  var selectedPoint;
+
   // Define the event handler function for zoom
   function handleZoom(event) {
+    //
+
     //variable to store current zoom level
     currentZoomLevel = event.transform.k;
 
@@ -221,6 +232,10 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
         .attr("cy", function (d) {
           return d.y;
         })
+        //save the label of the point
+        .attr("data-id", function (d) {
+          return d.l;
+        })
         .style("fill", "#0000ff")
         .style("fill-opacity", 0.5)
         .attr("transform", event.transform)
@@ -238,18 +253,32 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
           d3.select(this).style("fill", "red");
         });*/
         .on("click", function (event, d) {
-          var nextColor = d3.select(this).style("fill")  //gets color of selected Circle
-          d3.select(this).style("fill", "red")
-         
-          if (nextColor == "rgb(0, 0, 255)"){
-            d3.select(this).style("fill", "red")
+          var nextColor = d3.select(this).style("fill"); //gets color of selected Circle
+
+          //unselect previous point
+          if (selectedPoint != null) {
+            svg
+              .selectAll("circle")
+              .filter(function (d) {
+                return d.l === selectedPoint;
+              })
+              .transition()
+              .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
           }
-          else{
-            d3.select(this).style("fill", "rgb(0, 0, 255)")
-            
+
+          if (nextColor == "rgb(0, 0, 255)") {
+            d3.select(this).style("fill", "red");
+            selectedPoint = d.l;
+          } else {
+            d3.select(this).style("fill", "rgb(0, 0, 255)");
+            selectedPoint = null;
           }
-          
-      });
+          displayTextInClusterInfoBox(
+            selectedPoint,
+            clusterInfos,
+            button_zoom_level,
+          );
+        });
     }
   }
 
@@ -376,4 +405,34 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
 
   // Attach the zoom behavior to the SVG element and disable zoom on double click
   d3.select("svg").call(zoom).on("dblclick.zoom", null);
+}
+
+//function to display text in clusterInfoBox depending on selected point
+//TODO add nonnumflag and numflag selected column information
+function displayTextInClusterInfoBox(selectedPoint, clusterInfos, zoomLevel) {
+  if (selectedPoint != null) {
+    const clusterInfoBox = document.getElementById("clusterInfoBox");
+
+    let displayText =
+      "ClusterLabel: " +
+      clusterInfos[zoomLevel][selectedPoint].label +
+      "\n" +
+      "Number of points: " +
+      clusterInfos[zoomLevel][selectedPoint].numPoints +
+      "\n";
+
+    //display nonnumflag information
+    //DOESNT WORK YET!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    clusterInfos[zoomLevel][selectedPoint].nonnumflagCounters.forEach(
+      (flag) => {
+        Object.keys(flag).forEach((key) => {
+          displayText += key + ": " + flag[key].toString() + "\n";
+        });
+      },
+    );
+    clusterInfoBox.textContent = displayText;
+  } else {
+    const clusterInfoBox = document.getElementById("clusterInfoBox");
+    clusterInfoBox.textContent = "No point selected.";
+  }
 }
