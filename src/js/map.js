@@ -273,11 +273,11 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
             d3.select(this).style("fill", "rgb(0, 0, 255)");
             selectedPoint = null;
           }
-          displayTextInClusterInfoBox(
-            selectedPoint,
-            clusterInfos,
-            button_zoom_level,
-          );
+          //displayTextInClusterInfoBox(
+          //  selectedPoint,
+          //  clusterInfos,
+          //  button_zoom_level,
+          //);
         });
     }
   }

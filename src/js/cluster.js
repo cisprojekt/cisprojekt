@@ -288,10 +288,6 @@ class Cluster {
     pieMaxNumSlicesDefault = 5,
     pieFlagIndices = [], // empty means it will calculate the pie charts for each flag. To calcululate none, set pieMaxNumSlicesDefault<=0
   ) {
-    console.log(`nonnumflagCounters.type ${nonnumflagCounters.type}`);
-    console.log(`nonnumflagCounters[0] ${nonnumflagCounters[0]}`);
-    console.log(`nonnumflagCounters[0].type ${nonnumflagCounters[0].type}`);
-    console.log(`nonnumflagCounters ${nonnumflagCounters}`);
     // label is the label of the cluster corresponding to the label in the labelsResult array
     this.label = label;
     // numPoints is the number of points in the cluster
@@ -482,21 +478,19 @@ function getClusterInfo(
     } else {
       var numNonNumColumns = nonnumflags_array[0].length;
     }
-
+    console.log(`numNumColumns: ${numNumColumns}`);
+    console.log(`numNonNumColumns: ${numNonNumColumns}`);
     // Create an array of Cluster objects
     let clusters = new Array(largestLabel + 1).fill().map(
       (_, idx) =>
         new Cluster(
-          (label = idx),
-          (numPoints = 0),
-          (nonnumflagCounters = new Array(numNonNumColumns)
-            .fill(null)
-            .map(() => new Map())),
-          // .map(() => ({}))),
-          (numflagSums = new Array(numNumColumns).fill(0)),
-          (numflagAverages = new Array(numNumColumns).fill(0)),
-          (numflagMins = new Array(numNumColumns).fill(Infinity)),
-          (numflagMaxs = new Array(numNumColumns).fill(-Infinity)),
+          idx,
+          0,
+          new Array(numNonNumColumns).fill(null).map(() => new Map()),
+          new Array(numNumColumns).fill(0),
+          new Array(numNumColumns).fill(0),
+          new Array(numNumColumns).fill(Infinity),
+          new Array(numNumColumns).fill(-Infinity),
         ),
     );
     // console.log(`SOAGDUIGDJSHAVBDIHSAPDMNJSHABVDUOSALKDBJHUSABGDOISHALKDHBSOADHLKSANLDKAS`);
