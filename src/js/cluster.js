@@ -38,7 +38,7 @@ async function initializeMap(
 
     for (let i = 0; i < n * dim; i++) {
       points[i] = parseFloat(flatInputPoints[i]);
-	  console.log(flatInputPoints[i]);
+      console.log(flatInputPoints[i]);
     }
 
     // Heaps which wasm uses
@@ -286,7 +286,7 @@ class Cluster {
     numflagMins = [],
     numflagMaxs = [],
     pieMaxNumSlicesDefault = 5,
-    pieFlagIndices = [] // empty means it will calculate the pie charts for each flag. To calcululate none, set pieMaxNumSlicesDefault<=0
+    pieFlagIndices = [], // empty means it will calculate the pie charts for each flag. To calcululate none, set pieMaxNumSlicesDefault<=0
   ) {
     // label is the label of the cluster corresponding to the label in the labelsResult array
     this.label = label;
@@ -308,26 +308,27 @@ class Cluster {
     this.pieMaxNumSlicesDefault = pieMaxNumSlicesDefault;
     this.pieFlagIndices = pieFlagIndices;
 
-    this._pies = new Array(len(nonnumflagCounters)).fill(null).map(() => null);
-    this.pies = new Proxy(_pies, {
-
-      
+    this._pies = new Array(nonnumflagCounters.length)
+      .fill(null)
+      .map(() => null);
+    /* this.pies = new Proxy(this._pies, {
       get: function (target, idx) {
         var pie = target[idx];
         if (pie == null) {
         }
         return target[idx];
       },
-    });
-    
+    }); */
+
     if (this.pieMaxNumSlicesDefault > 0) {
       if (this.pieFlagIndices.length == 0) {
-        for (var i = 0; i <= this.nonnumflagCounters.length; i++) {
+        for (var i = 0; i <= this.nonnumflagCounters.length - 1; i++) {
+          console.log(`i: ${i}`);
           this.getPie(i, this.pieMaxNumSlicesDefault);
         }
       } else {
         this.pieFlagIndices.forEach((idx) => {
-          this.getPie(idx, this.pieMaxNumSlicesDefault)
+          this.getPie(idx, this.pieMaxNumSlicesDefault);
         });
       }
     }
@@ -335,7 +336,7 @@ class Cluster {
   get name() {
     return "Cluster #" + this.label;
   }
-  
+
   /**
   - `nonnumflagCounterIndex`: The index of the nonnumflag in this.nonnumflagCounters for which to get the pie chart.
 
@@ -346,29 +347,32 @@ class Cluster {
   - Array with with instances of Slice class, in descending order by Slice.value, with the last element always being the "other" slice
   */
   getPie(nonnumflagCounterIndex, maxSlices = this.pieMaxNumSlicesDefault) {
-    if (nonnumflagCounterIndex >= len(this.nonnumflagCounters)) {
-      throw "given nonnumflagCounterIndex is >= len(this.nonnumflagCounters)";
+    console.log(
+      `nonnumflagCounterIndex: ${nonnumflagCounterIndex}, this.nonnumflagCounters.length: ${this.nonnumflagCounters.length}`,
+    );
+    if (nonnumflagCounterIndex >= this.nonnumflagCounters.length) {
+      throw "given nonnumflagCounterIndex is >= this.nonnumflagCounters.length";
     }
     var totalPercent = 0;
     var totalValue = 0;
     // If the pie of this nonnumflag has not yet been calculated before, or there are not enough slices in it
     if (
       this._pies[nonnumflagCounterIndex] == null ||
-      (len(this._pies[nonnumflagCounterIndex]) - 1 > maxSlices && // more slices allowed
+      (this._pies[nonnumflagCounterIndex].length - 1 > maxSlices && // more slices allowed
         Object.keys(this.nonnumflagCounters[nonnumflagCounterIndex]).length >
-          len(this._pies[nonnumflagCounterIndex]) - 1) // more slices possible)
+          this._pies[nonnumflagCounterIndex].length - 1) // more slices possible)
     ) {
       // Find at most maxSlices biggest pie Slices  and store them in pieSlicesArray sorted desc with an added "other" Slice
       var pieSlicesArray = [];
-      smallestIdx = null;
-      idx = 0;
+      var smallestIdx = null;
+      var idx = 0;
       for (key in this.nonnumflagCounters[nonnumflagCounterIndex]) {
-        if (len(pieSlicesArray) <= maxSlices) {
+        if (pieSlicesArray.length <= maxSlices) {
           var value = this.nonnumflagCounters[nonnumflagCounterIndex][key];
           totalValue += value;
           var percent = (100 * value) / this.numPoints;
           totalPercent += percent;
-          pieSlicesArray.add(Slice(key, value, percent));
+          pieSlicesArray.push(new Slice(key, value, percent));
           if (smallestIdx == null) {
             smallestIdx = 0;
           } else {
@@ -384,31 +388,44 @@ class Cluster {
             totalPercent += percent;
             totalValue -= pieSlicesArray[smallestIdx].value;
             totalPercent -= pieSlicesArray[smallestIdx].percent;
-            pieSlicesArray[smallestIdx] = Slice(key, value, percent);
+            pieSlicesArray[smallestIdx] = new Slice(key, value, percent);
           }
         }
         idx++;
       }
       pieSlicesArray.sort((s1, s2) => (s1.value > s2.value ? -1 : 0)); // Sort descendingly by value
-      pieSlicesArray.add(Slice(other, this.numPoints - totalValue, 100 - totalPercent));
+      pieSlicesArray.push(
+        new Slice("other", this.numPoints - totalValue, 100 - totalPercent),
+      );
       console.log(pieSlicesArray);
+      this._pies[nonnumflagCounterIndex] = pieSlicesArray;
       return pieSlicesArray;
     }
     // If the pie of this nonnumflag has been calculated before, but the number of Slices is too great
-    else if (len(this._pies[nonnumflagCounterIndex]) - 1 > maxSlices) {
-      var removeNumber = maxSlices - len(this._pies[nonnumflagCounterIndex]) + 1;
+    else if (this._pies[nonnumflagCounterIndex].length - 1 > maxSlices) {
+      var removeNumber =
+        maxSlices - this._pies[nonnumflagCounterIndex].lenght + 1;
       var extraValue = 0;
       var extraPercent = 0;
-      for (var i = this._pies[nonnumflagCounterIndex].length - 2; i >= maxSlices; i--) {
+      for (
+        var i = this._pies[nonnumflagCounterIndex].length - 2;
+        i >= maxSlices;
+        i--
+      ) {
         extraValue += this._pies[nonnumflagCounterIndex][i].value;
         extraPercent += this._pies[nonnumflagCounterIndex][i].percent;
       }
       var pieView = this._pies[nonnumflagCounterIndex].slice(0, maxSlices);
-      pieView.add(this._pies[nonnumflagCounterIndex][len(this._pies[nonnumflagCounterIndex]) - 1]);
+      pieView.push(
+        this._pies[nonnumflagCounterIndex][
+          this._pies[nonnumflagCounterIndex].lenght - 1
+        ],
+      );
 
       pieView[pieView.length - 1].value += extraValue;
       pieView[pieView.length - 1].percent += extraPercent;
 
+      this._pies[nonnumflagCounterIndex] = pieView;
       return pieView;
     }
   }
