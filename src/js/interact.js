@@ -61,6 +61,7 @@ function readFileContents() {
 function selectDataType() {
   let data_type = document.getElementById("DataType").value;
   let fun_slector = document.getElementById("D_function");
+
   let distance_func_list = new Array();
 
   switch (data_type) {
@@ -75,6 +76,7 @@ function selectDataType() {
       break;
     case "Vector":
       distance_func_list = ["earth-dist", "Euclidean"];
+
       break;
     default:
       fun_slector.style.display = "none";
@@ -94,6 +96,7 @@ function changedistancefunclist(distance_func_list) {
     Tanimoto: "Tanimoto Coefficient",
     Euclidean: "Euclidean Distance",
     "earth-dist": "earth-dist",
+
   };
 
   for (let i = 0; i < distance_func_list.length; i++) {
@@ -257,6 +260,62 @@ function ColFlagCheck() {
   checkContainer.appendChild(checklist);
 }
 
+//choos flags for each colum
+function flag_preset() {
+  let preset_flag = document.createElement("select");
+  let first_flag = document.createElement("option");
+  let flag_list = [
+    "name",
+    "distance information",
+    "non-numerical flags",
+    "numericial flags",
+  ];
+
+  first_flag.value = "noChoice";
+  first_flag.text = "choose a flag";
+  preset_flag.appendChild(first_flag);
+  for (let i = 0; i < 4; i++) {
+    let flag = flag_list[i];
+    let _option = document.createElement("option");
+    _option.value = i + 1;
+    _option.text = flag;
+    preset_flag.appendChild(_option);
+  }
+  return preset_flag;
+}
+function ColFlagCheck() {
+  document.getElementById("checkFlagArea").style.display = "";
+  let titleline = getTitleLine((InputFlag = "coord"));
+  let checkContainer = document.getElementById("CheckContainer");
+  let checklist = document.getElementById("checkTable");
+  let dimension = titleline.length;
+  let rows = checklist.getElementsByTagName("tr");
+  while (rows.length > 1) {
+    checklist.deleteRow(-1);
+  }
+
+  let guide_info = document.getElementById("flag_guide");
+  guide_info.innerHTML =
+    dimension +
+    " Columns are detected in your file, \
+  please choose for every column that you want to ues, one of the following flags: </br> \
+  name(1), distance information(2), non-numerical flags(3), numericial flags(4)";
+
+  for (let d = 1; d < dimension + 1; d++) {
+    console.log(d + " Cloumn");
+    let _check_tr = checklist.insertRow();
+    let cell_1 = _check_tr.insertCell(0);
+    let cell_2 = _check_tr.insertCell(1);
+    let cell_3 = _check_tr.insertCell(2);
+    let ColFlagSelector = CreateColFlagSelector(d - 1, titleline);
+    let flag_menu = flag_preset();
+    cell_1.textContent = "the " + d + " Colum is:";
+    cell_2.appendChild(ColFlagSelector);
+    cell_3.appendChild(flag_menu);
+  }
+  checkContainer.appendChild(checklist);
+}
+
 /* Fullscreen in-Place */
 
 function MapViewSwitcher() {
@@ -296,10 +355,12 @@ function getDataFromInputTable(datenflag) {
     }
   }
   return selectedColumns;
+
 }
 
 function dealwithrun() {
   let punktdata = "";
+
   let matchflag = true;
   let functionFlag = getfunctionflag();
   let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
@@ -311,8 +372,9 @@ function dealwithrun() {
   console.log(dataColumns);
   console.log(data_type);
   console.log("yoyojqaodfjnaqoidjqaiwdipoqwajkdwqwdqwd");
+
   //read data from text box
-  punktdata = getinputdata();
+  //punktdata = getinputdata();
   // Split the CSV content into lines considering CR and LF as line endings
   var lines = punktdata.split(/\r?\n/);
 
@@ -404,6 +466,7 @@ function dealwithrun() {
       break;
     case "Hamming":
       break;
+
     default:
       console.log("Input data doesn't match the distance function");
   }
@@ -418,6 +481,7 @@ function dealwithrun() {
       numflags_array,
       scalingMethod,
     );
+
   } else {
     alert("Input data dosen't match the distance function");
     return false;
