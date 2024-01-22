@@ -201,10 +201,6 @@ function isCoordindat(txt_inhalt) {
   return "";
 }
 
-function isSequence(txt_inhalt, matchflag) {}
-
-function isInChI(txt_inhalt, matchflag) {}
-
 //choos flags for each colum
 function flag_preset() {
   let preset_flag = document.createElement("select");
@@ -231,7 +227,7 @@ function flag_preset() {
 function ColFlagCheck() {
   document.getElementById("checkFlagArea").style.display = "";
   let titleline = getTitleLine((InputFlag = "coord"));
-  let checkContainer = document.getElementById("CheckContainer");
+  let checkContainer = document.getElementById("checkFlagArea");
   let checklist = document.getElementById("checkTable");
   let dimension = titleline.length;
   let rows = checklist.getElementsByTagName("tr");
@@ -302,44 +298,80 @@ function getDataColumns(d_function_value) {
     // meaning the number of data columns is not fixed like for any other distance function.
     let axesArray = [];
     selectElements.forEach(function (selectElement) {
-      // Get the index of the selected option
-      var selectedIndex = selectElement.selectedIndex;
-      // Access the selected option using the selectedIndex
-      var selectedOption = selectElement.options[selectedIndex];
-      // selectedValue = idx of the column
-      var selectedValue = selectedOption.value;
-      axesArray.push(selectedValue);
+      if (selectElement.selectedIndex !== -1) {
+        // Get the index of the selected option
+        var selectedIndex = selectElement.selectedIndex;
+        // Access the selected option using the selectedIndex
+        var selectedOption = selectElement.options[selectedIndex];
+        // selectedValue = idx of the column
+        var selectedValue = selectedOption.value;
+        axesArray.push(selectedValue);
+      }
     });
     dataColumns["axesArray"] = axesArray;
     return dataColumns;
   } else {
     selectElements.forEach(function (selectElement) {
-      // Get the ID of the select element (e.g., "x", "y", "z")
-      var selectId = selectElement.id;
+      if (selectElement.selectedIndex !== -1) {
+        // Get the ID of the select element (e.g., "x", "y", "z")
+        var selectId = selectElement.id;
 
-      // Get the index of the selected option
-      var selectedIndex = selectElement.selectedIndex;
+        // Get the index of the selected option
+        var selectedIndex = selectElement.selectedIndex;
 
-      // Access the selected option using the selectedIndex
-      var selectedOption = selectElement.options[selectedIndex];
+        // Access the selected option using the selectedIndex
+        var selectedOption = selectElement.options[selectedIndex];
 
-      // selectedValue = idx of the column
-      var selectedValue = selectedOption.value;
+        // selectedValue = idx of the column
+        var selectedValue = selectedOption.value;
 
-      // Populate the dataColumns object with the selectId as key and selectedValue as value
-      // e.g., dataColumns["x"] = 0, that is the 0th column is the x-column
-      dataColumns[selectId] = selectedValue;
+        // Populate the dataColumns object with the selectId as key and selectedValue as value
+        // e.g., dataColumns["x"] = 0, that is the 0th column is the x-column
+        dataColumns[selectId] = selectedValue;
+      }
     });
   }
 
   return dataColumns;
 }
 
+function getFlagIdxName(d_function_value, type) {
+  //choose the right dropdown container
+  let dropdownId = "";
+  if (type == "nonnum") {
+    dropdownId = "Flags-dropdowns";
+  } else {
+    dropdownId = "NumericalFlags-dropdowns";
+  }
+
+  //return if no function is chosen
+  let flagColumns = [];
+  if (d_function_value == "noChoice" || !d_function_value) {
+    return flagColumns;
+  }
+  //get the selected column indices
+  var dropdownContainer = document.getElementById(dropdownId);
+  var selectElements = dropdownContainer.querySelectorAll("select");
+  selectElements.forEach(function (selectElement) {
+    // Get the index of the selected option
+    var selectedIndex = selectElement.selectedIndex;
+    var selectedOption = selectElement.options[selectedIndex];
+    // selectedValue = idx of the column
+    if (selectElement.selectedIndex !== -1) {
+      var selectedValue = selectedOption.value;
+      outputTuple = [selectedValue, selectedOption.textContent];
+      flagColumns.push(outputTuple);
+      console.log(outputTuple);
+    }
+  });
+  return flagColumns;
+}
+
 function dealwithrun() {
   let punktdata = "";
   let matchflag = new Boolean();
   let d_function_value = getfunctionflag();
-
+  console.log("run clicked, with function flag", d_function_value);
   let dataColumnsDict = getDataColumns(d_function_value);
   console.log(d_function_value);
 
@@ -446,14 +478,9 @@ function dealwithrun() {
       console.log("Input data doesn't match the distance function");
   }
 
-  if (matchflag) {
-    hideprepera();
-    showresult();
-    initializeMap(points_array, type);
-  } else {
-    alert("Input data dosen't match the distance function");
-    return false;
-  }
+  hideprepera();
+  showresult();
+  initializeMap(points_array, type);
 
   /*Send Data and functionflag to IV-Grupp*/
   /*Should get sth back and send to Map-Gruppp, denn initialis the Map*/
