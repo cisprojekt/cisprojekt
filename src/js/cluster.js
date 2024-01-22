@@ -13,6 +13,7 @@ async function initializeMap(
 ) {
   await wasmReady; // Make sure module is loaded
   console.log("Starting Clustering Program");
+  console.log(type);
 
   // For euclidean inputs
   if (type == "euclidean" || type == "earth-dist") {
@@ -136,7 +137,7 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos);
   } else if (type == "tanimotoFingerprints") {
     // For fingerprints input
 
@@ -264,7 +265,7 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels);
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos);
   }
 }
 
@@ -275,7 +276,6 @@ class Slice {
     this.percentage = percentage;
   }
 }
-
 class Cluster {
   constructor(
     label,
@@ -478,21 +478,19 @@ function getClusterInfo(
     } else {
       var numNonNumColumns = nonnumflags_array[0].length;
     }
-
+    console.log(`numNumColumns: ${numNumColumns}`);
+    console.log(`numNonNumColumns: ${numNonNumColumns}`);
     // Create an array of Cluster objects
     let clusters = new Array(largestLabel + 1).fill().map(
       (_, idx) =>
         new Cluster(
-          (label = idx),
-          (numPoints = 0),
-          (nonnumflagCounters = new Array(numNonNumColumns)
-            .fill(null)
-            .map(() => new Map())),
-          // .map(() => ({}))),
-          (numflagSums = new Array(numNumColumns).fill(0)),
-          (numflagAverages = new Array(numNumColumns).fill(0)),
-          (numflagMins = new Array(numNumColumns).fill(Infinity)),
-          (numflagMaxs = new Array(numNumColumns).fill(-Infinity)),
+          idx,
+          0,
+          new Array(numNonNumColumns).fill(null).map(() => new Map()),
+          new Array(numNumColumns).fill(0),
+          new Array(numNumColumns).fill(0),
+          new Array(numNumColumns).fill(Infinity),
+          new Array(numNumColumns).fill(-Infinity),
         ),
     );
     // console.log(`SOAGDUIGDJSHAVBDIHSAPDMNJSHABVDUOSALKDBJHUSABGDOISHALKDHBSOADHLKSANLDKAS`);

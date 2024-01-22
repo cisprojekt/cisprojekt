@@ -290,46 +290,12 @@ function getDataFromInputTable(datenflag) {
   let selectedColumns = [];
   for (let i = 1; i < rows.length; i++) {
     let row = rows[i];
-    console.log(row.cells[2].querySelector("select").value);
-    console.log(datenflag);
     if (row.cells[2].getElementsByTagName("select")[0].value == datenflag) {
       select = row.cells[1].querySelector("select");
       selectedColumns.push(select.selectedIndex);
     }
   }
   return selectedColumns;
-}
-
-function getFlagIdxName(data_type, type) {
-  //choose the right dropdown container
-  let dropdownId = "";
-  if (type == "nonnum") {
-    dropdownId = "Flags-dropdowns";
-  } else {
-    dropdownId = "NumericalFlags-dropdowns";
-  }
-
-  //return if no function is chosen
-  let flagColumns = [];
-  if (data_type == "noChoice" || !data_type) {
-    return flagColumns;
-  }
-  //get the selected column indices
-  var dropdownContainer = document.getElementById(dropdownId);
-  var selectElements = dropdownContainer.querySelectorAll("select");
-  selectElements.forEach(function (selectElement) {
-    // Get the index of the selected option
-    var selectedIndex = selectElement.selectedIndex;
-    var selectedOption = selectElement.options[selectedIndex];
-    // selectedValue = idx of the column
-    if (selectElement.selectedIndex !== -1) {
-      var selectedValue = selectedOption.value;
-      outputTuple = [selectedValue, selectedOption.textContent];
-      flagColumns.push(outputTuple);
-      console.log(outputTuple);
-    }
-  });
-  return flagColumns;
 }
 
 function dealwithrun() {
@@ -418,6 +384,10 @@ function dealwithrun() {
       console.log(points_array);
       break;
     case "Tanimoto":
+      //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+      //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+      //refactor this delete switch case
+      type = "tanimotoFingerprints";
       console.log("function as Tani");
       //cluster the data
       //initailize non-flattened (nested) array from lines
@@ -426,9 +396,8 @@ function dealwithrun() {
         let line = lines[i].split(",");
         let lineAxisValues = [];
         dataColumns.forEach((columnIndex) => {
-          lineAxisValues.push(line[columnIndex]);
+          points_array.push(line[columnIndex]);
         });
-        points_array.push(lineAxisValues);
       }
       console.log(points_array);
 
@@ -477,126 +446,4 @@ function deletedatenandfunc() {
 function back2input() {
   hideresult();
   showprepare();
-}
-
-/*+++++++++++++++++++++++ function for sdropdowns ++++++++++++++++++++ */
-/*
-function showDropdowns() {
-  var selectedFunction = document.getElementById("D_function").value;
-  //handle earth-dist and Euclidean the same way
-  if (selectedFunction == "earth-dist") {
-    selectedFunction = "Euclidean";
-  }
-  var csvInput = document.getElementById("text_box").value;
-
-  var firstLine = csvInput.split("\n")[0];
-  var columns = firstLine.split(",");
-
-  // Hide all dropdown containers
-  var dropdownContainers = document.querySelectorAll(".dropdown-container");
-  dropdownContainers.forEach(function (container) {
-    container.classList.remove("visible");
-  });
-
-  // Show the dropdown container corresponding to the selected function
-  if (selectedFunction !== "noChoice") {
-    var selectedContainer = document.getElementById(
-      selectedFunction + "-dropdowns",
-    );
-    var flagsContainer = document.getElementById("Flags-dropdowns");
-    if (selectedContainer) {
-      selectedContainer.classList.add("visible");
-      // Dynamically populate dropdown options based on columns
-      var dropdowns = selectedContainer.querySelectorAll("select");
-      dropdowns.forEach(function (dropdown) {
-        // Clear existing options
-        dropdown.innerHTML = "";
-
-        // Populate dropdown options based on columns
-        // option.value is the idx of the column
-        // option.textContent is the user input name of the column
-        var idx = 0;
-        columns.forEach(function (column) {
-          var option = document.createElement("option");
-          option.value = idx; // Assuming you want to use the idx as the option value
-          option.textContent = column.trim(); // Assuming you want to display the column value as the option text
-          dropdown.appendChild(option);
-          idx++;
-        });
-      });
-      //same for flags
-      flagsContainer.classList.add("visible");
-      var dropdowns = flagsContainer.querySelectorAll("select");
-      dropdowns.forEach(function (dropdown) {
-        // Clear existing options
-        dropdown.innerHTML = "";
-        var idx = 0;
-        columns.forEach(function (column) {
-          var option = document.createElement("option");
-          option.value = idx; // Assuming you want to use the column value as the option value
-          option.textContent = column.trim(); // Assuming you want to display the column value as the option text
-          dropdown.appendChild(option);
-          idx++;
-        });
-      });
-    }
-  }
-}
-*/
-
-// Add a new dimension to the Euclidean dropdowns
-
-function addDimension() {
-  // Get the dropdown container
-  var dropdownContainer = document.getElementById("Euclidean-dropdowns");
-
-  // Create a new label and select element
-  var label = document.createElement("label");
-  var select = document.createElement("select");
-
-  // Set the properties of the label and select elements
-  label.textContent = "x" + (dropdownContainer.children.length + 1) / 2 + ":"; // will be x1, x2, x3, ... weird implementation but it works
-  select.id = "dimension-" + (dropdownContainer.children.length + 1) / 2;
-  select.name = select.id;
-  // Append the label and select elements to the dropdown container
-  dropdownContainer.appendChild(label);
-  dropdownContainer.appendChild(select);
-
-  // Call the function to populate the dropdown
-  showDropdowns();
-}
-
-// Remove a dimension from the Euclidean dropdowns
-//Not tested yet!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-function removeDimension() {
-  // Get the dropdown container
-  var dropdownContainer = document.getElementById("Euclidean-dropdowns");
-
-  // Remove the last two children (label and select)
-  dropdownContainer.removeChild(dropdownContainer.lastChild);
-  dropdownContainer.removeChild(dropdownContainer.lastChild);
-
-  // Call the function to populate the dropdown
-  showDropdowns();
-}
-
-function addFlag() {
-  // Get the dropdown container
-  var dropdownContainer = document.getElementById("Flags-dropdowns");
-
-  // Create a new label and select element
-  var label = document.createElement("label");
-  var select = document.createElement("select");
-
-  // Set the properties of the label and select elements
-  label.textContent =
-    (dropdownContainer.children.length + 1) / 2 + ". Flag" + ":";
-  select.id = "flag-" + (dropdownContainer.children.length + 1) / 2;
-  select.name = select.id;
-  // Append the label and select elements to the dropdown container
-  dropdownContainer.appendChild(label);
-  dropdownContainer.appendChild(select);
-
-  // Call the function to populate the dropdown
-  showDropdowns();
 }
