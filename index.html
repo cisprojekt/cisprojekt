@@ -4,23 +4,37 @@
     <meta charset="utf-8" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <mate name="viewport" content="width=device-width" />
-    <title>Data Visualizer</title>
-    <link href="style/generalstyle.css" rel="stylesheet" />
+    <title>SCOUT.</title>
+    <link href="style/homestyle.css" rel="stylesheet" />
     <link href="style/actionstyle.css" rel="stylesheet" />
     <script src="src/js/map.js"></script>
     <script src="build/clustering.js"></script>
     <script src="src/js/interact.js"></script>
     <script src="src/js/cluster.js"></script>
 
-    <!--   Site-spesificiale Style   -->
+    <!--   Site-spesific Style   -->
     <style>
+      header {
+        display: flex;
+        align-items: center;
+        font-size: 30px;
+        font-weight: 600;
+        color: black;
+        text-shadow: 1px 1px 20px rgba(255, 255, 255, 1);
+        margin: 10px 20px;
+      }
       textarea {
         width: 70%;
         height: 100%;
         min-width: 200px;
         min-height: 100px;
         text-align: left;
+        font-size: larger;
+        font-family: sans-serif;
+        background-color: #d8d8d8;
+        border-radius: 5px;
       }
+
       select {
         width: 150px;
         background-color: #969fe2;
@@ -29,6 +43,7 @@
         border-radius: 5px;
         border-color: transparent;
       }
+
       .dropdown-container {
         display: none;
       }
@@ -51,7 +66,7 @@
 
 <body>
   <header>
-    <h1>Data Visualizer</h1>
+    <h1>SCOUT.</h1>
   </header>
 
   <main style="text-align: center">
@@ -63,6 +78,22 @@
         placeholder="Type here..."
         oninput="showDropdowns()"
       ></textarea>
+
+      <!-- Column flag cheker -->
+      <div id="checkFlagArea" style="display: none">
+        <p id="flag_guide" style="text-align: left"></p>
+        <table id="checkTable" style="border-collapse: collapse">
+          <thead>
+            <tr>
+              <th>Colum number</th>
+              <th>Column title</th>
+              <th>Daten flags</th>
+            </tr>
+          </thead>
+
+          <tbody></tbody>
+        </table>
+      </div>
 
       <!-- Here the funtional buttons -->
       <div>
@@ -77,20 +108,21 @@
         />
 
         <!-- Choose Function Button -->
+        <select id="DataType" style="width: 200px">
+          <option value="noChoice">Choose your data type</option>
+          <option value="Seq">DNA/RNA Sequence</option>
+          <option value="ChemInfo">Molecule Information</option>
+          <option value="Euclidean">Euclidean Distance</option>
+        </select>
 
-        <select
-          id="D_function"
-          name="selectFunction"
-          onchange="showDropdowns()"
-        >
-          <option value="noChoice">Add Function</option>
-          <option value="Euclidean">Euclidean distance</option>
-          <option value="Tanimoto">Tanimoto distance</option>
-          <option value="Hamming">Hamming distance</option>
+        <select id="D_function" style="display: none">
+          <option value="noChoice">Choose a Function</option>
         </select>
       </div>
 
       <div>
+        <!-- Flag check button -->
+        <button id="colFlag_button" onclick="ColFlagCheck()">Flag Check</button>
         <!-- Delete All Button -->
         <button id="deleAllButton" onclick="deletedatenandfunc()">
           Delete All
@@ -102,10 +134,6 @@
       <!-- Code for Selecting Data/Flags -->
       <!-- Code for Selecting Data/Flags -->
       <!-- Code for Selecting Data/Flags -->
-
-      <title>Dynamic Dropdowns Example</title>
-
-      <h2>Dynamic Dropdowns Example</h2>
 
       <!--
 
@@ -146,15 +174,7 @@
       </div>
 
       <div id="Flags-dropdowns" class="dropdown-container">
-        <button id="add-flag" onclick="addFlag('Flags')">
-          Add Non Numerical Flag
-        </button>
-      </div>
-
-      <div id="NumericalFlags-dropdowns" class="dropdown-container">
-        <button id="add-flag" onclick="addFlag('NumericalFlags')">
-          Add Numerical Flag
-        </button>
+        <button id="add-flag" onclick="addFlag()">Add Flag</button>
       </div>
 
       <!-- Code for Selecting Data/Flags -->
@@ -266,5 +286,12 @@
       statusElement.innerHTML = "JavaScript is enabled!";
       statusElement.style.color = "green";
     }
+  });
+
+  document.getElementById("DataType").addEventListener("change", function () {
+    let distance_func_list = selectDataType();
+    console.log(distance_func_list);
+    clean_fun_slector();
+    changedistancefunclist(distance_func_list);
   });
 </script>

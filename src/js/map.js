@@ -1,4 +1,6 @@
-function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
+function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels) {
+  //minor change
+
   //initialize
   var data = [];
   var y_coord = 0;
@@ -13,18 +15,45 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   var transform = 0; //variable to store current event.transform from handleZoom
   var button_zoom_level_old = 0.0; //starting var button_zoom_level -1 so that the if case in Event handler is taken and thus the points get loaded
   var currentZoomLevel = 1.0;
-  var button_zoom_level = 1.0; // starting layer of points which are generated
+
   var x_axis_width = width; // length of x-axis in pixels
   var x_max = 15; //initial domain shown on x axis starting with 0
 
   var y_axis_width = height; // length of y-axis in pixels
   var y_max = 15; //initial domain shown on y axis starting with 0
 
+  //var mouseCoords = [0,0] // array for storing mouse coords from event listener
+
   var info_height = 30; // gives fixed size to all info svgs
   var info_width = 150; // gives fixed size to all info svgs
 
   var newDomainX = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
   var newDomainY = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
+
+  // #### code for generating data points ####
+
+  // Function to generate a scaled y coordinate in pixels
+  function generate_y() {
+    var max_y_value = y_max;
+    var y_coord = 0;
+    y_coord = Math.random() * max_y_value; //+ y_offset is now obsolete, because points get scaled by scaling func y() anyway
+    return y_coord;
+  }
+
+  // Function to generate a scaled x coordinate in pixels
+  function generate_x() {
+    var max_x_value = x_max;
+    var x_coord = 0;
+    x_coord = Math.random() * max_x_value; //+ x_offset is now obsolete, because points get scaled by scaling func x() anyway
+    return x_coord;
+  }
+
+  //fill data array
+  for (let i = 0; i < 100; i++) {
+    y_coord = generate_y();
+    x_coord = generate_x();
+    data.push([i, x_coord, y_coord]);
+  }
 
   //transformation function from pixel to coordinates
   function coordFromPixels(x_coord, y_coord) {
@@ -67,13 +96,13 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   // Declare the y (vertical position) scale.
   const y = d3
     .scaleLinear()
-    .domain([-y_max, y_max]) //initial domain shown on y axis
+    .domain([-y_max, y_max]) //initial domain shown on y axis [0,...]
     .range([-y_axis_width, y_axis_width]); // //length of axis in pixel on reference svg
 
   // Declare the x (horizontal position) scale.
   const x = d3
     .scaleLinear()
-    .domain([-x_max, x_max]) //initial domain shown on x axis
+    .domain([-x_max, x_max]) //initial domain shown on x axis [0,...]
     .range([-x_axis_width, x_axis_width]); //length of axis in pixel on reference svg
 
   // #### remaining code: creating svgs and handeling zoom ####
@@ -98,10 +127,20 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     });
 
   // Add the x-axis.
-  var xAxis = svg.append("g").call(d3.axisBottom(x));
+  var xAxis = svg
+    .append("g")
+    //.attr("transform", "translate(0,30)")
+    //.attr("x", 0) //.attr() of x and y replaces .attr("transform", "translate(x,y)") because of known bug for various browsers
+    //.attr("y",y_offset)
+    .call(d3.axisBottom(x));
 
   // Add the y-axis.
-  var yAxis = svg.append("g").call(d3.axisRight(y));
+  var yAxis = svg
+    .append("g")
+    //.attr("transform", "translate(0,30)")
+    //.attr("x", 0) //.attr() of x and y replaces .attr("transform", "translate(x,y)") because of known bug for various browsers
+    //.attr("y",y_offset)
+    .call(d3.axisRight(y));
 
   // Add a tooltip div. Here we define the general feature of the tooltip: stuff that do not depend on the data point.
   // Its opacity is set to 0: we don't see it by default.
@@ -112,6 +151,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .append("svg")
     .attr("width", 50)
     .attr("height", 50);
+  //.style("pointer-events", "none"); // deactivates the possiblity to interact with the svg at all; doesnt work
 
   var tooltip = d3
     .select("#chartContainer")
@@ -125,21 +165,15 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .style("padding", "0px")
     .style("position", "absolute");
 
-  // Create a zoom behavior function
-  var zoom = d3
-    .zoom()
-    .scaleExtent([1, zoomLevels - 5])
-    .on("zoom", handleZoom);
-
-  // Add (initial) circles to plot
+  // Add dots to plot
   svg
     .selectAll("circle")
     .data(getAverages(1))
     .enter()
     .append("circle")
     .attr("cx", function (d) {
-      return d.x;
-    })
+      return x(d[1]);
+    }) //function x determines the linear scaling factor relativ to the x-axis as defined above
     .attr("cy", function (d) {
       return d.y;
     })
@@ -152,7 +186,9 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     })
     .style("fill", "#0000ff")
     .style("fill-opacity", 0.5)
-    .on("click", function (event, d) {
+    .on("mouseover", function (event, d) {
+      // A function that change this tooltip when the user hover a point.
+      // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
       console.log(event);
       svg.selectAll("circle").on("click", null);
       d3.select(this).style("fill", "red");
@@ -223,7 +259,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
         .append("circle")
         .merge(circles)
         .attr("r", function (d) {
-          return d.r * 1;
+          return d.r * 2;
         })
 
         .attr("cx", function (d) {
