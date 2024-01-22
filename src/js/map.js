@@ -38,8 +38,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   function getAverages(currentZoomLevel) {
     var sums = {};
     for (var i = 0; i < n; i++) {
-      var label =
-        labelsResult[i + n * (zoomLevels - 5 - Math.round(currentZoomLevel))];
+      var label = labelsResult[i + n * (zoomLevels - currentZoomLevel)];
       var point = pointsToPlot[i];
       if (!sums[label]) {
         sums[label] = { x: 0, y: 0, count: 0 };
@@ -126,10 +125,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .style("position", "absolute");
 
   // Create a zoom behavior function
-  var zoom = d3
-    .zoom()
-    .scaleExtent([1, zoomLevels - 5])
-    .on("zoom", handleZoom);
+  var zoom = d3.zoom().scaleExtent([1, zoomLevels]).on("zoom", handleZoom);
 
   // Add (initial) circles to plot
   svg
@@ -409,8 +405,14 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
 
 //function to display text in clusterInfoBox depending on selected point
 //TODO add nonnumflag and numflag selected column information
-function displayTextInClusterInfoBox(selectedPoint, clusterInfos, zoomLevel) {
+function displayTextInClusterInfoBox(
+  selectedPoint,
+  falschrumclusterInfos,
+  zoomLevel,
+) {
   if (selectedPoint != null) {
+    clusterInfos = falschrumclusterInfos.reverse();
+
     const clusterInfoBox = document.getElementById("clusterInfoBox");
 
     let displayText =

@@ -39,7 +39,6 @@ async function initializeMap(
 
     for (let i = 0; i < n * dim; i++) {
       points[i] = parseFloat(flatInputPoints[i]);
-      console.log(flatInputPoints[i]);
     }
 
     // Heaps which wasm uses
@@ -335,11 +334,6 @@ class Cluster {
   - Array with with instances of Slice class, in descending order by Slice.value, with the last element always being the "other" slice
   */
   getPie(nonnumflagCounterIndex, maxSlices = this.pieMaxNumSlicesDefault) {
-    console.log("getPie CALLED");
-    console.log("getPie CALLED");
-    console.log("getPie CALLED");
-    console.log("getPie CALLED");
-    console.log("getPie CALLED");
     if (nonnumflagCounterIndex >= this.nonnumflagCounters.length) {
       throw "given nonnumflagCounterIndex is >= this.nonnumflagCounters.length";
     }
@@ -478,8 +472,6 @@ function getClusterInfo(
     } else {
       var numNonNumColumns = nonnumflags_array[0].length;
     }
-    console.log(`numNumColumns: ${numNumColumns}`);
-    console.log(`numNonNumColumns: ${numNonNumColumns}`);
     // Create an array of Cluster objects
     let clusters = new Array(largestLabel + 1).fill().map(
       (_, idx) =>
@@ -572,35 +564,38 @@ function getClusterInfo(
       `Creating pies for each cluster in zoom layer ${i}, and logging them.`,
     );
     clusterInfos[i].forEach((cluster) => {
-      console.log(`/////////////////////////////////////////////////////`);
-      console.log(`/////////////////////////////////////////////////////`);
-      console.log(`/////////////////////////////////////////////////////`);
-      console.log(`${cluster.name} INTERNAL cluster._pies BEFORE:`);
-      console.log(cluster._pies);
-      // console.log(cluster.nonnumflagCounters);
+      //console.log(`/////////////////////////////////////////////////////`);
+      //console.log(`/////////////////////////////////////////////////////`);
+      //console.log(`/////////////////////////////////////////////////////`);
+      //console.log(`${cluster.name} INTERNAL cluster._pies BEFORE:`);
+      //console.log(cluster._pies);
+      //console.log(cluster.nonnumflagCounters);
       if (cluster.pieMaxNumSlicesDefault > 0) {
         if (cluster.pieFlagIndices.length == 0) {
           for (var i = 0; i < cluster.nonnumflagCounters.length; i++) {
-            console.log(`cluster.getPie(${i});`);
+            //console.log(`cluster.getPie(${i});`);
             var pie = cluster.getPie(i); // getPie also edits the internal Cluster._pies array in place
-            console.log(`pie for nonnumflag ${i}`);
-            console.log(pie);
+            //console.log(`pie for nonnumflag ${i}`);
+            //console.log(pie);
           }
         } else {
           cluster.pieFlagIndices.forEach((idx) => {
-            console.log(`cluster.getPie(${i});`);
+            //console.log(`cluster.getPie(${i});`);
             var pie = cluster.getPie(idx);
-            console.log(`pie for nonnumflag ${i}`);
-            console.log(pie);
+            //console.log(`pie for nonnumflag ${i}`);
+            //console.log(pie);
           });
         }
       }
-      console.log(`${cluster.name} INTERNAL cluster._pies AFTER:`);
-      console.log(cluster._pies);
-      console.log(`/////////////////////////////////////////////////////`);
-      console.log(`/////////////////////////////////////////////////////`);
-      console.log(`/////////////////////////////////////////////////////`);
+      //console.log(`${cluster.name} INTERNAL cluster._pies AFTER:`);
+      //console.log(cluster._pies);
+      //console.log(`/////////////////////////////////////////////////////`);
+      //console.log(`/////////////////////////////////////////////////////`);
+      //console.log(`/////////////////////////////////////////////////////`);
     });
   }
+  console.log("addwadawdadawdada dw daqwdaw dqdqwdqedq wqeqveq");
+  console.log(clusterInfos);
+  console.log("addwadawdadawdada dw daqwdaw dqdqwdqedq wqeqveq");
   return clusterInfos;
 }
