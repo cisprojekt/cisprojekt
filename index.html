@@ -112,11 +112,20 @@
           <option value="noChoice">Choose your data type</option>
           <option value="Seq">DNA/RNA Sequence</option>
           <option value="ChemInfo">Molecule Information</option>
-          <option value="Euclidean">Euclidean Distance</option>
+          <option value="Vector">Vector</option>
+          <!-- value="Vector" was former "Euclidean" -->
         </select>
 
         <select id="D_function" style="display: none">
           <option value="noChoice">Choose a Function</option>
+        </select>
+
+        <select id="Scaling_alg" name="SaclingAlgorithmus">
+          <option value="noChoice">Add scaling algorithmus</option>
+          <!-- the following values are supposed to uniqueley indentify their scaling algorithm -->
+          <option value="1">SMACOF</option>
+          <option value="2">SciKit-learn</option>
+          <option value="3">Glimmer</option>
         </select>
       </div>
 
@@ -155,13 +164,8 @@
       </div>
 
       <div id="Tanimoto-dropdowns" class="dropdown-container">
-        <label for="tanimoto-option1">Tanimoto Option 1:</label>
-        <select id="tanimoto-option1" name="tanimoto-option1">
-          <!-- Column options are dynamically created through showDropdowns() function -->
-        </select>
-
-        <label for="tanimoto-option2">Tanimoto Option 2:</label>
-        <select id="tanimoto-option2" name="tanimoto-option2">
+        <label for="tanimoto-fingerprint">Tanimoto Fingerprint:</label>
+        <select id="tanimoto-fingerprint" name="tanimoto-fingerprint">
           <!-- Column options are dynamically created through showDropdowns() function -->
         </select>
       </div>

@@ -1,14 +1,25 @@
+// Copyright [year] <Copyright Owner>
 #ifndef SRC_CPP_SCALING_SCALING_H_
 #define SRC_CPP_SCALING_SCALING_H_
-// Copyright [year] <Copyright Owner>
-#include <algorithm>
+
+//#include "../distmat/distmat.h"
+#include <Eigen/Dense>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-// SMACOF funtions
+// clang-format off
 
-//
+/**
+ *  ____   ____    _    _     ___ _   _  ____
+ * / ___| / ___|  / \  | |   |_ _| \ | |/ ___|
+ * \___ \| |     / _ \ | |    | ||  \| | |  _
+ *  ___) | |___ / ___ \| |___ | || |\  | |_| |
+ * |____/ \____/_/   \_\_____|___|_| \_|\____|
+ *
+ */
+
+// clang-format on
 
 /**
  * @brief Calculate weights matrix, entry is 1 if (dis)similarity is present,
@@ -72,7 +83,7 @@ double stressFunction(MatrixXd X, MatrixXd Z, MatrixXd B, MatrixXd weights,
 MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights);
 
 /**
- * @brief Applies multidimensional scaling with SMACOF algorithm
+ * @brief Applies multidimensional scaling with SMACOF Algorithm
  * @param distMat Original distance matrix
  * @param maxIt Maximum number of iterations
  * @param eps Cutoff for differences between new and old stress values
@@ -107,19 +118,17 @@ MatrixXd createRandomPoints(int n, int m);
 // full distance-matrix needed!
 
 // Scikit functions
-double scikit_mds_single(double *dissimilarities, double *x, double *x_inter,
+double scikit_mds_single(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
                          int n_samples, bool init, bool metric,
                          int n_components, int max_iter, bool verbose,
                          double eps, int random_state, bool normalized_stress);
 
-void scikit_mds_multi(double *dissimilarities, double *x, double *x_inter,
+void scikit_mds_multi(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
                       int n_iterations, int n_samples, bool init, bool metric,
                       int n_components, int max_iter, bool verbose, double eps,
                       int random_state, bool normalized_stress);
 
-void outputscikit(double *embedding);
-
-int calculateMDSscikit(void);
+MatrixXd calculateMDSscikit(int N, MatrixXd &distanceMatrix);
 
 // Glimmer functions
 
@@ -134,14 +143,14 @@ typedef struct _VECTYPE {
   float value;
 } VECTYPE;
 
-int calculateMDSglimmer(void);
+MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix);
 int myrand(void);
 int distcomp(const void *a, const void *b);
 int idxcomp(const void *a, const void *b);
 float max(float a, float b);
 float min(float a, float b);
 int terminate(INDEXTYPE *idx_set, int size);
-void force_directed(int size, int fixedsize, float *distmat);
+void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix);
 void init_embedding(float *embedding);
 int fill_level_count(int input, int *h);
 

@@ -60,7 +60,7 @@ function readFileContents() {
 
 function selectDataType() {
   let data_type = document.getElementById("DataType").value;
-  let fun_slector = document.getElementById(D_function);
+  let fun_slector = document.getElementById("D_function");
   let distance_func_list = new Array();
 
   switch (data_type) {
@@ -73,8 +73,8 @@ function selectDataType() {
     case "ChemInfo":
       distance_func_list = ["For chemicial data", "Tanimoto"];
       break;
-    case "Euclidean":
-      distance_func_list = ["For coordinaten", "Eculidean"];
+    case "Vector":
+      distance_func_list = ["earth-dist", "Euclidean"];
       break;
     default:
       fun_slector.style.display = "none";
@@ -86,13 +86,14 @@ function selectDataType() {
 function changedistancefunclist(distance_func_list) {
   let fun_slector = document.getElementById("D_function");
 
+  //information(names) we display in the dropdown menu for the distance functions
   let func_dic = {
     Seq: "example for Sequence",
     ChemInfo: "example for Chemicial data",
-    Euclidean: "example for Vector",
     Hamming: "Hamming Distance",
     Tanimoto: "Tanimoto Coefficient",
-    Eculidean: "Eculidean Distance",
+    Euclidean: "Euclidean Distance",
+    "earth-dist": "earth-dist",
   };
 
   for (let i = 0; i < distance_func_list.length; i++) {
@@ -189,7 +190,6 @@ function isCoordindat(txt_inhalt) {
       let line = lines[i];
       line = line.split(",");
       if (line.length == 2 && parseFloat(line[0]) && parseFloat(line[1])) {
-        console.log("coord found");
         coorindat.push(line.toString());
       }
     }
@@ -218,7 +218,7 @@ function flag_preset() {
   for (let i = 0; i < 4; i++) {
     let flag = flag_list[i];
     let _option = document.createElement("option");
-    _option.value = i + 1;
+    _option.value = flag;
     _option.text = flag;
     preset_flag.appendChild(_option);
   }
@@ -281,61 +281,26 @@ function MapViewSwitcher() {
 }
 
 /*+++++++++++++++++++++++ function for buttons ++++++++++++++++++++ */
-
-function getDataColumns(d_function_value) {
-  let dataColumns = {};
-
-  if (d_function_value == "noChoice" || !d_function_value) {
-    return dataColumns;
+//this function will read the user input on the selected columns on a specific
+// "DatenFlag" f.e numerical flags will output all the columns that are selected
+// in the dropdown menu for numerical flags
+function getDataFromInputTable(datenflag) {
+  let table = document.getElementById("checkTable");
+  let rows = table.getElementsByTagName("tr");
+  let selectedColumns = [];
+  for (let i = 1; i < rows.length; i++) {
+    let row = rows[i];
+    console.log(row.cells[2].querySelector("select").value);
+    console.log(datenflag);
+    if (row.cells[2].getElementsByTagName("select")[0].value == datenflag) {
+      select = row.cells[1].querySelector("select");
+      selectedColumns.push(select.selectedIndex);
+    }
   }
-
-  let dropdownId = d_function_value + "-dropdowns";
-  var dropdownContainer = document.getElementById(dropdownId);
-  var selectElements = dropdownContainer.querySelectorAll("select");
-
-  if (d_function_value == "Euclidean") {
-    // Euclidean dict has axesArray key with all the column indices of the axes, since it might have any n number of data columns,
-    // meaning the number of data columns is not fixed like for any other distance function.
-    let axesArray = [];
-    selectElements.forEach(function (selectElement) {
-      if (selectElement.selectedIndex !== -1) {
-        // Get the index of the selected option
-        var selectedIndex = selectElement.selectedIndex;
-        // Access the selected option using the selectedIndex
-        var selectedOption = selectElement.options[selectedIndex];
-        // selectedValue = idx of the column
-        var selectedValue = selectedOption.value;
-        axesArray.push(selectedValue);
-      }
-    });
-    dataColumns["axesArray"] = axesArray;
-    return dataColumns;
-  } else {
-    selectElements.forEach(function (selectElement) {
-      if (selectElement.selectedIndex !== -1) {
-        // Get the ID of the select element (e.g., "x", "y", "z")
-        var selectId = selectElement.id;
-
-        // Get the index of the selected option
-        var selectedIndex = selectElement.selectedIndex;
-
-        // Access the selected option using the selectedIndex
-        var selectedOption = selectElement.options[selectedIndex];
-
-        // selectedValue = idx of the column
-        var selectedValue = selectedOption.value;
-
-        // Populate the dataColumns object with the selectId as key and selectedValue as value
-        // e.g., dataColumns["x"] = 0, that is the 0th column is the x-column
-        dataColumns[selectId] = selectedValue;
-      }
-    });
-  }
-
-  return dataColumns;
+  return selectedColumns;
 }
 
-function getFlagIdxName(d_function_value, type) {
+function getFlagIdxName(data_type, type) {
   //choose the right dropdown container
   let dropdownId = "";
   if (type == "nonnum") {
@@ -346,7 +311,7 @@ function getFlagIdxName(d_function_value, type) {
 
   //return if no function is chosen
   let flagColumns = [];
-  if (d_function_value == "noChoice" || !d_function_value) {
+  if (data_type == "noChoice" || !data_type) {
     return flagColumns;
   }
   //get the selected column indices
@@ -369,30 +334,67 @@ function getFlagIdxName(d_function_value, type) {
 
 function dealwithrun() {
   let punktdata = "";
-  let matchflag = new Boolean();
-  let d_function_value = getfunctionflag();
-  console.log("run clicked, with function flag", d_function_value);
-  let dataColumnsDict = getDataColumns(d_function_value);
-  console.log(d_function_value);
-
+  let matchflag = true;
+  let functionFlag = getfunctionflag();
+  let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
+  let data_type = functionFlag;
+  let dataColumns = getDataFromInputTable("distance information");
+  console.log("yoyojqaodfjnaqoidjqaiwdipoqwajkdwqwdqwd");
+  console.log(scalingMethod);
+  console.log(functionFlag);
+  console.log(dataColumns);
+  console.log(data_type);
+  console.log("yoyojqaodfjnaqoidjqaiwdipoqwajkdwqwdqwd");
   //read data from text box
-  //punktdata = getinputdata();
+  punktdata = getinputdata();
   // Split the CSV content into lines considering CR and LF as line endings
-  //var lines = punktdata.split(/\r?\n/);
-  // Assuming the first line contains headers
-
-  // gotta be careful here, if the first line is not the header, this will fail
-  //var headers = lines[0].split(",");
+  var lines = punktdata.split(/\r?\n/);
 
   var points_array = [];
+  var nonnumflags_array = [];
+  var numflags_array = [];
+  var nonnumflagsIdxName = getDataFromInputTable("non-numerical flags");
+  var numflagsIdxName = getDataFromInputTable("numericial flags");
+  //assigning flag values to the flags arrays
+  //if flagColumns is empty, the array will be empty
+  for (let i = 1; i < lines.length; i++) {
+    let line = lines[i].split(",");
+    let FlagValues = [];
+    nonnumflagsIdxName.forEach((flagIdxName) => {
+      FlagValues.push(line[flagIdxName]);
+    });
+    nonnumflags_array.push(FlagValues);
+    FlagValues = [];
+    numflagsIdxName.forEach((flagIdxName) => {
+      //throw error if the value is not a number
+      number = parseFloat(line[flagIdxName]);
+      if (isNaN(number)) {
+        alert(
+          `All numflag values must be valid numbers. number "${
+            number + 1
+          }" in line ${i}, column ${flagIdxName + 1} was invalid`,
+        );
+      }
+      if (isNaN(number)) {
+        console.log(line[flagIdxName]);
+        assert(!isNaN(number), "All numflag values must be valid numbers");
+      }
+      FlagValues.push(number);
+    });
+    numflags_array.push(FlagValues);
+  }
 
   var type = "default";
-  switch (d_function_value) {
+  switch (data_type) {
     case "noChoice":
       alert("Please choose a distance function");
       break;
+    case "earth-dist":
     case "Euclidean":
       type = "euclidean";
+      if (functionFlag == "earth-dist") {
+        type = "earth-dist";
+      }
       //check if the data is coordinate data
       //
       console.log("function as Euc");
@@ -408,79 +410,49 @@ function dealwithrun() {
       for (let i = 1; i < lines.length; i++) {
         let line = lines[i].split(",");
         let lineAxisValues = [];
-        dataColumnsDict["axesArray"].forEach((columnIndex) => {
+        dataColumns.forEach((columnIndex) => {
           lineAxisValues.push(line[columnIndex]);
         });
         points_array.push(lineAxisValues);
       }
+      console.log(points_array);
       break;
     case "Tanimoto":
       console.log("function as Tani");
+      //cluster the data
+      //initailize non-flattened (nested) array from lines
+      //ignore the header
+      for (let i = 1; i < lines.length; i++) {
+        let line = lines[i].split(",");
+        let lineAxisValues = [];
+        dataColumns.forEach((columnIndex) => {
+          lineAxisValues.push(line[columnIndex]);
+        });
+        points_array.push(lineAxisValues);
+      }
+      console.log(points_array);
+
       break;
     case "Hamming":
-      // Initialize an array to store the objects
-      flags = [];
-      nucleotideData = [];
-      for (var i = 1; i < lines.length; i++) {
-        var nucleotides = lines[i].split(",");
-        nucleotideData.push(nucleotides[0]);
-        //store the flags
-        for (var j = 1; j < nucleotides.length; j++) {
-          flags.push(nucleotides[j]);
-        }
-      }
-      //initialize array with pointers to the strings as Uint8Arrays
-      const string_array = nucleotides.map(
-        (str) => new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
-      );
-      //allocate memory for each string in the array
-      const charPtrs = string_array.map((chars) => {
-        const ptr = Module._malloc(chars.length * chars.BYTES_PER_ELEMENT);
-        Module.HEAPU8.set(chars, ptr);
-        return ptr;
-      });
-      //allocate memory for the array of pointers
-      const ptrBuf = Module._malloc(
-        charPtrs.length * Int32Array.BYTES_PER_ELEMENT,
-      );
-
-      // Copy the array of pointers to the allocated memory
-      Module.HEAP32.set(charPtrs, ptrBuf / Int32Array.BYTES_PER_ELEMENT);
-
-      //call the distance matrix function
-      //returns the pointer to the result array
-      let resultPtr2 = Module.ccall(
-        "calculateHammingDistanceMatrix",
-        "number",
-        ["number", "number", "number"],
-        [ptrBuf, nucleotides.length, nucleotides[0].length],
-      );
-
-      //create a typed array from the pointer containing the distmat as flattened array
-      let hamdistmat = new Int32Array(
-        Module.HEAP32.buffer,
-        resultPtr2,
-        (nucleotides.length * (nucleotides.length + 1)) / 2,
-      );
-
-      for (
-        let i = 0;
-        i < (nucleotides.length * (nucleotides.length + 1)) / 2;
-        i++
-      ) {
-        console.log(hamdistmat[i]);
-      }
-
-      Module._free(ptrBuf);
-
       break;
     default:
       console.log("Input data doesn't match the distance function");
   }
 
-  hideprepera();
-  showresult();
-  initializeMap(points_array, type);
+  if (matchflag) {
+    hideprepera();
+    showresult();
+    initializeMap(
+      points_array,
+      type,
+      nonnumflags_array,
+      numflags_array,
+      scalingMethod,
+    );
+  } else {
+    alert("Input data dosen't match the distance function");
+    return false;
+  }
 
   /*Send Data and functionflag to IV-Grupp*/
   /*Should get sth back and send to Map-Gruppp, denn initialis the Map*/
@@ -511,6 +483,10 @@ function back2input() {
 /*
 function showDropdowns() {
   var selectedFunction = document.getElementById("D_function").value;
+  //handle earth-dist and Euclidean the same way
+  if (selectedFunction == "earth-dist") {
+    selectedFunction = "Euclidean";
+  }
   var csvInput = document.getElementById("text_box").value;
 
   var firstLine = csvInput.split("\n")[0];
@@ -567,7 +543,9 @@ function showDropdowns() {
   }
 }
 */
+
 // Add a new dimension to the Euclidean dropdowns
+
 function addDimension() {
   // Get the dropdown container
   var dropdownContainer = document.getElementById("Euclidean-dropdowns");

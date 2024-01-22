@@ -15,7 +15,7 @@ using Eigen::MatrixXd;
 
 int n = 0;
 
-double scikit_mds_single(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
+double scikit_mds_single(MatrixXd dissimilarities, double *x, double *x_inter,
                          int n_samples, bool init = false, bool metric = true,
                          int n_components = 2, int max_iter = 1000,
                          bool verbose = 0, double eps = 1e-5,
@@ -23,42 +23,42 @@ double scikit_mds_single(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, E
   int m = n_samples * (n_samples - 1) / 2;
   srand(time(NULL));
   if (!init) {
-    for (int it = 0; it < n_samples; it++) {
-      x_inter(it,0) = drand48();
-      x_inter(it,1) = drand48();
+    for (int it = 0; it < 2 * n_samples; it++) {
+      x_inter[it] = drand48();
     }
   } else {
-    x_inter(0,0) = 0.0;
-    x_inter(0,1) = 0.0;
-    x_inter(1,0) = 1.0;
-    x_inter(1,1) = -1.0;
-    x_inter(2,0) = -1.0;
-    x_inter(2,1) = 1.0;
-    x_inter(3,0) = 1.0;
-    x_inter(3,1) = 1.0;
-    x_inter(4,0) = -1.0;
-    x_inter(4,1) = -1.0;
+    x_inter[0] = 0.0;
+    x_inter[1] = 0.0;
+    x_inter[2] = 1.0;
+    x_inter[3] = -1.0;
+    x_inter[4] = -1.0;
+    x_inter[5] = 1.0;
+    x_inter[6] = 1.0;
+    x_inter[7] = 1.0;
+    x_inter[8] = -1.0;
+    x_inter[9] = -1.0;
   }
   double old_stress = 1e15;
-  //Eigen::MatrixXd disparities(n_samples,n_samples);     //needed for non-metric case
-  Eigen::MatrixXd dis(n_samples,n_samples);
+  double *disparities = new double[n_samples * n_samples];
+  double *dis = new double[n_samples * n_samples];
   double stress = 0;
   // isotonic regression
   for (int it = 0; it < max_iter; it++) {
     for (int f = 0; f < n_samples; f++) {
       for (int g = 0; g < n_samples; g++) {
-        dis(f, g) =
-            sqrt(pow(x_inter(f,0) - x_inter(g,0), 2) +
-                 pow(x_inter(f,1) - x_inter(g,1), 2));
+        dis[n_samples * f + g] =
+            sqrt(pow(x_inter[2 * f] - x_inter[2 * g], 2) +
+                 pow(x_inter[2 * f + 1] - x_inter[2 * g + 1], 2));
       }
     }
-    /*
     if (metric) {
-          disparities(i, j) = dissimilarities(i, j);
+      for (int i = 0; i < n_samples; i++) {
+        for (int j = 0; j < n_samples; j++) {
+          disparities[i * n_samples + j] = dissimilarities(i, j);
         }
       }
     }
-    //non-metric case
+    /* non-metric case
     else {
       disparities_flat = ir.fit_transform(sim_flat_w aka dissimilarities, dis)
       disparities = dis.copy
@@ -68,53 +68,72 @@ double scikit_mds_single(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, E
     }
     */
     double normalizer;
-    for (int i = 0; i < n_samples; i++) {
-      for (int j = 0; j < n_samples; j++) {  
-        stress += pow(dis(i,j) - dissimilarities(i,j), 2);
-        if (dis(i,j) == 0) {
-          dis(i,j) = 1e-5;
-        }
-      }
+    for (int i = 0; i < n_samples * n_samples; i++) {
+      stress += pow(dis[i] - disparities[i], 2);
     }
     stress *= 0.5;
     if (normalized_stress) {
-      for (int i = 0; i < n_samples; i++) {
-        for (int j = 0; j < n_samples; j++) { 
-          normalizer += pow(dissimilarities(i,j), 2);
-        }
+      for (int i = 0; i < n_samples * n_samples; i++) {
+        normalizer += pow(disparities[i], 2);
       }
       normalizer *= 0.5;
       stress = sqrt(stress / normalizer);
     }
-    //Eigen::MatrixXd B(n_samples, n_samples);
+    Eigen::MatrixXd B(n_samples, n_samples);
     Eigen::MatrixXd ratio(n_samples, n_samples);
+    Eigen::MatrixXd X_m(2, n_samples);
 
-    ratio.array() = -1.0*(dissimilarities.array() / dis.array());
-    //B.array() = -ratio.array();
-    
-    for (int i = 0; i < n_samples; i++) {
-      ratio(i,i) += -1.0*(ratio.col(i).sum());
-      //B(i, i) += sum;
+    for (int h = 0; h < 2 * n_samples; h += 2) {
+      X_m(0, h / 2) = x_inter[h];
+      X_m(1, h / 2) = x_inter[h + 1];
     }
-    //Eigen::MatrixXd X_c(2, n_samples);
-    //X_c = x_inter;
-    x_inter = ratio * x_inter;
-    x_inter.array() = 1.0 / n_samples * x_inter.array();
-    Eigen::MatrixXd x_sq(n_samples, 2);
-    x_sq = (x_inter.array()) * (x_inter.array());
+    for (int i = 0; i < n_samples * n_samples; i++) {
+      if (dis[i] == 0) {
+        dis[i] = 1e-5;
+      }
+    }
+    for (int i = 0; i < n_samples; i++) {
+      for (int j = 0; j < n_samples; j++) {
+        ratio(i, j) = disparities[i * n_samples + j] / dis[i * n_samples + j];
+        B(i, j) = -ratio(i, j);
+      }
+    }
+    for (int i = 0; i < n_samples; i++) {
+      double sum = 0;
+      for (int r = 0; r < n_samples; r++) {
+        sum += ratio(i, r);
+      }
+      B(i, i) += sum;
+    }
+    Eigen::MatrixXd X_c(2, n_samples);
+    X_c = X_m;
+    X_m = X_c * B;
+    X_m = 1.0 / n_samples * X_m;
+    Eigen::MatrixXd X_sq(2, n_samples);
+    X_sq = (X_m.array()) * (X_m.array());
     Eigen::VectorXd interm(n_samples);
     for (int i = 0; i < n_samples; i++) {
-      interm(i) = sqrt(x_sq.row(i).sum());
+      double sum = 0;
+      for (int r = 0; r < 2; r++) {
+        sum += (X_sq)(r, i);
+      }
+      interm(i) = sqrt(sum);
     }
     double discrepancy = interm.sum();
     if ((old_stress - stress / discrepancy) < eps) {
       break;
     }
     old_stress = stress / discrepancy;
+    for (int e = 0; e < 2 * n_samples; e += 2) {
+      x_inter[e] = X_m(0, e / 2);
+      x_inter[e + 1] = X_m(1, e / 2);
+    }
   }
+  delete disparities;
+  delete dis;
   return stress;
 }
-void scikit_mds_multi(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
+void scikit_mds_multi(MatrixXd dissimilarities, double *x, double *x_inter,
                       int n_iterations, int n_samples, bool init = false,
                       bool metric = true, int n_components = 2,
                       int max_iter = 1000, bool verbose = 0, double eps = 1e-5,
@@ -126,9 +145,8 @@ void scikit_mds_multi(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eige
                                metric, n_components, max_iter, verbose, eps,
                                random_state, normalized_stress);
     if (stress < min_stress) {
-      for (int k = 0; k < n_samples; k++) {
-        x(k,0) = x_inter(k,0);
-        x(k,1) = x_inter(k,1);
+      for (int k = 0; k < 2 * n_samples; k++) {
+        x[k] = x_inter[k];
       }
       min_stress = stress;
     }
@@ -160,13 +178,14 @@ void outputCSV(double *embedding) {
   fclose(fp);
 }
 */
-MatrixXd calculateMDSscikit(int n, MatrixXd &distanceMatrix) {
+MatrixXd calculateMDSscikit(int n, MatrixXd distanceMatrix) {
   // distmat = delta
-  MatrixXd x(n, 2);
-  MatrixXd x_inter(n, 2);
+  MatrixXd XUpdated(n, 2);
+  double *x_inter = new double[2 * n];
   // for (int g = 0; g < 2*n; g++) {
   // x_inter[g] = 0.1*g;
   //}
+  double *x = new double[2 * n];
   int n_iterations = 2;
   bool init = false;
   bool metric = true;
@@ -181,6 +200,10 @@ MatrixXd calculateMDSscikit(int n, MatrixXd &distanceMatrix) {
   scikit_mds_multi(distanceMatrix, x, x_inter, n_iterations, n_samples, init,
                    metric, n_components, max_iter, verbose, eps, random_state,
                    normalized_stress);
+  for (int it_1; it_1 < 2 * n; it_1++) {
+    XUpdated(it_1, 1) = x[2 * it_1];
+    XUpdated(it_1, 2) = x[2 * it_1 + 1];
+  }
 
-  return x;
+  return XUpdated;
 }

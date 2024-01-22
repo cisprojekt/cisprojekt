@@ -1,6 +1,4 @@
 // Copyright [year] <Copyright Owner>
-#include "src/cpp/distmat/distmat.h"
-
 #include <emscripten.h>
 
 #include <Eigen/Dense>
@@ -9,18 +7,23 @@
 #include <map>
 #include <random>
 
-#include "src/cpp/clustering/fastcluster.h"
-#include "src/cpp/dv_main.h"
+#include "../dv_main.h"
+#include "../external/hclust/fastcluster.h"
 
 using Eigen::MatrixXd;
 
-MatrixXd distanceMatrix(MatrixXd points) {
+MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
   int n = points.rows();
   MatrixXd distMat(n, n);
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       // TODO(Jonas): Implement other distance functions
-      distMat(i, j) = euclideanDistance(points.row(i), points.row(j));
+      if (isSperical) {
+        distMat(i, j) =
+            haversine(points(i, 0), points(i, 1), points(j, 0), points(j, 1));
+      } else {
+        distMat(i, j) = euclideanDistance(points.row(i), points.row(j));
+      }
     }
   }
 
@@ -48,9 +51,12 @@ double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
   int molA = 0, molB = 0, molC = 0;
   // We assume both fingerprints have equal length
   for (std::string::size_type i = 0; i < fingerprintA.size(); i++) {
-    if (fingerprintA[i] == '1') molA++;
-    if (fingerprintB[i] == '1') molB++;
-    if (fingerprintA[i] == '1' && fingerprintB[i] == '1') molC++;
+    if (fingerprintA[i] == '1')
+      molA++;
+    if (fingerprintB[i] == '1')
+      molB++;
+    if (fingerprintA[i] == '1' && fingerprintB[i] == '1')
+      molC++;
   }
 
   double dist = 1 - (static_cast<double>(molC) / (molA + molB - molC));
@@ -149,4 +155,29 @@ int *calculateHammingDistanceMatrix(char **array, int num_strings,
 
   return flatArray;
 }
+}
+
+double toRadians(double degree) { return degree * (M_PI / 180.0); }
+
+double haversine(double lat1, double lon1, double lat2, double lon2) {
+
+  double EarthRadiusKm = 6371.0;
+  // Convert latitude and longitude from degrees to radians
+
+  lat1 = toRadians(lat1);
+  lon1 = toRadians(lon1);
+  lat2 = toRadians(lat2);
+  lon2 = toRadians(lon2);
+
+  // Differences in coordinates
+  double dlat = lat2 - lat1;
+  double dlon = lon2 - lon1;
+
+  // Haversine formula
+  double a = std::sin(dlat / 2) * std::sin(dlat / 2) +
+             std::cos(lat1) * std::cos(lat2) * std::sin(dlon / 2) * std::sin(dlon / 2);
+  double c = 2 * std::atan2(sqrt(a), sqrt(1 - a));
+  double distance = EarthRadiusKm * c;
+
+  return distance;
 }
