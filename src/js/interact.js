@@ -96,7 +96,6 @@ function changedistancefunclist(distance_func_list) {
     Tanimoto: "Tanimoto Coefficient",
     Euclidean: "Euclidean Distance",
     "earth-dist": "earth-dist",
-
   };
 
   for (let i = 0; i < distance_func_list.length; i++) {
@@ -355,7 +354,6 @@ function getDataFromInputTable(datenflag) {
     }
   }
   return selectedColumns;
-
 }
 
 function dealwithrun() {
@@ -481,7 +479,6 @@ function dealwithrun() {
       numflags_array,
       scalingMethod,
     );
-
   } else {
     alert("Input data dosen't match the distance function");
     return false;
