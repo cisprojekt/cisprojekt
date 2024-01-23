@@ -10,6 +10,7 @@ async function initializeMap(
   nonnumflags_array,
   numflags_array,
   scalingMethod,
+  flagColumnNames,
 ) {
   await wasmReady; // Make sure module is loaded
   console.log("Starting Clustering Program");
@@ -136,7 +137,14 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos);
+    mapFunctions(
+      labelsResult,
+      pointsToPlot,
+      n,
+      zoomLevels,
+      clusterInfos,
+      flagColumnNames,
+    );
   } else if (type == "tanimotoFingerprints") {
     // For fingerprints input
 
@@ -264,7 +272,14 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos);
+    mapFunctions(
+      labelsResult,
+      pointsToPlot,
+      n,
+      zoomLevels,
+      clusterInfos,
+      flagColumnNames,
+    );
   }
 }
 
@@ -343,8 +358,8 @@ class Cluster {
     // console.log(`Deciding ${nonnumflagCounterIndex}`)
     if (
       this._pies[nonnumflagCounterIndex] == null ||
-      (this._pies[nonnumflagCounterIndex].length - 1 > maxSlices && // more slices allowed
-        Object.keys(this.nonnumflagCounters[nonnumflagCounterIndex]).length >
+      (this._pies[nonnumflagCounterIndex].length - 1 < maxSlices && // more slices allowed
+        this.nonnumflagCounters[nonnumflagCounterIndex].size >
           this._pies[nonnumflagCounterIndex].length - 1) // more slices possible)
     ) {
       // console.log(`Creating new pie at nonnumflagCounterIndex: ${nonnumflagCounterIndex}`);
@@ -402,6 +417,9 @@ class Cluster {
     }
     // If the pie of this nonnumflag has been calculated before, but the number of Slices is too great
     else if (this._pies[nonnumflagCounterIndex].length - 1 > maxSlices) {
+      console.log(
+        "DOING THE THIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIING",
+      );
       var removeNumber =
         maxSlices - this._pies[nonnumflagCounterIndex].length + 1;
 
@@ -431,6 +449,7 @@ class Cluster {
       this._pies[nonnumflagCounterIndex] = pieView;
       return pieView;
     }
+    return this._pies[nonnumflagCounterIndex];
   }
 }
 
@@ -505,7 +524,7 @@ function getClusterInfo(
       let cluster_idx = currentLabels[point_idx];
       flag_idx = 0;
       flags.forEach((flag) => {
-        if (flag in clusters[cluster_idx].nonnumflagCounters[flag_idx]) {
+        if (clusters[cluster_idx].nonnumflagCounters[flag_idx].has(flag)) {
           var currentValue =
             clusters[cluster_idx].nonnumflagCounters[flag_idx].get(flag);
           clusters[cluster_idx].nonnumflagCounters[flag_idx].set(

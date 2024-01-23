@@ -298,6 +298,25 @@ function getDataFromInputTable(datenflag) {
   return selectedColumns;
 }
 
+//get the header names of the flag columns for the clusterInfoBox
+//returns an array with 2 elements (non-numerical flags, numerical flags)
+//each containing the headers for numflags or nonnumflags
+function getFlagColumnNames(header, nonnumIndices, numIndices) {
+  header = header.split(",");
+  let flagColumnNames = [];
+  let tmp = [];
+  nonnumIndices.forEach((index) => {
+    tmp.push(header[index]);
+  });
+  flagColumnNames.push(tmp);
+  tmp = [];
+  numIndices.forEach((index) => {
+    tmp.push(header[index]);
+  });
+
+  return flagColumnNames;
+}
+
 function dealwithrun() {
   let punktdata = "";
   let matchflag = true;
@@ -321,6 +340,11 @@ function dealwithrun() {
   var numflags_array = [];
   var nonnumflagsIdxName = getDataFromInputTable("non-numerical flags");
   var numflagsIdxName = getDataFromInputTable("numericial flags");
+  var flagColumnNames = getFlagColumnNames(
+    lines[0],
+    nonnumflagsIdxName,
+    numflagsIdxName,
+  );
   //assigning flag values to the flags arrays
   //if flagColumns is empty, the array will be empty
   for (let i = 1; i < lines.length; i++) {
@@ -417,6 +441,7 @@ function dealwithrun() {
       nonnumflags_array,
       numflags_array,
       scalingMethod,
+      flagColumnNames,
     );
   } else {
     alert("Input data dosen't match the distance function");

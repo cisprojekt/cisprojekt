@@ -1,4 +1,11 @@
-function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
+function mapFunctions(
+  labelsResult,
+  pointsToPlot,
+  n,
+  zoomLevels,
+  clusterInfos,
+  flagColumnNames,
+) {
   //initialize
   var data = [];
   var y_coord = 0;
@@ -25,6 +32,10 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
 
   var newDomainX = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
   var newDomainY = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
+
+  // we create a variable to store the label of the previous selected point
+  // for some reason this has to be a global variable, otherwise it does not work
+  var selectedPoint;
 
   //transformation function from pixel to coordinates
   function coordFromPixels(x_coord, y_coord) {
@@ -154,10 +165,6 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       d3.select(this).style("fill", "red");
     });
 
-  // we create a variable to store the label of the previous selected point
-  // for some reason this has to be a global variable, otherwise it does not work
-  var selectedPoint;
-
   // Define the event handler function for zoom
   function handleZoom(event) {
     //
@@ -248,21 +255,21 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
           svg.selectAll("circle").on("click", null);
           d3.select(this).style("fill", "red");
         });*/
-        .on("click", function (event, d) {
-          var nextColor = d3.select(this).style("fill"); //gets color of selected Circle
-
+        .on("click", function (d) {
+          /*var currentColor = d3.select(this).style("fill"); //gets color of selected Circle
           //unselect previous point
           if (selectedPoint != null) {
             svg
               .selectAll("circle")
               .filter(function (d) {
-                return d.l === selectedPoint;
+                return d.l == selectedPoint;
               })
               .transition()
               .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
+            selectedPoint = null;
           }
 
-          if (nextColor == "rgb(0, 0, 255)") {
+          if (currentColor == "rgb(0, 0, 255)") {
             d3.select(this).style("fill", "red");
             selectedPoint = d.l;
           } else {
@@ -273,7 +280,22 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
             selectedPoint,
             clusterInfos,
             button_zoom_level,
-          );
+            flagColumnNames
+          ); */
+          let clickedCircle = d3.select(this);
+
+          // Now you can get any attribute of the clicked circle
+          let radius = clickedCircle.attr("r");
+          let color = clickedCircle.style("fill");
+          let label = clickedCircle.attr("data-id");
+
+          // If you have bound data to the circles, 'd' will contain the data for the clicked circle
+          console.log(d);
+
+          // Log the attributes
+          console.log("Label: " + label);
+          console.log("Radius: " + radius);
+          console.log("Color: " + color);
         });
     }
   }
@@ -409,6 +431,7 @@ function displayTextInClusterInfoBox(
   selectedPoint,
   falschrumclusterInfos,
   zoomLevel,
+  flagColumnNames,
 ) {
   if (selectedPoint != null) {
     clusterInfos = falschrumclusterInfos.reverse();
@@ -418,23 +441,37 @@ function displayTextInClusterInfoBox(
     let displayText =
       "ClusterLabel: " +
       clusterInfos[zoomLevel][selectedPoint].label +
-      "\n" +
+      "<br>" +
       "Number of points: " +
       clusterInfos[zoomLevel][selectedPoint].numPoints +
-      "\n";
+      "<br>";
 
     //display nonnumflag information
-    //DOESNT WORK YET!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    clusterInfos[zoomLevel][selectedPoint].nonnumflagCounters.forEach(
-      (flag) => {
-        Object.keys(flag).forEach((key) => {
-          displayText += key + ": " + flag[key].toString() + "\n";
-        });
-      },
-    );
-    clusterInfoBox.textContent = displayText;
+    cluster = clusterInfos[zoomLevel][selectedPoint];
+    cluster.nonnumflagCounters.forEach((columnFlag, index) => {
+      displayText += "<br>" + flagColumnNames[0][index] + "<br>";
+      for (let [key, value] of columnFlag) {
+        displayText += key + ": " + value.toString() + "<br>";
+      }
+      //piechart for the columnFlag
+      displayText += createPieHTML(cluster.getPie(index));
+    });
+    displayText += clusterInfoBox.innerHTML = displayText; // maybe make this a <textbox> so we dont need innerHTML and <br>?
   } else {
     const clusterInfoBox = document.getElementById("clusterInfoBox");
     clusterInfoBox.textContent = "No point selected.";
   }
+}
+
+function createPieHTML(pie) {
+  let pieDiv = document.getElementById("clusterInfoBox");
+  console.log(pie);
+
+  let string = "";
+  pie.forEach((slice) => {
+    let sliceDiv = document.createElement("sliceDiv");
+    sliceDiv.innerHTML = `${slice.name}: ${slice.value} grams (${slice.percentage}%)<br>`;
+    pieDiv.appendChild(sliceDiv);
+  });
+  return pieDiv;
 }
