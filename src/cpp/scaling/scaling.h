@@ -1,12 +1,9 @@
-#ifndef SRC_CPP_CLUSTERING_H_
-#define SRC_CPP_CLUSTERING_H_
-
 // Copyright [year] <Copyright Owner>
+#ifndef SRC_CPP_SCALING_SCALING_H_
+#define SRC_CPP_SCALING_SCALING_H_
 
+//#include "../distmat/distmat.h"
 #include <Eigen/Dense>
-#include <cmath>
-#include <iostream>
-#include <random>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -14,15 +11,12 @@ using Eigen::VectorXd;
 // clang-format off
 
 /**
- *  ____  __  __    _    ____ ___  _____    ___      ____ _    _   _ ____ _____ _____ ____  ___ _   _  ____ 
- * / ___||  \/  |  / \  / ___/ _ \|  ___|  ( _ )    / ___| |  | | | / ___|_   _| ____|  _ \|_ _| \ | |/ ___|
- * \___ \| |\/| | / _ \| |  | | | | |_     / _ \/\ | |   | |  | | | \___ \ | | |  _| | |_) || ||  \| | |  _ 
- *  ___) | |  | |/ ___ \ |__| |_| |  _|   | (_>  < | |___| |__| |_| |___) || | | |___|  _ < | || |\  | |_| |
- * |____/|_|  |_/_/   \_\____\___/|_|      \___/\/  \____|_____\___/|____/ |_| |_____|_| \_\___|_| \_|\____|                                                                                                         
+ *  ____   ____    _    _     ___ _   _  ____
+ * / ___| / ___|  / \  | |   |_ _| \ | |/ ___|
+ * \___ \| |     / _ \ | |    | ||  \| | |  _
+ *  ___) | |___ / ___ \| |___ | || |\  | |_| |
+ * |____/ \____/_/   \_\_____|___|_| \_|\____|
  *
- * Implementation of the SMACOF-Algorithm for MDS as it is described in
- * [1] Modern Multidimensional Scaling. (2005). In Springer Series in
- * Statistics. Springer New York. https://doi.org/10.1007/0-387-28981-x
  */
 
 // clang-format on
@@ -79,21 +73,6 @@ double stressFunction(MatrixXd X, MatrixXd Z, MatrixXd B, MatrixXd weights,
                       MatrixXd distMat);
 
 /**
- * @brief Calculate a square distance matrix for points
- * @param points Points in Euclidean space
- * @return distMat Distance Matrix
- */
-MatrixXd distanceMatrix(MatrixXd points);
-
-/**
- * @brief Calculate Euclidean distance between two points
- * @param pointA First point
- * @param pointB Second point
- * @return dist Euclidean distance between two points
- */
-double euclideanDistance(VectorXd pointA, VectorXd pointB);
-
-/**
  * @brief Apply Guttman transformation according to e.q. (8.28, 8.29)
  * @param n Number of points
  * @param B The B matrix
@@ -104,15 +83,15 @@ double euclideanDistance(VectorXd pointA, VectorXd pointB);
 MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights);
 
 /**
- * @brief Applies multidimensional scaling with SMACOF algorithm
+ * @brief Applies multidimensional scaling with SMACOF Algorithm
  * @param distMat Original distance matrix
  * @param maxIt Maximum number of iterations
  * @param eps Cutoff for differences between new and old stress values
  * @param dim Dimensions to scale the data to
  * @return XUpdated Final configuration
  */
-MatrixXd calculateMDS(MatrixXd distMat, int maxIt = 50, double eps = 10e-6,
-                      int dim = 2);
+MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt = 50,
+                            double eps = 10e-6, int dim = 2);
 
 /**
  * @brief Created n random m dimensional points
@@ -135,22 +114,44 @@ MatrixXd createRandomPoints(int n, int m);
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
  */
-extern "C" void clusterPoints(double* points, int dimension, double* distMat,
-                              double* height, int* merge, int* labels,
-                              int nPoints, int maxIterations, int zoomLevels,
-                              int calcDistMethod);
 
-extern "C" {
-double calculateEuclideanDistance(double* vector1, double* vector2,
-                                  int string_length);
+// full distance-matrix needed!
 
-double* calculateEuclideanDistanceMatrix(double* array, int num_points,
-                                         int dimension);
+// Scikit functions
+double scikit_mds_single(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
+                         int n_samples, bool init, bool metric,
+                         int n_components, int max_iter, bool verbose,
+                         double eps, int random_state, bool normalized_stress);
 
-int calculateHammingDistance(char* str1, char* str2, int string_length);
+void scikit_mds_multi(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
+                      int n_iterations, int n_samples, bool init, bool metric,
+                      int n_components, int max_iter, bool verbose, double eps,
+                      int random_state, bool normalized_stress);
 
-int* calculateHammingDistanceMatrix(char** array, int num_strings,
-                                    int string_length);
-}
+MatrixXd calculateMDSscikit(int N, MatrixXd &distanceMatrix);
 
-#endif  // SRC_CPP_CLUSTERING_H_
+// Glimmer functions
+
+typedef struct _INDEXTYPE {
+  int index;    // index of the other point
+  float highd;  // high dimensional distance
+  float lowd;   // low dimensional distance
+} INDEXTYPE;
+
+typedef struct _VECTYPE {
+  int index;
+  float value;
+} VECTYPE;
+
+MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix);
+int myrand(void);
+int distcomp(const void *a, const void *b);
+int idxcomp(const void *a, const void *b);
+float max(float a, float b);
+float min(float a, float b);
+int terminate(INDEXTYPE *idx_set, int size);
+void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix);
+void init_embedding(float *embedding);
+int fill_level_count(int input, int *h);
+
+#endif  // SRC_CPP_SCALING_SCALING_H_

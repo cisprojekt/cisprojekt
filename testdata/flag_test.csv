@@ -1,0 +1,11 @@
+compound,x-coord,y-coord,pKs,drug group,molecular weight,super class
+Acetaminophen,3.82,45.17,9.46,pain managment,151,benzenoids
+Abacavir,8.62,-3.87,15.41,nrti,286, nucleosides
+Aspirin,2.77,-2.42,3.41,pain managment,180,benzenoids
+Baba,8.72,5.32,1.77,gastrointestinal,72,alkyloids
+Calla,-1.1,1.8,8.22,nrti,66,benzenoids
+Fufu,-2.1,6.6,3.22,gastrointestinal,92,benzenoids
+Trara,6.8,2.7,9.11,fever,34,steroids
+Masa,4.72,12.2,11.7,nrti,88,benzenoids
+Ruru,8.77,2.22,14.6,gastrointestinal,142,alkyloids
+Sere,6.11,9.13,10.0,nrti,141,nucleosides
