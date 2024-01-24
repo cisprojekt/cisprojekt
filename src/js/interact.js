@@ -375,6 +375,8 @@ function dealwithrun() {
       //throw error if the value is not a number
       number = parseFloat(line[flagIdxName]);
       if (isNaN(number)) {
+        console.log(number);
+        console.log(line[flagIdxName]);
         alert(
           `All numflag values must be valid numbers. number "${
             number + 1
