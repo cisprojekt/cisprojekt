@@ -139,7 +139,19 @@
         <!-- Run function Button -->
         <button id="runFuncButton" onclick="dealwithrun()">Run</button>
       </div>
+      <!-- Users deciding the devider for the csv button-->
+      <button id="myButton" onclick="showCSVDeviderPopUp()">
+        Select CSV-Devider
+      </button>
+      <div id="CSVDeviderPopUp" style="display: none">
+        <input
+          type="text"
+          id="myCSVDeviderInput"
+          placeholder="default is commas"
+        />
+      </div>
     </div>
+
     <!-- Here for result, will only be showed after click -->
     <div id="result">
       <!-- Information Box -->

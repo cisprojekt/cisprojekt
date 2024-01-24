@@ -7,11 +7,11 @@ function showCSVDeviderPopUp() {
 //function to get the csv devider from the pop up
 //default is ","
 function getCSVDevider() {
-  /* let devider = document.getElementById("myCSVDeviderInput").value;
+  let devider = document.getElementById("myCSVDeviderInput").value;
   if (devider == "") {
     devider = ",";
-  } */
-  return ",";
+  }
+  return devider;
 }
 function hideprepera() {
   let prepareObj = document.getElementById("prepare");
