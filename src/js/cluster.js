@@ -616,5 +616,6 @@ function getClusterInfo(
   console.log("addwadawdadawdada dw daqwdaw dqdqwdqedq wqeqveq");
   console.log(clusterInfos);
   console.log("addwadawdadawdada dw daqwdaw dqdqwdqedq wqeqveq");
-  return clusterInfos;
+
+  return clusterInfos.reverse();
 }

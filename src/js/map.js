@@ -35,7 +35,7 @@ function mapFunctions(
 
   // we create a variable to store the label of the previous selected point
   // for some reason this has to be a global variable, otherwise it does not work
-  var selectedPoint;
+  var selectedPoint = null;
 
   //transformation function from pixel to coordinates
   function coordFromPixels(x_coord, y_coord) {
@@ -168,6 +168,7 @@ function mapFunctions(
   // Define the event handler function for zoom
   function handleZoom(event) {
     //
+    //reset selected point
 
     //variable to store current zoom level
     currentZoomLevel = event.transform.k;
@@ -255,8 +256,9 @@ function mapFunctions(
           svg.selectAll("circle").on("click", null);
           d3.select(this).style("fill", "red");
         });*/
-        .on("click", function (d) {
-          /*var currentColor = d3.select(this).style("fill"); //gets color of selected Circle
+        .on("click", function (event, d) {
+          //var currentColor = d3.select(this).style("fill"); //gets color of selected Circle
+          var clickedCircle = d3.select(this); //gets selected Circle
           //unselect previous point
           if (selectedPoint != null) {
             svg
@@ -266,25 +268,24 @@ function mapFunctions(
               })
               .transition()
               .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
-            selectedPoint = null;
           }
-
-          if (currentColor == "rgb(0, 0, 255)") {
+          //if the same point is clicked again dont select it again
+          //else select the point
+          if (selectedPoint == d.l) {
+            selectedPoint = null;
+          } else {
             d3.select(this).style("fill", "red");
             selectedPoint = d.l;
-          } else {
-            d3.select(this).style("fill", "rgb(0, 0, 255)");
-            selectedPoint = null;
           }
           displayTextInClusterInfoBox(
             selectedPoint,
             clusterInfos,
             button_zoom_level,
-            flagColumnNames
-          ); */
-          let clickedCircle = d3.select(this);
+            flagColumnNames,
+          );
 
           // Now you can get any attribute of the clicked circle
+          console.log(labelsResult);
           let radius = clickedCircle.attr("r");
           let color = clickedCircle.style("fill");
           let label = clickedCircle.attr("data-id");
@@ -429,25 +430,27 @@ function mapFunctions(
 //TODO add nonnumflag and numflag selected column information
 function displayTextInClusterInfoBox(
   selectedPoint,
-  falschrumclusterInfos,
+  clusterInfos,
   zoomLevel,
   flagColumnNames,
 ) {
   if (selectedPoint != null) {
-    clusterInfos = falschrumclusterInfos.reverse();
-
     const clusterInfoBox = document.getElementById("clusterInfoBox");
 
+    console.log(zoomLevel);
+    console.log(selectedPoint);
+    console.log(clusterInfos[zoomLevel - 1][selectedPoint]);
+    console.log(clusterInfos);
     let displayText =
       "ClusterLabel: " +
-      clusterInfos[zoomLevel][selectedPoint].label +
+      clusterInfos[zoomLevel - 1][selectedPoint].label +
       "<br>" +
       "Number of points: " +
-      clusterInfos[zoomLevel][selectedPoint].numPoints +
+      clusterInfos[zoomLevel - 1][selectedPoint].numPoints +
       "<br>";
 
     //display nonnumflag information
-    cluster = clusterInfos[zoomLevel][selectedPoint];
+    cluster = clusterInfos[zoomLevel - 1][selectedPoint];
     cluster.nonnumflagCounters.forEach((columnFlag, index) => {
       displayText += "<br>" + flagColumnNames[0][index] + "<br>";
       for (let [key, value] of columnFlag) {
