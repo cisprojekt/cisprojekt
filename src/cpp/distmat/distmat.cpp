@@ -1,4 +1,6 @@
 // Copyright [year] <Copyright Owner>
+#include "src/cpp/distmat/distmat.h"
+
 #include <emscripten.h>
 
 #include <Eigen/Dense>
@@ -7,10 +9,11 @@
 #include <map>
 #include <random>
 
-#include "../dv_main.h"
-#include "../external/hclust/fastcluster.h"
+#include "src/cpp/dv_main.h"
+#include "src/cpp/external/hclust/fastcluster.h"
 
 using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
 MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
   int n = points.rows();
@@ -51,12 +54,9 @@ double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
   int molA = 0, molB = 0, molC = 0;
   // We assume both fingerprints have equal length
   for (std::string::size_type i = 0; i < fingerprintA.size(); i++) {
-    if (fingerprintA[i] == '1')
-      molA++;
-    if (fingerprintB[i] == '1')
-      molB++;
-    if (fingerprintA[i] == '1' && fingerprintB[i] == '1')
-      molC++;
+    if (fingerprintA[i] == '1') molA++;
+    if (fingerprintB[i] == '1') molB++;
+    if (fingerprintA[i] == '1' && fingerprintB[i] == '1') molC++;
   }
 
   double dist = 1 - (static_cast<double>(molC) / (molA + molB - molC));
@@ -160,7 +160,6 @@ int *calculateHammingDistanceMatrix(char **array, int num_strings,
 double toRadians(double degree) { return degree * (M_PI / 180.0); }
 
 double haversine(double lat1, double lon1, double lat2, double lon2) {
-
   double EarthRadiusKm = 6371.0;
   // Convert latitude and longitude from degrees to radians
 
@@ -174,8 +173,9 @@ double haversine(double lat1, double lon1, double lat2, double lon2) {
   double dlon = lon2 - lon1;
 
   // Haversine formula
-  double a = std::sin(dlat / 2) * std::sin(dlat / 2) +
-             std::cos(lat1) * std::cos(lat2) * std::sin(dlon / 2) * std::sin(dlon / 2);
+  double a =
+      std::sin(dlat / 2) * std::sin(dlat / 2) +
+      std::cos(lat1) * std::cos(lat2) * std::sin(dlon / 2) * std::sin(dlon / 2);
   double c = 2 * std::atan2(sqrt(a), sqrt(1 - a));
   double distance = EarthRadiusKm * c;
 

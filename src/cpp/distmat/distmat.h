@@ -2,6 +2,10 @@
 #ifndef SRC_CPP_DISTMAT_DISTMAT_H_
 #define SRC_CPP_DISTMAT_DISTMAT_H_
 
+#include <Eigen/Dense>
+#include <string>
+#include <vector>
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 

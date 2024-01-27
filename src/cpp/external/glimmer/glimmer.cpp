@@ -5,15 +5,17 @@
 //
 
 // structs are not defined in glimmer.cpp but in scaling.h
-#include "../../scaling/scaling.h"
-#include <Eigen/Dense>
 #include <float.h>
-#include <iostream>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include <Eigen/Dense>
+#include <iostream>
+
+#include "../../scaling/scaling.h"
 
 /*
         CONSTANTS
@@ -150,8 +152,7 @@ void outputCSV(const char *filename, float *embedding) {
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < n_embedding_dims; j++) {
       fprintf(fp, "%f", embedding[(i * n_embedding_dims) + j]);
-      if (j < n_embedding_dims - 1)
-        fprintf(fp, ",");
+      if (j < n_embedding_dims - 1) fprintf(fp, ",");
     }
     fprintf(fp, "\n");
   }
@@ -310,8 +311,7 @@ i+=n_original_dims ) {
 int distcomp(const void *a, const void *b) {
   const INDEXTYPE *da = (const INDEXTYPE *)a;
   const INDEXTYPE *db = (const INDEXTYPE *)b;
-  if (da->highd == db->highd)
-    return 0;
+  if (da->highd == db->highd) return 0;
   return (da->highd - db->highd) < 0.f ? -1 : 1;
 }
 int idxcomp(const void *a, const void *b) {
@@ -375,7 +375,7 @@ int terminate(INDEXTYPE *idx_set, int size) {
         Compute Chalmers' an iteration of force directed simulation on subset of
    size 'size' holding fixedsize fixed
 */
-void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix) {
+void force_directed(int size, int fixedsize, MatrixXd distanceMatrix) {
   // initialize index sets
   if (iteration == stop_iteration) {
     for (int i = 0; i < size; i++) {
@@ -546,16 +546,14 @@ int fill_level_count(int input, int *h) {
   // printf("h[%d]=%d\n",levels,input);
   h[levels] = input;
   levels++;
-  if (input <= MIN_SET_SIZE)
-    return levels;
+  if (input <= MIN_SET_SIZE) return levels;
   return fill_level_count(input / DEC_FACTOR, h);
 }
 
 /*
         main function
 */
-MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix) {
-
+MatrixXd calculateMDSglimmer(int num_p, MatrixXd distanceMatrix) {
   // float* distmat = new float[line_num];           --> convert to MatrixXd
   // distmat
   N = num_p;
@@ -594,10 +592,10 @@ MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix) {
   srand((unsigned)(time(&t)));
   // initialize embedding
   init_embedding(g_embed);
-  //std::cout << "init_embedding" << std::endl;
-  //for (int i = 0; i < 2 * N; i++) {
-  //  std::cout << g_embed[i] << std::endl;
-  //}
+  // std::cout << "init_embedding" << std::endl;
+  // for (int i = 0; i < 2 * N; i++) {
+  //   std::cout << g_embed[i] << std::endl;
+  // }
   int chalm = 0;
   if (chalm == 1) {
     //	if( !strcmp( argv[4], "chalm" ) ) {

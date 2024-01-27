@@ -14,115 +14,119 @@
     <script src="src/js/cluster.js"></script>
 
     <!--   Site-spesific Style   -->
-    <style>
-
-    </style>
+    <style></style>
   </head>
 </html>
 
 <body>
-    <div class="wrapper">
-        <div id="leftside"></div>
-        <div class="box" id="main-area">
+  <div class="wrapper">
+    <div id="leftside"></div>
+    <div class="box" id="main-area">
+      <header>
+        <h1 style="text-align: left">SCOUT.</h1>
+      </header>
 
-            <header>
-                <h1 style="text-align: left;">SCOUT.</h1>
-            </header>
-
-            <div class="box" id="prepare">
-                <div class="label">
-                    <p style="text-align: left;">Upload your CSV file</datagrid></p>
-                </div>
-                <textarea
-                    id="text_box"
-                    name="textinput"
-                    placeholder="Type here..."
-                    oninput="showDropdowns()"
-                ></textarea>  
-            </div>
-    
-            <div class="box" id="box-for-check-list">
-                <div id="checkFlagArea" style="display: none">
-                    <div class="label">
-                        <p style="text-align: left;">Flach match</datagrid></p>
-                    </div>
-                    <p id="flag_guide" style="text-align: left"></p>
-                    <table id="checkTable" style="border-collapse: collapse">
-                      <thead>
-                        <tr>
-                          <th>Colum number</th>
-                          <th>Column title</th>
-                          <th>Daten flags</th>
-                        </tr>
-                      </thead>
-            
-                      <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-    
-            <div class="box" id="box-for-button-group" >
-                <div style="display: grid;">
-                    <!-- Formal and real button for add data -->
-                    <button type="button" id="addDataButton">Add Data</button>
-                    <input
-                      type="file"
-                      id="dataFile"
-                      name="dataFile"
-                      accept=".CSV"
-                      style="display: none"
-                    />
-            
-                    <!-- Choose Function Button -->
-                    <div style="min-height: 80px;">
-                        <div class="label">
-                            <p style="text-align: left;">Choose clustering</datagrid></p>
-                        </div>
-                        <select id="DataType" style="width: 200px; margin-top: 20px;">
-                            <option value="noChoice">Choose your data type</option>
-                            <option value="Seq">DNA/RNA Sequence</option>
-                            <option value="ChemInfo">Molecule Information</option>
-                            <option value="Euclidean">Euclidean Distance</option>
-                        </select>
-                
-                        <select id="D_function" >
-                            <option value="noChoice">Choose a Function</option>
-                        </select>
-                    </div>
-                    <div>
-                        <div class="label">
-                            <p style="text-align: left;">Flach match</datagrid></p>
-                        </div>
-                        <!-- Flag check button -->
-                        <button id="colFlag_button" onclick="ColFlagCheck()" style="margin-top: 20px;">Flag Check</button>
-                        <!-- Delete All Button -->
-                        <button id="deleAllButton" onclick="deletedatenandfunc()">
-                            Delete All
-                        </button>
-                    </div>
-                    <div>
-                        <div class="label">
-                            <p style="text-align: left;">Get your map now</datagrid></p>
-                        </div>
-                        
-                        <!-- Run function Button -->
-                        <button id="runFuncButton" onclick="dealwithrun()" style="margin-top: 20px;">Run</button>
-                    </div>
-                </div>
-            </div>
-
+      <div class="box" id="prepare">
+        <div class="label">
+          <p style="text-align: left">Upload your CSV file</p>
         </div>
+        <textarea
+          id="text_box"
+          name="textinput"
+          placeholder="Type here..."
+          oninput="showDropdowns()"
+        ></textarea>
+      </div>
 
-        <div id="rightside"></div>
+      <div class="box" id="box-for-check-list">
+        <div id="checkFlagArea" style="display: none">
+          <div class="label">
+            <p style="text-align: left">Flach match</p>
+          </div>
+          <p id="flag_guide" style="text-align: left"></p>
+          <table id="checkTable" style="border-collapse: collapse">
+            <thead>
+              <tr>
+                <th>Colum number</th>
+                <th>Column title</th>
+                <th>Daten flags</th>
+              </tr>
+            </thead>
 
-        <div class="box" id="result" style="display: none;">
-            <div id="InforArea">
-                Cluster Infor box
-            </div>
-
-            <div id="mapContainer">
-                Map
-            </div>
+            <tbody></tbody>
+          </table>
         </div>
+      </div>
+
+      <div class="box" id="box-for-button-group">
+        <div style="display: grid">
+          <!-- Formal and real button for add data -->
+          <button type="button" id="addDataButton">Add Data</button>
+          <input
+            type="file"
+            id="dataFile"
+            name="dataFile"
+            accept=".CSV"
+            style="display: none"
+          />
+
+          <!-- Choose Function Button -->
+          <div style="min-height: 80px">
+            <div class="label">
+              <p style="text-align: left">Choose clustering</p>
+            </div>
+            <select id="DataType" style="width: 200px; margin-top: 20px">
+              <option value="noChoice">Choose your data type</option>
+              <option value="Seq">DNA/RNA Sequence</option>
+              <option value="ChemInfo">Molecule Information</option>
+              <option value="Euclidean">Euclidean Distance</option>
+            </select>
+
+            <select id="D_function">
+              <option value="noChoice">Choose a Function</option>
+            </select>
+          </div>
+          <div>
+            <div class="label">
+              <p style="text-align: left">Flach match</p>
+            </div>
+            <!-- Flag check button -->
+            <button
+              id="colFlag_button"
+              onclick="ColFlagCheck()"
+              style="margin-top: 20px"
+            >
+              Flag Check
+            </button>
+            <!-- Delete All Button -->
+            <button id="deleAllButton" onclick="deletedatenandfunc()">
+              Delete All
+            </button>
+          </div>
+          <div>
+            <div class="label">
+              <p style="text-align: left">Get your map now</p>
+            </div>
+
+            <!-- Run function Button -->
+            <button
+              id="runFuncButton"
+              onclick="dealwithrun()"
+              style="margin-top: 20px"
+            >
+              Run
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div id="rightside"></div>
+
+    <div class="box" id="result" style="display: none">
+      <div id="InforArea">Cluster Infor box</div>
+
+      <div id="mapContainer">Map</div>
+    </div>
+  </div>
 </body>
