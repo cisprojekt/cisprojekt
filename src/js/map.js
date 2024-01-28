@@ -5,6 +5,7 @@ function mapFunctions(
   zoomLevels,
   clusterInfos,
   flagColumnNames,
+  numflags_array,
 ) {
   //initialize
   var data = [];
@@ -275,6 +276,7 @@ function mapFunctions(
             clusterInfos,
             button_zoom_level,
             flagColumnNames,
+            numflags_array,
           );
           // Now you can get any attribute of the clicked circle
         });
@@ -413,6 +415,7 @@ function updateClusterInfoBox(
   clusterInfos,
   zoomLevel,
   flagColumnNames,
+  numflags_array,
 ) {
   if (selectedPoint != null) {
     const clusterInfoBox = document.getElementById("clusterInfoBox");
@@ -454,9 +457,29 @@ function updateClusterInfoBox(
       pieDiv.appendChild(createPieDiv(cluster.getPie(index)));
       pieDivs.push(pieDiv);
     });
+
+    let boxPlotDivs = [];
+    for (
+      let flagIndex = 0;
+      flagIndex < flagColumnNames[1].length;
+      flagIndex++
+    ) {
+      let boxPlotDiv = document.createElement("div");
+      let boxPlotTitleDiv = document.createElement("div");
+      boxPlotTitleDiv.innerHTML =
+        "<br>" + flagColumnNames[1][flagIndex] + ":" + "<br>";
+      boxPlotDiv.appendChild(boxPlotTitleDiv);
+      boxPlotDiv.appendChild(
+        createViolinPlotDiv(numflags_array, cluster.pointIndices, flagIndex),
+      );
+      boxPlotDivs.push(boxPlotDiv);
+    }
     clusterInfoBox.innerHTML = displayText; // maybe make this a <textbox> so we dont need innerHTML and <br>?
     pieDivs.forEach((pieDiv) => {
       clusterInfoBox.appendChild(pieDiv);
+    });
+    boxPlotDivs.forEach((boxPlotDiv) => {
+      clusterInfoBox.appendChild(boxPlotDiv);
     });
   } else {
     console.log("No point selected.");
@@ -516,36 +539,124 @@ function createPieDiv(pie) {
 
   return pieDiv;
 }
-/* function createPieDiv(pie) {
-  let pieDiv = document.createElement('div');
-  pieDiv.id = 'pieDiv' + pie.name;
-  console.log(pie);
-  console.log(`CREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTML`)
-  
-  let i = 0;
-  pie.forEach((slice) => {
-    let sliceDiv = document.createElement("sliceDiv");
-    sliceDiv.id = 'sliceDiv' + i;
-    sliceDiv.innerHTML = `${slice.name}: ${slice.value}, (${slice.percentage}%)<br>`;
-    pieDiv.appendChild(sliceDiv);
-    i++;
-  });
-  console.log(`pieDiv: ${pieDiv}`)
-  return pieDiv;
-}
- */
-/* function createPieDiv(pie) {
-  let pieDiv = document.getElementById("clusterInfoBox");
-  console.log(pie);
-  console.log(`CREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTML`)
 
-  let string = "";
-  pie.forEach((slice) => {
-    let sliceDiv = document.createElement("sliceDiv");
-    sliceDiv.innerHTML = `${slice.name}: ${slice.value} grams (${slice.percentage}%)<br>`;
-    pieDiv.appendChild(sliceDiv);
-  });
-  console.log(`displayText: ${pieDiv}`)
-  return pieDiv;
+// clusterPoints: cluster.pointIndices, list of indices of the points in the cluster
+function createViolinPlotDiv(numflagsArray, clusterPoints, flagIndex) {
+  console.log(
+    "-----------------------------createViolinPlotDiv log-----------------------------",
+  );
+  console.log(numflagsArray);
+  console.log(clusterPoints);
+  console.log(flagIndex);
+
+  // Create a container div for the violin plot
+  let violinDiv = document.createElement("div");
+  violinDiv.id = `violinPlot_${flagIndex}`;
+
+  // Prepare data for the violin plot
+  const data = [
+    {
+      type: "violin",
+      y: clusterPoints.map(
+        (pointIndex) => numflagsArray[pointIndex][flagIndex],
+      ),
+      // points: "none",
+      box: {
+        visible: true,
+      },
+      boxpoints: false,
+      line: {
+        color: "black",
+      },
+      fillcolor: "#8dd3c7",
+      opacity: 0.6,
+      meanline: {
+        visible: true,
+      },
+      x0: `Flag ${flagIndex}`,
+    },
+  ];
+
+  // Layout configuration
+  const layout = {
+    title: `Violin Plot for Flag ${flagIndex}`,
+    yaxis: {
+      zeroline: false,
+    },
+  };
+
+  console.log(Plotly);
+
+  // Create the violin plot
+  Plotly.newPlot(violinDiv, data, layout);
+
+  return violinDiv;
 }
+
+function createBoxPlotDiv(numflagsArray, clusterPoints, flagIndex) {
+  // Create a container div for the box plot
+  let boxDiv = document.createElement("div");
+  boxDiv.id = `boxDiv_${flagIndex}`;
+
+  // Create a canvas element for the box plot
+  let canvas = document.createElement("canvas");
+  canvas.id = `boxChart_${flagIndex}`;
+  canvas.width = 400; // Set the width of the canvas as needed
+  canvas.height = 300; // Set the height of the canvas as needed
+  boxDiv.appendChild(canvas);
+
+  // Get the 2d context of the canvas
+  let ctx = canvas.getContext("2d");
+
+  // Prepare data for the box plot
+  let boxData = {
+    labels: ["Cluster Points"], // Use a single label for the x-axis
+    datasets: [
+      {
+        label: "Box Plot",
+        data: clusterPoints.map(
+          (pointIndex) => numflagsArray[pointIndex][flagIndex],
+        ),
+        backgroundColor: "lightseagreen",
+      },
+    ],
+  };
+
+  // Configuration for the box plot
+  let config = {
+    type: "boxplot",
+    data: boxData,
+    options: {
+      responsive: true,
+      title: {
+        display: true,
+        text: `Box Plot for Index ${flagIndex}`,
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "Cluster Points",
+          },
+        },
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  };
+
+  // Initialize the box plot
+  let boxChart = new Chart(ctx, config);
+
+  return boxDiv;
+}
+
+/* // Example usage:
+// Assuming you have nonnumflags_array and clusterPoints defined
+let indexToPlot = 0; // Change this to the desired index
+let boxPlotDiv = createBoxPlotDiv(nonnumflags_array, clusterPoints, indexToPlot);
+
+// Append the box plot div to the document body or any other container
+document.body.appendChild(boxPlotDiv);
  */

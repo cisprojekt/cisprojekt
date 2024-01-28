@@ -323,10 +323,11 @@ function getFlagColumnNames(header, nonnumIndices, numIndices) {
     tmp.push(header[index]);
   });
   flagColumnNames.push(tmp);
-  tmp = [];
+  let tmp2 = [];
   numIndices.forEach((index) => {
-    tmp.push(header[index]);
+    tmp2.push(header[index]);
   });
+  flagColumnNames.push(tmp2);
 
   return flagColumnNames;
 }
@@ -338,12 +339,6 @@ function dealwithrun() {
   let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
   let data_type = functionFlag;
   let dataColumns = getDataFromInputTable("distance information");
-  console.log("yoyojqaodfjnaqoidjqaiwdipoqwajkdwqwdqwd");
-  console.log(scalingMethod);
-  console.log(functionFlag);
-  console.log(dataColumns);
-  console.log(data_type);
-  console.log("yoyojqaodfjnaqoidjqaiwdipoqwajkdwqwdqwd");
   //read data from text box
   punktdata = getinputdata();
   // Split the CSV content into lines considering CR and LF as line endings
