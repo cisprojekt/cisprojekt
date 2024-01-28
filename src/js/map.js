@@ -1,4 +1,26 @@
+var exportFile;
+
 function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
+  // Export function parameters to a JSON file
+  // will be saved as 'result.json'
+  exportFile = function () {
+    var a = window.document.createElement("a");
+    var jsonText = JSON.stringify([
+      labelsResult,
+      pointsToPlot,
+      n,
+      zoomLevels,
+      clusterInfos,
+    ]);
+    a.href = window.URL.createObjectURL(
+      new Blob([jsonText], { type: "application/json" }),
+    );
+    a.download = "result.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   //initialize
   var data = [];
   var y_coord = 0;
