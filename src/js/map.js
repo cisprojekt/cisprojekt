@@ -1,4 +1,11 @@
-function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, flagColumnNames) {
+function mapFunctions(
+  labelsResult,
+  pointsToPlot,
+  n,
+  zoomLevels,
+  clusterInfos,
+  flagColumnNames,
+) {
   //initialize
   var data = [];
   var y_coord = 0;
@@ -110,7 +117,11 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
   // Its opacity is set to 0: we don't see it by default.
   // taken from https://d3-graph-gallery.com/graph/scatter_tooltip.html and adapted to the current version of d3js
   // supplemented with infos from https://chartio.com/resources/tutorials/how-to-show-data-on-mouseover-in-d3js/
-  var tooltip_svg = d3.select("#my_dataviz").append("svg").attr("width", 50).attr("height", 50);
+  var tooltip_svg = d3
+    .select("#my_dataviz")
+    .append("svg")
+    .attr("width", 50)
+    .attr("height", 50);
 
   var tooltip = d3
     .select("#chartContainer")
@@ -186,7 +197,9 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
     xAxis.call(d3.axisBottom(newX));
     yAxis.call(d3.axisRight(newY));
 
-    infoHierarchyLevel.select("text").text("hierarchy level: " + button_zoom_level);
+    infoHierarchyLevel
+      .select("text")
+      .text("hierarchy level: " + button_zoom_level);
 
     //button_zoom_level_old +=1;
 
@@ -202,7 +215,9 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
       button_zoom_level_old = button_zoom_level;
       //button_zoom_level_old = 1 + button_zoom_level_old;
 
-      console.log("button_zoom_level_old in handleZoom " + button_zoom_level_old);
+      console.log(
+        "button_zoom_level_old in handleZoom " + button_zoom_level_old,
+      );
       console.log("button_zoom_level in handleZoom " + button_zoom_level);
 
       circles.exit().remove();
@@ -262,7 +277,12 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
             d3.select(this).style("fill", "red");
             selectedPoint = d.l;
           }
-          displayTextInClusterInfoBox(selectedPoint, clusterInfos, button_zoom_level, flagColumnNames);
+          displayTextInClusterInfoBox(
+            selectedPoint,
+            clusterInfos,
+            button_zoom_level,
+            flagColumnNames,
+          );
 
           // Now you can get any attribute of the clicked circle
           console.log(labelsResult);
@@ -396,7 +416,10 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
       // Define the scale factor for the minimal zoom
       var scaleFactor = 1;
       // Apply the minimal zoom by a specific value
-      svg.transition().duration(0).call(zoom.transform, transform.scale(scaleFactor));
+      svg
+        .transition()
+        .duration(0)
+        .call(zoom.transform, transform.scale(scaleFactor));
     });
 
   // Attach the zoom behavior to the SVG element and disable zoom on double click
@@ -405,7 +428,12 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
 
 //function to display text in clusterInfoBox depending on selected point
 //TODO add nonnumflag and numflag selected column information
-function displayTextInClusterInfoBox(selectedPoint, clusterInfos, zoomLevel, flagColumnNames) {
+function displayTextInClusterInfoBox(
+  selectedPoint,
+  clusterInfos,
+  zoomLevel,
+  flagColumnNames,
+) {
   if (selectedPoint != null) {
     const clusterInfoBox = document.getElementById("clusterInfoBox");
 
@@ -433,8 +461,8 @@ function displayTextInClusterInfoBox(selectedPoint, clusterInfos, zoomLevel, fla
       } */
       //piechart for the columnFlagMap
       console.log(`displayText: ${displayText}`);
-      let pieDiv = document.createElement('div');
-      let pieTitleDiv = document.createElement('div');
+      let pieDiv = document.createElement("div");
+      let pieTitleDiv = document.createElement("div");
       pieTitleDiv.innerHTML = "<br>" + flagColumnNames[0][index] + ":" + "<br>";
       pieDiv.appendChild(pieTitleDiv);
       pieDiv.appendChild(createPieDiv(cluster.getPie(index)));
@@ -464,7 +492,17 @@ function createPieDiv(pie) {
   let ctx = canvas.getContext("2d");
 
   // Prepare data for the Chart.js pie chart
-  let defaultBackgroundColors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "gray"];
+  let defaultBackgroundColors = [
+    "red",
+    "blue",
+    "green",
+    "yellow",
+    "purple",
+    "orange",
+    "pink",
+    "brown",
+    "gray",
+  ];
   let backgroundColor = defaultBackgroundColors.slice(0, pie.length - 1);
   backgroundColor.push("gray");
   for (let i = backgroundColor.length; i < pie.length; i++) {
