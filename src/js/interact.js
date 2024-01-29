@@ -1,5 +1,18 @@
 /*+++++++++++++++++++Basic functions+++++++++++++++++++*/
 
+//button function for the csv devider pop up
+function showCSVDeviderPopUp() {
+  document.getElementById("CSVDeviderPopUp").style.display = "block";
+}
+//function to get the csv devider from the pop up
+//default is ","
+function getCSVDevider() {
+  let devider = document.getElementById("myCSVDeviderInput").value;
+  if (devider == "") {
+    devider = ",";
+  }
+  return devider;
+}
 function hideprepera() {
   let prepareObj = document.getElementById("prepare");
   prepareObj.style.display = "none";
@@ -41,7 +54,7 @@ function getinputdata() {
 function readFileContents() {
   let fileInput = document.getElementById("dataFile");
   let file = fileInput.files[0];
-  if (file && (file.name.endsWith(".csv") || file.name.endsWith(".json"))) {
+  if (file && file.name.endsWith(".csv")) {
     var reader = new FileReader();
 
     reader.onload = function (e) {
@@ -123,7 +136,8 @@ function getTitleLine(InputFlag = "coord") {
   console.log("trying to get the title Title line from", InputFlag, "data");
   let inhalt = document.getElementById("text_box").value;
   let lines = inhalt.split("\n");
-  let firstline = lines[0].split(",");
+  let devider = getCSVDevider();
+  let firstline = lines[0].split(devider);
   let titleline = new Array();
   console.log("first line is:", firstline);
   let dimension = firstline.length;
@@ -181,7 +195,7 @@ function CreateColFlagSelector(idx = 0, titleline) {
 }
 
 /** This will check the first line and delete the axises */
-function isCoordindat(txt_inhalt) {
+function isCoordindat(txt_inhalt, devider = ",") {
   let coorindat = [];
   if (txt_inhalt != "") {
     let lines = txt_inhalt.split("\n");
@@ -298,6 +312,25 @@ function getDataFromInputTable(datenflag) {
   return selectedColumns;
 }
 
+//get the header names of the flag columns for the clusterInfoBox
+//returns an array with 2 elements (non-numerical flags, numerical flags)
+//each containing the headers for numflags or nonnumflags
+function getFlagColumnNames(header, nonnumIndices, numIndices) {
+  header = header.split(",");
+  let flagColumnNames = [];
+  let tmp = [];
+  nonnumIndices.forEach((index) => {
+    tmp.push(header[index]);
+  });
+  flagColumnNames.push(tmp);
+  tmp = [];
+  numIndices.forEach((index) => {
+    tmp.push(header[index]);
+  });
+
+  return flagColumnNames;
+}
+
 function dealwithrun() {
   let punktdata = "";
   let matchflag = true;
@@ -315,16 +348,23 @@ function dealwithrun() {
   punktdata = getinputdata();
   // Split the CSV content into lines considering CR and LF as line endings
   var lines = punktdata.split(/\r?\n/);
+  //get the devider
+  var devider = getCSVDevider();
 
   var points_array = [];
   var nonnumflags_array = [];
   var numflags_array = [];
   var nonnumflagsIdxName = getDataFromInputTable("non-numerical flags");
   var numflagsIdxName = getDataFromInputTable("numericial flags");
+  var flagColumnNames = getFlagColumnNames(
+    lines[0],
+    nonnumflagsIdxName,
+    numflagsIdxName,
+  );
   //assigning flag values to the flags arrays
   //if flagColumns is empty, the array will be empty
   for (let i = 1; i < lines.length; i++) {
-    let line = lines[i].split(",");
+    let line = lines[i].split(devider);
     let FlagValues = [];
     nonnumflagsIdxName.forEach((flagIdxName) => {
       FlagValues.push(line[flagIdxName]);
@@ -364,7 +404,7 @@ function dealwithrun() {
       //check if the data is coordinate data
       //
       console.log("function as Euc");
-      punktdata = isCoordindat(punktdata);
+      punktdata = isCoordindat(punktdata, devider);
       if (Boolean(punktdata)) {
         console.log("match the euc");
       } else {
@@ -374,7 +414,7 @@ function dealwithrun() {
       //initailize non-flattened (nested) array from lines
       //ignore the header
       for (let i = 1; i < lines.length; i++) {
-        let line = lines[i].split(",");
+        let line = lines[i].split(devider);
         let lineAxisValues = [];
         dataColumns.forEach((columnIndex) => {
           lineAxisValues.push(line[columnIndex]);
@@ -393,7 +433,7 @@ function dealwithrun() {
       //initailize non-flattened (nested) array from lines
       //ignore the header
       for (let i = 1; i < lines.length; i++) {
-        let line = lines[i].split(",");
+        let line = lines[i].split(devider);
         let lineAxisValues = [];
         dataColumns.forEach((columnIndex) => {
           points_array.push(line[columnIndex]);
@@ -408,6 +448,10 @@ function dealwithrun() {
       console.log("Input data doesn't match the distance function");
   }
 
+  if (points_array[points_array.length - 1] == undefined) {
+    points_array.pop();
+  }
+
   if (matchflag) {
     hideprepera();
     showresult();
@@ -417,6 +461,7 @@ function dealwithrun() {
       nonnumflags_array,
       numflags_array,
       scalingMethod,
+      flagColumnNames,
     );
   } else {
     alert("Input data dosen't match the distance function");
@@ -446,17 +491,4 @@ function deletedatenandfunc() {
 function back2input() {
   hideresult();
   showprepare();
-}
-
-// Import JSON file and call mapFunctions
-function importFile() {
-  // Read Textbox
-  var data = JSON.parse(getinputdata());
-
-  // Hide elements
-  hideprepera();
-  showresult();
-
-  // Call map
-  mapFunctions(data[0], data[1], data[2], data[3], data[4]);
 }
