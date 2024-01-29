@@ -1,26 +1,11 @@
-var exportFile;
-
-function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
-  // Export function parameters to a JSON file
-  // will be saved as 'result.json'
-  exportFile = function () {
-    var a = window.document.createElement("a");
-    var jsonText = JSON.stringify([
-      labelsResult,
-      pointsToPlot,
-      n,
-      zoomLevels,
-      clusterInfos,
-    ]);
-    a.href = window.URL.createObjectURL(
-      new Blob([jsonText], { type: "application/json" }),
-    );
-    a.download = "result.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
+function mapFunctions(
+  labelsResult,
+  pointsToPlot,
+  n,
+  zoomLevels,
+  clusterInfos,
+  flagColumnNames,
+) {
   //initialize
   var data = [];
   var y_coord = 0;
@@ -47,6 +32,10 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
 
   var newDomainX = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
   var newDomainY = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
+
+  // we create a variable to store the label of the previous selected point
+  // for some reason this has to be a global variable, otherwise it does not work
+  var selectedPoint = null;
 
   //transformation function from pixel to coordinates
   function coordFromPixels(x_coord, y_coord) {
@@ -176,13 +165,10 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       d3.select(this).style("fill", "red");
     });
 
-  // we create a variable to store the label of the previous selected point
-  // for some reason this has to be a global variable, otherwise it does not work
-  var selectedPoint;
-
   // Define the event handler function for zoom
   function handleZoom(event) {
     //
+    //reset selected point
 
     //variable to store current zoom level
     currentZoomLevel = event.transform.k;
@@ -271,31 +257,46 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
           d3.select(this).style("fill", "red");
         });*/
         .on("click", function (event, d) {
-          var nextColor = d3.select(this).style("fill"); //gets color of selected Circle
-
+          //var currentColor = d3.select(this).style("fill"); //gets color of selected Circle
+          var clickedCircle = d3.select(this); //gets selected Circle
           //unselect previous point
           if (selectedPoint != null) {
             svg
               .selectAll("circle")
               .filter(function (d) {
-                return d.l === selectedPoint;
+                return d.l == selectedPoint;
               })
               .transition()
               .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
           }
-
-          if (nextColor == "rgb(0, 0, 255)") {
+          //if the same point is clicked again dont select it again
+          //else select the point
+          if (selectedPoint == d.l) {
+            selectedPoint = null;
+          } else {
             d3.select(this).style("fill", "red");
             selectedPoint = d.l;
-          } else {
-            d3.select(this).style("fill", "rgb(0, 0, 255)");
-            selectedPoint = null;
           }
           displayTextInClusterInfoBox(
             selectedPoint,
             clusterInfos,
             button_zoom_level,
+            flagColumnNames,
           );
+
+          // Now you can get any attribute of the clicked circle
+          console.log(labelsResult);
+          let radius = clickedCircle.attr("r");
+          let color = clickedCircle.style("fill");
+          let label = clickedCircle.attr("data-id");
+
+          // If you have bound data to the circles, 'd' will contain the data for the clicked circle
+          console.log(d);
+
+          // Log the attributes
+          console.log("Label: " + label);
+          console.log("Radius: " + radius);
+          console.log("Color: " + color);
         });
     }
   }
@@ -429,34 +430,134 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
 //TODO add nonnumflag and numflag selected column information
 function displayTextInClusterInfoBox(
   selectedPoint,
-  falschrumclusterInfos,
+  clusterInfos,
   zoomLevel,
+  flagColumnNames,
 ) {
   if (selectedPoint != null) {
-    clusterInfos = falschrumclusterInfos.reverse();
-
     const clusterInfoBox = document.getElementById("clusterInfoBox");
 
+    console.log(zoomLevel);
+    console.log(selectedPoint);
+    console.log(clusterInfos[zoomLevel - 1][selectedPoint]);
+    console.log(clusterInfos);
     let displayText =
       "ClusterLabel: " +
-      clusterInfos[zoomLevel][selectedPoint].label +
-      "\n" +
+      clusterInfos[zoomLevel - 1][selectedPoint].label +
+      "<br>" +
       "Number of points: " +
-      clusterInfos[zoomLevel][selectedPoint].numPoints +
-      "\n";
+      clusterInfos[zoomLevel - 1][selectedPoint].numPoints +
+      "<br>";
 
     //display nonnumflag information
-    //DOESNT WORK YET!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    clusterInfos[zoomLevel][selectedPoint].nonnumflagCounters.forEach(
-      (flag) => {
-        Object.keys(flag).forEach((key) => {
-          displayText += key + ": " + flag[key].toString() + "\n";
-        });
-      },
-    );
-    clusterInfoBox.textContent = displayText;
+    cluster = clusterInfos[zoomLevel - 1][selectedPoint];
+    let pieDivs = [];
+    // Create pieDivs for the nonnumflags
+    cluster.nonnumflagCounters.forEach((columnFlagMap, index) => {
+      //infotext for the columnFlagMap
+      /* displayText += "<br>" + flagColumnNames[0][index] + "<br>";
+      for (let [key, value] of columnFlagMap) {
+        displayText += key + ": " + value.toString() + "<br>";
+      } */
+      //piechart for the columnFlagMap
+      console.log(`displayText: ${displayText}`);
+      let pieDiv = document.createElement("div");
+      let pieTitleDiv = document.createElement("div");
+      pieTitleDiv.innerHTML = "<br>" + flagColumnNames[0][index] + ":" + "<br>";
+      pieDiv.appendChild(pieTitleDiv);
+      pieDiv.appendChild(createPieDiv(cluster.getPie(index)));
+      pieDivs.push(pieDiv);
+    });
+    clusterInfoBox.innerHTML = displayText; // maybe make this a <textbox> so we dont need innerHTML and <br>?
+    pieDivs.forEach((pieDiv) => {
+      clusterInfoBox.appendChild(pieDiv);
+    });
   } else {
     const clusterInfoBox = document.getElementById("clusterInfoBox");
     clusterInfoBox.textContent = "No point selected.";
   }
 }
+
+function createPieDiv(pie) {
+  let pieDiv = document.createElement("div");
+  pieDiv.id = "pieDiv" + pie.name;
+
+  let canvas = document.createElement("canvas");
+  canvas.id = "pieChart" + pie.name;
+  canvas.width = 10; // Set the width of the canvas as needed
+  canvas.height = 10; // Set the height of the canvas as needed
+  pieDiv.appendChild(canvas);
+
+  // Get the 2d context of the canvas
+  let ctx = canvas.getContext("2d");
+
+  // Prepare data for the Chart.js pie chart
+  let defaultBackgroundColors = [
+    "red",
+    "blue",
+    "green",
+    "yellow",
+    "purple",
+    "orange",
+    "pink",
+    "brown",
+    "gray",
+  ];
+  let backgroundColor = defaultBackgroundColors.slice(0, pie.length - 1);
+  backgroundColor.push("gray");
+  for (let i = backgroundColor.length; i < pie.length; i++) {
+    backgroundColor.push("gray");
+  }
+  console.log(backgroundColor);
+
+  let chartData = {
+    labels: pie.map((slice) => slice.name),
+    datasets: [
+      {
+        data: pie.map((slice) => slice.value),
+        backgroundColor: backgroundColor,
+      },
+    ],
+  };
+
+  // Initialize the pie chart
+  let pieChart = new Chart(ctx, {
+    type: "pie",
+    data: chartData,
+  });
+
+  return pieDiv;
+}
+/* function createPieDiv(pie) {
+  let pieDiv = document.createElement('div');
+  pieDiv.id = 'pieDiv' + pie.name;
+  console.log(pie);
+  console.log(`CREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTML`)
+  
+  let i = 0;
+  pie.forEach((slice) => {
+    let sliceDiv = document.createElement("sliceDiv");
+    sliceDiv.id = 'sliceDiv' + i;
+    sliceDiv.innerHTML = `${slice.name}: ${slice.value}, (${slice.percentage}%)<br>`;
+    pieDiv.appendChild(sliceDiv);
+    i++;
+  });
+  console.log(`pieDiv: ${pieDiv}`)
+  return pieDiv;
+}
+ */
+/* function createPieDiv(pie) {
+  let pieDiv = document.getElementById("clusterInfoBox");
+  console.log(pie);
+  console.log(`CREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTMLCREATEHTML`)
+
+  let string = "";
+  pie.forEach((slice) => {
+    let sliceDiv = document.createElement("sliceDiv");
+    sliceDiv.innerHTML = `${slice.name}: ${slice.value} grams (${slice.percentage}%)<br>`;
+    pieDiv.appendChild(sliceDiv);
+  });
+  console.log(`displayText: ${pieDiv}`)
+  return pieDiv;
+}
+ */

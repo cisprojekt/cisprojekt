@@ -11,6 +11,7 @@
     <script src="build/clustering.js"></script>
     <script src="src/js/interact.js"></script>
     <script src="src/js/cluster.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!--   Site-spesific Style   -->
     <style>
@@ -139,51 +140,17 @@
         <!-- Run function Button -->
         <button id="runFuncButton" onclick="dealwithrun()">Run</button>
       </div>
-
-      <!-- Code for Selecting Data/Flags -->
-      <!-- Code for Selecting Data/Flags -->
-      <!-- Code for Selecting Data/Flags -->
-
-      <!--
-
-    The select elements of this dropdown at the time of run are iterated over, and the at that point in time selected option is used
-    to determine the data columns of the user input. Therefore, they should, at that point in time, map one to one onto the intended dimensions of
-    the euclidean space.
-
-    See getDataColumns() from interact.js.
-
-    -->
-      <div id="Euclidean-dropdowns" class="dropdown-container">
-        <button id="add-dimension" onclick="addDimension()">
-          Add Dimension
-        </button>
-        <label for="x1">x1:</label>
-        <select id="x1" name="x1">
-          <!-- Column options are dynamically created through showDropdowns() function -->
-        </select>
+      <!-- Users deciding the devider for the csv button-->
+      <button id="myButton" onclick="showCSVDeviderPopUp()">
+        Select CSV-Devider
+      </button>
+      <div id="CSVDeviderPopUp" style="display: none">
+        <input
+          type="text"
+          id="myCSVDeviderInput"
+          placeholder="default is commas"
+        />
       </div>
-
-      <div id="Tanimoto-dropdowns" class="dropdown-container">
-        <label for="tanimoto-fingerprint">Tanimoto Fingerprint:</label>
-        <select id="tanimoto-fingerprint" name="tanimoto-fingerprint">
-          <!-- Column options are dynamically created through showDropdowns() function -->
-        </select>
-      </div>
-
-      <div id="Hamming-dropdowns" class="dropdown-container">
-        <label for="hamming-option1">Hamming Data:</label>
-        <select id="hamming-option1" name="hamming-option1">
-          <!-- Column options are dynamically created through showDropdowns() function -->
-        </select>
-      </div>
-
-      <div id="Flags-dropdowns" class="dropdown-container">
-        <button id="add-flag" onclick="addFlag()">Add Flag</button>
-      </div>
-
-      <!-- Code for Selecting Data/Flags -->
-      <!-- Code for Selecting Data/Flags -->
-      <!-- Code for Selecting Data/Flags -->
     </div>
 
     <!-- Here for result, will only be showed after click -->
