@@ -1,0 +1,11 @@
+compound;tanimoto;pKs;drug group;molecular weight;super class
+Acetaminophen;0100100100;9.46;pain managment;151;benzenoids
+Abacavir;0001100100;15.41;nrti;286;nucleosides
+Aspirin;1100100100;3.41;pain managment;180;benzenoids
+Baba;1100100111;1.77;gastrointestinal;72;alkyloids
+Calla;0100100000;8.22;nrti;66;benzenoids
+Fufu;0101110000;3.22;gastrointestinal;92;benzenoids
+Trara;0000000111;9.11;fever;34;steroids
+Masa;1100101100;11.7;nrti;88;benzenoids
+Ruru;0110100101;14.6;gastrointestinal;142;alkyloids
+Sere;0101010101;10.0;nrti;141;nucleosides
