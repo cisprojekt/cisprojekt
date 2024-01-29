@@ -177,7 +177,7 @@ function getTitleLine(InputFlag = "coord") {
 function CreateColFlagSelector(idx = 0, titleline) {
   console.log(
     "creating the ColFlag selector accroding to the titleline",
-    titleline
+    titleline,
   );
   let ColFlagMenu = document.createElement("select");
   let firstOption = document.createElement("option");
@@ -359,7 +359,7 @@ function dealwithrun() {
   var flagColumnNames = getFlagColumnNames(
     lines[0],
     nonnumflagsIdxName,
-    numflagsIdxName
+    numflagsIdxName,
   );
   //assigning flag values to the flags arrays
   //if flagColumns is empty, the array will be empty
@@ -378,7 +378,7 @@ function dealwithrun() {
         alert(
           `All numflag values must be valid numbers. number "${
             number + 1
-          }" in line ${i}, column ${flagIdxName + 1} was invalid`
+          }" in line ${i}, column ${flagIdxName + 1} was invalid`,
         );
       }
       if (isNaN(number)) {
@@ -461,7 +461,7 @@ function dealwithrun() {
       nonnumflags_array,
       numflags_array,
       scalingMethod,
-      flagColumnNames
+      flagColumnNames,
     );
   } else {
     alert("Input data dosen't match the distance function");
