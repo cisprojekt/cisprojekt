@@ -1,4 +1,12 @@
-function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, flagColumnNames, numflags_array) {
+function mapFunctions(
+  labelsResult,
+  pointsToPlot,
+  n,
+  zoomLevels,
+  clusterInfos,
+  flagColumnNames,
+  numflags_array,
+) {
   //initialize
   var data = [];
   var y_coord = 0;
@@ -110,7 +118,11 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
   // Its opacity is set to 0: we don't see it by default.
   // taken from https://d3-graph-gallery.com/graph/scatter_tooltip.html and adapted to the current version of d3js
   // supplemented with infos from https://chartio.com/resources/tutorials/how-to-show-data-on-mouseover-in-d3js/
-  var tooltip_svg = d3.select("#my_dataviz").append("svg").attr("width", 50).attr("height", 50);
+  var tooltip_svg = d3
+    .select("#my_dataviz")
+    .append("svg")
+    .attr("width", 50)
+    .attr("height", 50);
 
   var tooltip = d3
     .select("#chartContainer")
@@ -185,7 +197,9 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
     xAxis.call(d3.axisBottom(newX));
     yAxis.call(d3.axisRight(newY));
 
-    infoHierarchyLevel.select("text").text("hierarchy level: " + button_zoom_level);
+    infoHierarchyLevel
+      .select("text")
+      .text("hierarchy level: " + button_zoom_level);
 
     //button_zoom_level_old +=1;
 
@@ -234,30 +248,38 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
           d3.select(this).style("fill", "red");
         });
     } else {
-      circles.attr("transform", event.transform).on("click", function (event, d) {
-        //var currentColor = d3.select(this).style("fill"); //gets color of selected Circle
-        var clickedCircle = d3.select(this); //gets selected Circle
-        //unselect previous point
-        if (selectedPoint != null) {
-          svg
-            .selectAll("circle")
-            .filter(function (d) {
-              return d.l == selectedPoint;
-            })
-            .transition()
-            .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
-        }
-        //if the same point is clicked again dont select it again
-        //else select the point
-        if (selectedPoint == d.l) {
-          selectedPoint = null;
-        } else {
-          d3.select(this).style("fill", "red");
-          selectedPoint = d.l;
-        }
-        updateClusterInfoBox(selectedPoint, clusterInfos, button_zoom_level, flagColumnNames, numflags_array);
-        // Now you can get any attribute of the clicked circle
-      });
+      circles
+        .attr("transform", event.transform)
+        .on("click", function (event, d) {
+          //var currentColor = d3.select(this).style("fill"); //gets color of selected Circle
+          var clickedCircle = d3.select(this); //gets selected Circle
+          //unselect previous point
+          if (selectedPoint != null) {
+            svg
+              .selectAll("circle")
+              .filter(function (d) {
+                return d.l == selectedPoint;
+              })
+              .transition()
+              .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
+          }
+          //if the same point is clicked again dont select it again
+          //else select the point
+          if (selectedPoint == d.l) {
+            selectedPoint = null;
+          } else {
+            d3.select(this).style("fill", "red");
+            selectedPoint = d.l;
+          }
+          updateClusterInfoBox(
+            selectedPoint,
+            clusterInfos,
+            button_zoom_level,
+            flagColumnNames,
+            numflags_array,
+          );
+          // Now you can get any attribute of the clicked circle
+        });
     }
   }
 
@@ -376,7 +398,10 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
       // Define the scale factor for the minimal zoom
       var scaleFactor = 1;
       // Apply the minimal zoom by a specific value
-      svg.transition().duration(0).call(zoom.transform, transform.scale(scaleFactor));
+      svg
+        .transition()
+        .duration(0)
+        .call(zoom.transform, transform.scale(scaleFactor));
     });
 
   // Attach the zoom behavior to the SVG element and disable zoom on double click
@@ -385,7 +410,13 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, f
 
 //function to display text in clusterInfoBox depending on selected point
 //TODO add nonnumflag and numflag selected column information
-function updateClusterInfoBox(selectedPoint, clusterInfos, zoomLevel, flagColumnNames, numflags_array) {
+function updateClusterInfoBox(
+  selectedPoint,
+  clusterInfos,
+  zoomLevel,
+  flagColumnNames,
+  numflags_array,
+) {
   if (selectedPoint != null) {
     const clusterInfoBox = document.getElementById("clusterInfoBox");
     console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
@@ -400,6 +431,10 @@ function updateClusterInfoBox(selectedPoint, clusterInfos, zoomLevel, flagColumn
     console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 
+    console.log(zoomLevel);
+    console.log(selectedPoint);
+    console.log(clusterInfos[zoomLevel - 1][selectedPoint]);
+    console.log(clusterInfos);
     let displayText =
       "ClusterLabel: " +
       clusterInfos[zoomLevel - 1][selectedPoint].label +
@@ -431,14 +466,26 @@ function updateClusterInfoBox(selectedPoint, clusterInfos, zoomLevel, flagColumn
 
     let boxPlotDivs = [];
     // Create violinPlotDivs (WITH titles) for the numflags
-    for (let flagIndex = 0; flagIndex < flagColumnNames[1].length; flagIndex++) {
+    for (
+      let flagIndex = 0;
+      flagIndex < flagColumnNames[1].length;
+      flagIndex++
+    ) {
       let boxPlotDiv = document.createElement("div");
       let boxPlotTitleDiv = document.createElement("div");
-      boxPlotTitleDiv.innerHTML = "<br>" + flagColumnNames[1][flagIndex] + ":" + "<br>";
+      boxPlotTitleDiv.innerHTML =
+        "<br>" + flagColumnNames[1][flagIndex] + ":" + "<br>";
       // boxPlotDiv.style.display = "inline-block";
       // boxPlotDiv.style.width = "50%";
       boxPlotDiv.appendChild(boxPlotTitleDiv);
-      boxPlotDiv.appendChild(createViolinPlotDiv(numflags_array, cluster.pointIndices, flagIndex, clusterInfoBox.clientWidth/*  / 2 */));
+      boxPlotDiv.appendChild(
+        createViolinPlotDiv(
+          numflags_array,
+          cluster.pointIndices,
+          flagIndex,
+          clusterInfoBox.clientWidth /*  / 2 */,
+        ),
+      );
       boxPlotDivs.push(boxPlotDiv);
     }
     clusterInfoBox.innerHTML = displayText; // maybe make this a <textbox> so we dont need innerHTML and <br>?
@@ -531,7 +578,17 @@ function createPieDiv(pie) {
   let ctx = canvas.getContext("2d");
 
   // Prepare data for the Chart.js pie chart
-  let defaultBackgroundColors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "gray"];
+  let defaultBackgroundColors = [
+    "red",
+    "blue",
+    "green",
+    "yellow",
+    "purple",
+    "orange",
+    "pink",
+    "brown",
+    "gray",
+  ];
   let backgroundColor = defaultBackgroundColors.slice(0, pie.length - 1);
   backgroundColor.push("gray");
   for (let i = backgroundColor.length; i < pie.length; i++) {
@@ -558,8 +615,15 @@ function createPieDiv(pie) {
 }
 
 // clusterPoints: cluster.pointIndices, list of indices of the points in the cluster
-function createViolinPlotDiv(numflagsArray, clusterPoints, flagIndex, plotWidthPixels) {
-  console.log("-----------------------------createViolinPlotDiv log-----------------------------");
+function createViolinPlotDiv(
+  numflagsArray,
+  clusterPoints,
+  flagIndex,
+  plotWidthPixels,
+) {
+  console.log(
+    "-----------------------------createViolinPlotDiv log-----------------------------",
+  );
   console.log(numflagsArray);
   console.log(clusterPoints);
   console.log(flagIndex);
@@ -575,7 +639,9 @@ function createViolinPlotDiv(numflagsArray, clusterPoints, flagIndex, plotWidthP
   const data = [
     {
       type: "violin",
-      y: clusterPoints.map((pointIndex) => numflagsArray[pointIndex][flagIndex]),
+      y: clusterPoints.map(
+        (pointIndex) => numflagsArray[pointIndex][flagIndex],
+      ),
       // points: "none",
       box: {
         visible: true,
@@ -603,7 +669,7 @@ function createViolinPlotDiv(numflagsArray, clusterPoints, flagIndex, plotWidthP
     // width: violinDiv.clientWidth.toString() + "px",
   };
 
-  var config = {responsive: true}
+  var config = { responsive: true };
 
   console.log(Plotly);
 
@@ -636,7 +702,9 @@ function createBoxPlotDiv(numflagsArray, clusterPoints, flagIndex) {
     datasets: [
       {
         label: "Box Plot",
-        data: clusterPoints.map((pointIndex) => numflagsArray[pointIndex][flagIndex]),
+        data: clusterPoints.map(
+          (pointIndex) => numflagsArray[pointIndex][flagIndex],
+        ),
         backgroundColor: "lightseagreen",
       },
     ],

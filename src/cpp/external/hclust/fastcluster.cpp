@@ -134,6 +134,7 @@ void cutree_cdist(int n, const int* merge, double* height, double cdist, int* la
 int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double* height) {
   
   // call appropriate culstering function
+  clock_t start_time1 = clock();
   std::cout << "initialize hclust_fast" << std::endl;
   cluster_result Z2(n-1);
   std::cout << "initialize cluster_result" << std::endl;
@@ -168,7 +169,8 @@ int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double*
   } else {
     generate_R_dendrogram<false>(merge, height, order, Z2, n);
   }
-
+  clock_t start_time2 = clock();
+  std::cout << "hclust needed " << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC) << "s for clustering\n";
   delete[] order; // only needed for visualization
   
   return 0;

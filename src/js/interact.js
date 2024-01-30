@@ -445,6 +445,10 @@ function dealwithrun() {
       console.log("Input data doesn't match the distance function");
   }
 
+  if (points_array[points_array.length - 1] == undefined) {
+    points_array.pop();
+  }
+
   if (matchflag) {
     hideprepera();
     showresult();

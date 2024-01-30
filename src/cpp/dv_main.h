@@ -23,12 +23,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 #include <Eigen/Dense>
+
 #include <cmath>
 #include <iostream>
 #include <map>
 #include <random>
+#include <boost/dynamic_bitset.hpp>
 
 #include "distmat/distmat.h"
 #include "external/hclust/fastcluster.h"
@@ -37,11 +38,12 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
+extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
                                int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
-                               int calcScalingMethod, double *resultPoints, int calcClusterMethod = 1);
+                               int calcScalingMethod, int bool_bit,
+                               double *resultPoints);
 
 /**
  * @brief Webassembly function, will apply multidimensional scaling and
@@ -59,7 +61,7 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
-                              int calcDistMethod, int calcScalingMethod, 
-                              bool isSpherical, int calcClusterMethod = 1);
+                              int calcDistMethod, int calcScalingMethod,
+                              bool isSpherical);
 
 #endif  // SRC_CPP_DV_MAIN_H_

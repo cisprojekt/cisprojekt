@@ -578,20 +578,21 @@ static void NN_chain_core(const t_index N, Eigen::MatrixXd &D,
 
   t_float min;
   std::cout << "Fehlercheck" << std::endl;
-  for (int it_1 = 0; it_1 < N; it_1++) {
-    for (int it_2 = 0; it_2 < N; it_2++) {
+  double *matrixpointer = D.data();
+  for (int it_1 = 0, size = D.size(); i < size; i++) {
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
-    if (fc_isnan(D(it_1,it_2))) {
+    if (fc_isnan(*matrixpointer)) {
+      std::cout << "Matrixeintrag " << (i % D.rows()) << ", " << static_cast<int>(i/(D.rows())) << " ist NaN " << std::endl;
       throw(nan_error());
     }
+    matrixpointer++;
 #if HAVE_DIAGNOSTIC
 #pragma GCC diagnostic pop
 #endif
   }
-}
 #ifdef FE_INVALID
   if (feclearexcept(FE_INVALID))
     throw fenv_error();

@@ -53,13 +53,12 @@ async function initializeMap(
 
     // Move input points into heap
     Module.HEAPF64.set(points, pointsBuf / points.BYTES_PER_ELEMENT);
-
+    console.log("Calculations started");
     // Actual function call to cluster
     Module.ccall(
       "clusterPoints",
       null,
       [
-        "number",
         "number",
         "number",
         "number",
@@ -86,10 +85,9 @@ async function initializeMap(
         1,
         scalingMethod,
         isSperical,
-        1,
       ],
     );
-    console.log("Clustering finished");
+    console.log("Calculations finished");
     // Copy results into js array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
@@ -108,7 +106,7 @@ async function initializeMap(
     for (var i = 0; i < n * 2; i += 2) {
       pointsToPlot.push({ x: pointsResult[i], y: pointsResult[i + 1] });
     }
-
+    console.log("points to plot " + pointsToPlot);
     // Free memory
     Module._free(pointsBuf);
     Module._free(distMatBuf);
@@ -150,19 +148,22 @@ async function initializeMap(
     // For fingerprints input
 
     // Create one large string and create array of length of each string
-    let lengthOfString = [];
     let n = inputPoints.length;
+    let lengthOfString = new Uint32Array(n);
     let inputString = "";
     for (let i = 0; i < n; i++) {
       inputString += inputPoints[i];
       lengthOfString[i] = inputPoints[i].length;
     }
+    console.log("Number points " + n);
 
     // Allocate memory for inputString
     let lengthBytes = lengthBytesUTF8(inputString) + 1;
     let stringOnHeap = _malloc(lengthBytes);
     stringToUTF8(inputString, stringOnHeap, lengthBytes);
 
+    console.log("lengthBytes " + lengthBytes);
+    console.log("Number points " + n);
     // For now hardcoded
     let zoomLevels = 20;
     let pointsToPlot = [];
@@ -175,7 +176,9 @@ async function initializeMap(
     let resultPointsBuf = Module._malloc(
       n * 2 * Float64Array.BYTES_PER_ELEMENT,
     );
-    let lengthOfStringBuf = Module._malloc(n * Int32Array.BYTES_PER_ELEMENT);
+    let lengthOfStringBuf = Module._malloc(
+      lengthOfString.length * lengthOfString.BYTES_PER_ELEMENT,
+    );
     let distMatBuf = Module._malloc(n * n * Float64Array.BYTES_PER_ELEMENT);
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
@@ -190,11 +193,14 @@ async function initializeMap(
     );
 
     // Move length of string into heap
-    Module.HEAPF64.set(
+    Module.HEAPU32.set(
       lengthOfString,
       lengthOfStringBuf / lengthOfString.BYTES_PER_ELEMENT,
     );
 
+    console.log("lengthOfStringBuf length " + lengthOfString[0]);
+    console.log("input lengths " + lengthOfString);
+    console.log("Calculations start");
     // Actual function call to cluster
     Module.ccall(
       "clusterStrings",
@@ -212,10 +218,11 @@ async function initializeMap(
         "number",
         "number",
         "number",
+        "number",
       ],
       [
         stringOnHeap,
-        lengthOfString,
+        lengthOfStringBuf,
         distMatBuf,
         heightBuf,
         mergeBuf,
@@ -225,11 +232,11 @@ async function initializeMap(
         zoomLevels,
         1,
         scalingMethod,
-        resultPointsBuf,
         1,
+        resultPointsBuf,
       ],
     );
-
+    console.log("Calculations finished");
     // Copy results into js array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
@@ -257,8 +264,8 @@ async function initializeMap(
     Module._free(distMatBuf);
     Module._free(heightBuf);
     Module._free(mergeBuf);
-    Module._free(resultPointsBuf);
     Module._free(lengthOfStringBuf);
+    _free(stringOnHeap);
 
     // -----------------------------------------------------------------
 
@@ -521,11 +528,11 @@ function getClusterInfo(
       pointIdx++;
     });
 
-    console.log("-------------------");
-    clusters.forEach((cluster) => {
-      console.log(cluster.name + " has " + cluster.numPoints + " points");
-    });
-    console.log("-------------------");
+    //console.log("-------------------");
+    //clusters.forEach((cluster) => {
+    //console.log(cluster.name + " has " + cluster.numPoints + " points");
+    //});
+    //console.log("-------------------");
     // flags is array of values of the flag columns of the i'th point in labels
     // counting the nonnumflags of each cluster
     var point_idx = 0;
@@ -582,15 +589,15 @@ function getClusterInfo(
     console.log(
       "-----------------------------------------------------------------",
     );
-    console.log(clusters);
+    //console.log(clusters);
     clusterInfos[i] = clusters;
 
     // console.log(`clusterInfos[2]`)
     // console.log(`///////////////////////////////////////////`)
     // console.log(`${clusterInfos[2]}`)
-    console.log(
-      `Creating pies for each cluster in zoom layer ${i}, and logging them.`,
-    );
+    //console.log(
+    //`Creating pies for each cluster in zoom layer ${i}, and logging them.`,
+    //);
     clusterInfos[i].forEach((cluster) => {
       //console.log(`/////////////////////////////////////////////////////`);
       //console.log(`/////////////////////////////////////////////////////`);
@@ -622,9 +629,5 @@ function getClusterInfo(
       //console.log(`/////////////////////////////////////////////////////`);
     });
   }
-  console.log("addwadawdadawdada dw daqwdaw dqdqwdqedq wqeqveq");
-  console.log(clusterInfos);
-  console.log("addwadawdadawdada dw daqwdaw dqdqwdqedq wqeqveq");
-
   return clusterInfos.reverse();
 }

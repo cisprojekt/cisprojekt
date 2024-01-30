@@ -1,0 +1,111 @@
+.wrapper {
+  display: grid;
+  column-gap: 2px;
+  row-gap: 15px;
+}
+.wrapper .box {
+  border-radius: 10px;
+  max-width: 1000px;
+  padding: auto;
+  background-color: #edf6f9;
+}
+
+.wrapper {
+  grid-template-columns: 1fr 8fr 1fr;
+}
+
+#leftside {
+  background-color: white;
+  grid-column: 1/2;
+}
+#rightside {
+  background-color: white;
+  grid-column: 3/4;
+}
+
+.label {
+  width: 300px;
+  height: 30px;
+  color: #d5e8e6;
+  line-height: 30px;
+  padding-left: 5px;
+  background-image: url("../pic/label.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+* {
+  text-align: center;
+  padding: auto;
+}
+
+header {
+  text-align: left;
+  background-image: url("../pic/ttback.png");
+  background-size: inherit;
+}
+
+#main-area {
+  max-width: 800px;
+}
+
+button {
+  display: inline-block;
+  width: 200px;
+  background-color: #0e7c7b;
+  margin: 2px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  border-color: transparent;
+}
+
+select {
+  display: inline-block;
+  width: 200px;
+  background-color: #83c5be;
+  margin: 2px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  border-color: transparent;
+}
+
+button#addDataButton {
+  width: inherit;
+  margin-left: 2%;
+  margin-right: 2%;
+}
+
+button#deleAllButton {
+  background-color: #db9e9e;
+}
+
+button#runFuncButton {
+  background-color: #17bebb;
+}
+
+#result {
+  width: 100%;
+  grid-column: [seit-start]/[seit-end];
+}
+#side-bar {
+  text-align: right;
+}
+
+.sub-box {
+  background-color: rgb(143, 183, 170);
+  grid-row-gap: 10px;
+}
+* {
+  box-sizing: border-box;
+}
+
+#text_box {
+  background-color: rgb(177, 205, 196);
+  border-radius: 8px;
+  min-height: 80px;
+  width: 96%;
+  margin: 2%;
+  text-align: left;
+}
