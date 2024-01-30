@@ -12,6 +12,8 @@
     <script src="src/js/interact.js"></script>
     <script src="src/js/cluster.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <!--   Site-spesific Style   -->
     <style>
@@ -156,7 +158,7 @@
     <!-- Here for result, will only be showed after click -->
     <div id="result">
       <!-- Information Box -->
-      <div id="InforArea" style="text-align: left; border: none; width: 30%">
+      <!-- <div id="InforArea" style="text-align: left; border: none; width: 30%">
         <table id="InforList" style="padding: 5px; border: 1px solid">
           <tr>
             <td>Cluster Information</td>
@@ -168,10 +170,10 @@
             <td>cluster 2</td>
           </tr>
         </table>
-      </div>
+      </div> -->
       <div
         id="clusterInfoBox"
-        style="text-align: left; border: none; width: 30%"
+        style="text-align: left; border: 1px solid; width: 30%"
       ></div>
 
       <!-- map Container with .js

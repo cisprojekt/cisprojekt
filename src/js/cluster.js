@@ -126,8 +126,8 @@ async function initializeMap(
       zoomLevels,
       labelsResult,
       n,
-      numflags_array,
-      nonnumflags_array,
+      numflags_array, // Holds an array for each point, holding the numflag values for that point
+      nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
     );
     // -----------------------------------------------------------------
     // -----------------------------------------------------------------
@@ -142,6 +142,7 @@ async function initializeMap(
       zoomLevels,
       clusterInfos,
       flagColumnNames,
+      numflags_array,
     );
   } else if (type == "tanimotoFingerprints") {
     // For fingerprints input
@@ -286,6 +287,7 @@ async function initializeMap(
       zoomLevels,
       clusterInfos,
       flagColumnNames,
+      numflags_array,
     );
   }
 }
@@ -306,8 +308,9 @@ class Cluster {
     numflagAverages = [],
     numflagMins = [],
     numflagMaxs = [],
-    pieMaxNumSlicesDefault = 5,
+    pointIndices = [],
     pieFlagIndices = [], // empty means it will calculate the pie charts for each flag. To calcululate none, set pieMaxNumSlicesDefault<=0
+    pieMaxNumSlicesDefault = 5,
   ) {
     // label is the label of the cluster corresponding to the label in the labelsResult array
     this.label = label;
@@ -325,6 +328,8 @@ class Cluster {
     this.numflagMins = numflagMins;
     // numflagMaxs is an array which contains the maximum of each numflag
     this.numflagMaxs = numflagMaxs;
+    // this.pointIndices = pointIndices;
+    this.pointIndices = pointIndices;
 
     this.pieMaxNumSlicesDefault = pieMaxNumSlicesDefault;
     this.pieFlagIndices = pieFlagIndices;
@@ -468,8 +473,8 @@ function getClusterInfo(
   zoom,
   labelsResult,
   n,
-  numflags_array,
-  nonnumflags_array,
+  numflags_array, // Holds an array for each point, holding the numflag values for that point
+  nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
 ) {
   // Create an array for each Zoomlevel which contais the info of the clusters
   var clusterInfos = new Array(zoom);
@@ -509,14 +514,18 @@ function getClusterInfo(
           new Array(numNumColumns).fill(0),
           new Array(numNumColumns).fill(Infinity),
           new Array(numNumColumns).fill(-Infinity),
+          [],
         ),
     );
     // console.log(`SOAGDUIGDJSHAVBDIHSAPDMNJSHABVDUOSALKDBJHUSABGDOISHALKDHBSOADHLKSANLDKAS`);
     // console.log(`clusters: ${clusters}`);
 
     // Count the number of points in each cluster
+    let pointIdx = 0;
     currentLabels.forEach((label) => {
       clusters[label].numPoints++;
+      clusters[label].pointIndices.push(pointIdx); // keep track of the points that are in the cluster
+      pointIdx++;
     });
 
     //console.log("-------------------");
@@ -620,9 +629,5 @@ function getClusterInfo(
       //console.log(`/////////////////////////////////////////////////////`);
     });
   }
-  //console.log("addwadawdadawdada dw daqwdaw dqdqwdqedq wqeqveq");
-  //console.log(clusterInfos);
-  //console.log("addwadawdadawdada dw daqwdaw dqdqwdqedq wqeqveq");
-
   return clusterInfos.reverse();
 }
