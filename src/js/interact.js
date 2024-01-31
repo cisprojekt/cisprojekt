@@ -404,7 +404,6 @@ function dealwithrun() {
     case "noChoice":
       alert("Please choose a distance function");
       break;
-    case "earth-dist":
     case "Custom":
       type = "custom";
       console.log("function is custom");
@@ -419,6 +418,7 @@ function dealwithrun() {
       console.log(points_array);
 
       break;
+    case "earth-dist":
     case "Euclidean":
       type = "euclidean";
       if (functionFlag == "earth-dist") {
