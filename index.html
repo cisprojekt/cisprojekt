@@ -100,6 +100,16 @@
         accept=".CSV"
         style="display: none"
       />
+      <button id="myButton" onclick="showCSVDeviderPopUp()">
+        Select CSV-Devider
+      </button>
+      <div id="CSVDeviderPopUp" style="display: none">
+        <input
+          type="text"
+          id="myCSVDeviderInput"
+          placeholder="default is commas"
+        />
+      </div>
 
       <div class="box" id="box-for-check-list">
         <div id="checkFlagArea" style="display: none">
@@ -158,11 +168,7 @@
               onclick="ColFlagCheck()"
               style="margin-top: 20px"
             >
-              Flag Check
-            </button>
-            <!-- Delete All Button -->
-            <button id="deleAllButton" onclick="deletedatenandfunc()">
-              Delete All
+              Table Interpretation
             </button>
           </div>
           <div>
@@ -171,6 +177,10 @@
             </div>
           </div>
           <div>
+            <!-- Delete All Button -->
+            <button id="deleAllButton" onclick="deletedatenandfunc()">
+              Delete All
+            </button>
             <!-- Run function Button -->
             <button
               id="runFuncButton"
@@ -179,17 +189,6 @@
             >
               Run
             </button>
-
-            <button id="myButton" onclick="showCSVDeviderPopUp()">
-              Select CSV-Devider
-            </button>
-            <div id="CSVDeviderPopUp" style="display: none">
-              <input
-                type="text"
-                id="myCSVDeviderInput"
-                placeholder="default is commas"
-              />
-            </div>
           </div>
         </div>
       </div>
