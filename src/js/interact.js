@@ -89,6 +89,9 @@ function selectDataType() {
     case "Vector":
       distance_func_list = ["earth-dist", "Euclidean"];
       break;
+    case "Custom":
+      distance_func_list = ["Custom"];
+      break;
     default:
       fun_slector.style.display = "none";
       break;
@@ -107,6 +110,7 @@ function changedistancefunclist(distance_func_list) {
     Tanimoto: "Tanimoto Coefficient",
     Euclidean: "Euclidean Distance",
     "earth-dist": "earth-dist",
+    Custom: "Custom",
   };
 
   for (let i = 0; i < distance_func_list.length; i++) {
@@ -393,6 +397,20 @@ function dealwithrun() {
       alert("Please choose a distance function");
       break;
     case "earth-dist":
+    case "Custom":
+      type = "custom";
+      console.log("function is custom");
+      for (let i = 1; i < lines.length; i++) {
+        let line = lines[i].split(devider);
+        let lineAxisValues = [];
+        dataColumns.forEach((columnIndex) => {
+          lineAxisValues.push(line[columnIndex]);
+        });
+        points_array.push(lineAxisValues);
+      }
+      console.log(points_array);
+
+      break;
     case "Euclidean":
       type = "euclidean";
       if (functionFlag == "earth-dist") {

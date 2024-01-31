@@ -63,6 +63,10 @@
         transform: scale(0.6);
         position: relative;
       }
+
+      .distFunc {
+        display: none;
+      }
     </style>
   </head>
 </html>
@@ -112,10 +116,36 @@
 
         <!-- Choose Function Button -->
         <select id="DataType" style="width: 200px">
-          <option value="noChoice">Choose your data type</option>
-          <option value="Seq">DNA/RNA Sequence</option>
-          <option value="ChemInfo">Molecule Information</option>
-          <option value="Vector">Vector</option>
+          <option
+            value="noChoice"
+            onclick="document.getElementById('distFunction').style.display='none'"
+          >
+            Choose your data type
+          </option>
+          <option
+            value="Seq"
+            onclick="document.getElementById('distFunction').style.display='none'"
+          >
+            DNA/RNA Sequence
+          </option>
+          <option
+            value="ChemInfo"
+            onclick="document.getElementById('distFunction').style.display='none'"
+          >
+            Molecule Information
+          </option>
+          <option
+            value="Vector"
+            onclick="document.getElementById('distFunction').style.display='none'"
+          >
+            Vector
+          </option>
+          <option
+            value="Custom"
+            onclick="document.getElementById('distFunction').style.display='inline'"
+          >
+            Custom
+          </option>
           <!-- value="Vector" was former "Euclidean" -->
         </select>
 
@@ -153,6 +183,14 @@
           placeholder="default is commas"
         />
       </div>
+      <br />
+
+      <!-- Textarea for custom function -->
+      <textarea
+        placeholder="Enter custom distance function"
+        id="distFunction"
+        class="distFunc"
+      ></textarea>
     </div>
 
     <!-- Here for result, will only be showed after click -->
