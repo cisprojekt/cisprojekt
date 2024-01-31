@@ -4,7 +4,7 @@ body {
   box-sizing: border-box;
   font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
     "Helvetica Neue", sans-serif;
-  background-image: url(folder/back.png);
+  background-image: url("../style/folder/back.png");
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;

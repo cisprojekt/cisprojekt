@@ -4,17 +4,19 @@
 
 // Stephen Ingram (sfingram@cs.ubc.ca) 02/08
 
+
 // structs are not defined in glimmer.cpp but in scaling.h
+#include <Eigen/Dense>
 #include <float.h>
+#include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include <Eigen/Dense>
-#include <fstream>
 #include <iostream>
+#include <fstream>
 
 #include "../../scaling/scaling.h"
 
@@ -26,14 +28,14 @@
 // #define V_SET_SIZE   4               // number of close neighbors
 // #define S_SET_SIZE   4               // number of randomly chosen
 // neighbors
-#define V_SET_SIZE 8       // number of close neighbors
-#define S_SET_SIZE 12      // number of randomly chosen neighbors
-#define USE_GLUT 0         // comment this when timing tests are done
+#define V_SET_SIZE 8        // number of close neighbors
+#define S_SET_SIZE 12       // number of randomly chosen neighbors
+#define USE_GLUT 0          // comment this when timing tests are done
 #define MAX_ITERATION 200  // maximum number of iterations
-#define COSCLEN 51         // length of cosc filter
-#define EPS 1.e-05f        // termination threshold
-#define MIN_SET_SIZE 1000  // recursion termination condition
-#define DEC_FACTOR 8       // decimation factor
+#define COSCLEN 51          // length of cosc filter
+#define EPS 1.e-05f         // termination threshold
+#define MIN_SET_SIZE 1000   // recursion termination condition
+#define DEC_FACTOR 8        // decimation factor
 
 /*
         FORCE CONSTANTS
@@ -153,7 +155,8 @@ void outputCSV(const char *filename, float *embedding) {
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < n_embedding_dims; j++) {
       fprintf(fp, "%f", embedding[(i * n_embedding_dims) + j]);
-      if (j < n_embedding_dims - 1) fprintf(fp, ",");
+      if (j < n_embedding_dims - 1)
+        fprintf(fp, ",");
     }
     fprintf(fp, "\n");
   }
@@ -312,7 +315,8 @@ i+=n_original_dims ) {
 int distcomp(const void *a, const void *b) {
   const INDEXTYPE *da = (const INDEXTYPE *)a;
   const INDEXTYPE *db = (const INDEXTYPE *)b;
-  if (da->highd == db->highd) return 0;
+  if (da->highd == db->highd)
+    return 0;
   return (da->highd - db->highd) < 0.f ? -1 : 1;
 }
 int idxcomp(const void *a, const void *b) {
@@ -390,10 +394,10 @@ void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix) {
   // {printf("%d\n",g_idx[a].index); }
 
   // perform the force simulation iteration
-  float *dir_vec =
-      reinterpret_cast<float *>(malloc(sizeof(float) * n_embedding_dims));
-  float *relvel_vec =
-      reinterpret_cast<float *>(malloc(sizeof(float) * n_embedding_dims));
+  float *dir_vec = reinterpret_cast<float *>(malloc(sizeof(float) *
+                                                   n_embedding_dims));
+  float *relvel_vec = reinterpret_cast<float *>(malloc(sizeof(float) *
+                                                      n_embedding_dims));
   float diff = 0.f;
   float norm = 0.f;
   float lo = 0.f;
@@ -421,7 +425,7 @@ void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix) {
       int idx = g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].index;
 
       g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].highd =
-          static_cast<float>(const_cast<MatrixXd &>(distanceMatrix)(i, idx));
+          static_cast<float>(const_cast<MatrixXd&>(distanceMatrix)(i, idx));
       // i*N-akk+idx
       // printf("init embed\n");
       // printf("%d\n",akk);
@@ -537,7 +541,7 @@ void init_embedding(float *embedding) {
     for (int j = 0; j < n_embedding_dims; j++) {
       unsigned int seed = time(NULL);
       embedding[i * (n_embedding_dims) + j] =
-          static_cast<float>(rand_r(&seed) % 10000) / 10000.f - 0.5f;
+      static_cast<float>(rand_r(&seed) % 10000) / 10000.f - 0.5f;
     }
   }
 }
@@ -550,7 +554,8 @@ int fill_level_count(int input, int *h) {
   // printf("h[%d]=%d\n",levels,input);
   h[levels] = input;
   levels++;
-  if (input <= MIN_SET_SIZE) return levels;
+  if (input <= MIN_SET_SIZE)
+    return levels;
   return fill_level_count(input / DEC_FACTOR, h);
 }
 
@@ -577,7 +582,7 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix) {
   }
   // max_dist = biggest distance in distancematrix
 
-  const_cast<MatrixXd &>(distanceMatrix).array() /= max_dist;
+  const_cast<MatrixXd&>(distanceMatrix).array() /= max_dist;
 
   clock_t start_time2 = clock();
 
@@ -587,14 +592,15 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix) {
 
   // float *embedding = NULL;
   // embedding = (float *)malloc(sizeof(float) * n_embedding_dims * N);
-  g_embed =
-      reinterpret_cast<float *>(malloc(sizeof(float) * n_embedding_dims * N));
-  g_vel =
-      reinterpret_cast<float *>(calloc(n_embedding_dims * N, sizeof(float)));
-  g_force =
-      reinterpret_cast<float *>(calloc(n_embedding_dims * N, sizeof(float)));
-  g_idx = reinterpret_cast<INDEXTYPE *>(
-      malloc(sizeof(INDEXTYPE) * N * (V_SET_SIZE + S_SET_SIZE)));
+  g_embed = reinterpret_cast<float *>(malloc(sizeof(float) *
+                                            n_embedding_dims * N));
+  g_vel = reinterpret_cast<float *>(calloc(n_embedding_dims * N,
+                                          sizeof(float)));
+  g_force = reinterpret_cast<float *>(calloc(n_embedding_dims * N,
+                                            sizeof(float)));
+  g_idx =
+      reinterpret_cast<INDEXTYPE *>(malloc(sizeof(INDEXTYPE) *
+                                          N * (V_SET_SIZE + S_SET_SIZE)));
 
   time_t t;
   srand((unsigned)(time(&t)));
@@ -648,29 +654,22 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix) {
   float max_value = -1.e37f;
   float min_value = 1.e37f;
   float factor = 0.0;
-  for (int i = 0; i < N * n_embedding_dims; i++) {
-    if (g_embed[i] < min_value) {
-      min_value = g_embed[i];
-    }
-    if (g_embed[i] > max_value) {
-      max_value = g_embed[i];
-    }
+  for (int i = 0; i < N*n_embedding_dims; i++) {
+    if (g_embed[i] < min_value) { min_value = g_embed[i]; }
+    if (g_embed[i] > max_value) { max_value = g_embed[i]; }
   }
   /*
   if (min_value < 0.0) {
     for (int i = 0; i < N*n_embedding_dims; i++) {
-      g_embed[i] -= min_value;
+      g_embed[i] -= min_value; 
     }
     max_value -= min_value;
   }
   */
-  if (max_value < -min_value) {
-    factor = -min_value;
-  } else {
-    factor = max_value;
-  }
+  if (max_value < -min_value) {factor = -min_value;
+  } else { factor = max_value; }
 
-  for (int i = 0; i < N * n_embedding_dims; i++) {
+  for (int i = 0; i < N*n_embedding_dims; i++) {
     g_embed[i] /= factor;
   }
   clock_t start_time5 = clock();
@@ -679,8 +678,8 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix) {
   // printf("stop_iteration %d\n", stop_iteration);
   for (int it_1 = 0; it_1 < N; it_1++) {
     XUpdated(it_1, 0) = static_cast<double>(g_embed[(it_1 * n_embedding_dims)]);
-    XUpdated(it_1, 1) =
-        static_cast<double>(g_embed[(it_1 * n_embedding_dims + 1)]);
+    XUpdated(it_1, 1) = static_cast<double>(g_embed[(it_1 *
+                                                    n_embedding_dims + 1)]);
   }
   clock_t start_time6 = clock();
   // const char *outputfile = "/home/timo/Documents/studium_cis/projekt/
@@ -690,24 +689,24 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix) {
   // auto *coutbuf = std::cout.rdbuf();
   // std::cout.rdbuf(out.rdbuf());
   /*
-  std::cout << "Glimmer needed "
-  << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC)
+  std::cout << "Glimmer needed " 
+  << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC) 
   << "s to normalize the distance matrix\n";
-  std::cout << "Glimmer needed "
-  << static_cast<float>(start_time3 - start_time2) / (CLOCKS_PER_SEC)
+  std::cout << "Glimmer needed " 
+  << static_cast<float>(start_time3 - start_time2) / (CLOCKS_PER_SEC) 
   << "s to initialize storage and variables\n";
-  std::cout << "Glimmer needed "
-  << static_cast<float>(start_time4 - start_time3) / (CLOCKS_PER_SEC)
+  std::cout << "Glimmer needed " 
+  << static_cast<float>(start_time4 - start_time3) / (CLOCKS_PER_SEC) 
   << "s to calculate the force application\n";
-  std::cout << "Glimmer needed "
-  << static_cast<float>(start_time5 - start_time4) / (CLOCKS_PER_SEC)
+  std::cout << "Glimmer needed " 
+  << static_cast<float>(start_time5 - start_time4) / (CLOCKS_PER_SEC) 
   << "s to normalize the coordinates\n";
-  std::cout << "Glimmer needed "
-  << static_cast<float>(start_time6 - start_time6) / (CLOCKS_PER_SEC)
+  std::cout << "Glimmer needed " 
+  << static_cast<float>(start_time6 - start_time6) / (CLOCKS_PER_SEC) 
   << "s to convert coordinates into Eigen-Matrix\n";
   */
   std::cout << "Glimmer needed "
-            << static_cast<float>(start_time6 - start_time1) / (CLOCKS_PER_SEC)
-            << "s for scaling\n";
+  << static_cast<float>(start_time6 - start_time1) / (CLOCKS_PER_SEC)
+  << "s for scaling\n";
   return XUpdated;
 }

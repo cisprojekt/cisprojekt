@@ -54,7 +54,7 @@ function getinputdata() {
 function readFileContents() {
   let fileInput = document.getElementById("dataFile");
   let file = fileInput.files[0];
-  if (file && file.name.endsWith(".csv")) {
+  if (file && (file.name.endsWith(".csv") || file.name.endsWith(".json"))) {
     var reader = new FileReader();
 
     reader.onload = function (e) {
@@ -89,6 +89,9 @@ function selectDataType() {
     case "Vector":
       distance_func_list = ["earth-dist", "Euclidean"];
       break;
+    case "Custom":
+      distance_func_list = ["Custom"];
+      break;
     default:
       fun_slector.style.display = "none";
       break;
@@ -107,6 +110,7 @@ function changedistancefunclist(distance_func_list) {
     Tanimoto: "Tanimoto Coefficient",
     Euclidean: "Euclidean Distance",
     "earth-dist": "earth-dist",
+    Custom: "Custom",
   };
 
   for (let i = 0; i < distance_func_list.length; i++) {
@@ -401,6 +405,20 @@ function dealwithrun() {
       alert("Please choose a distance function");
       break;
     case "earth-dist":
+    case "Custom":
+      type = "custom";
+      console.log("function is custom");
+      for (let i = 1; i < lines.length; i++) {
+        let line = lines[i].split(devider);
+        let lineAxisValues = [];
+        dataColumns.forEach((columnIndex) => {
+          lineAxisValues.push(line[columnIndex]);
+        });
+        points_array.push(lineAxisValues);
+      }
+      console.log(points_array);
+
+      break;
     case "Euclidean":
       type = "euclidean";
       if (functionFlag == "earth-dist") {
@@ -496,4 +514,17 @@ function deletedatenandfunc() {
 function back2input() {
   hideresult();
   showprepare();
+}
+
+// Import JSON file and call mapFunctions
+function importFile() {
+  // Read Textbox
+  var data = JSON.parse(getinputdata());
+
+  // Hide elements
+  hideprepera();
+  showresult();
+
+  // Call map
+  mapFunctions(data[0], data[1], data[2], data[3], data[4]);
 }

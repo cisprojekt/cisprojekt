@@ -11,10 +11,24 @@
 #include <map>
 #include <random>
 
-#include "../dv_main.h"
-#include "../external/hclust/fastcluster.h"
+#include "src/cpp/dv_main.h"
+#include "src/cpp/external/hclust/fastcluster.h"
 
 using Eigen::MatrixXd;
+
+MatrixXd distanceMatrix(double *distMatFilled, int n) {
+  MatrixXd distMat(n, n);
+  for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+      int idx = i * (n - 1) + j - ((i + 1) * (i + 2)) / 2;
+      distMat(i, j) = distMatFilled[idx];
+      distMat(j, i) = distMatFilled[idx];
+    }
+    distMat(i, i) = 0;
+  }
+
+  return distMat;
+}
 
 MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
   int n = points.rows();
