@@ -4,7 +4,7 @@ body {
   box-sizing: border-box;
   font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
     "Helvetica Neue", sans-serif;
-  background-image: url("../style/folder/back.png");
+  background-image: url(folder/back.png);
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -116,6 +116,19 @@ button {
   border-radius: 5px;
   cursor: pointer;
   border-color: transparent;
+}
+
+.label {
+  width: 300px;
+  height: 30px;
+  background-image: url("../style/folder/label.png");
+  font-size: 20px;
+  font-weight: bold;
+  color: #41438e;
+  line-height: 30px;
+  padding-left: 5px;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 body.dark-mode {

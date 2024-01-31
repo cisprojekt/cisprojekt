@@ -1,5 +1,18 @@
 /*+++++++++++++++++++Basic functions+++++++++++++++++++*/
 
+//button function for the csv devider pop up
+function showCSVDeviderPopUp() {
+  document.getElementById("CSVDeviderPopUp").style.display = "block";
+}
+//function to get the csv devider from the pop up
+//default is ","
+function getCSVDevider() {
+  let devider = document.getElementById("myCSVDeviderInput").value;
+  if (devider == "") {
+    devider = ",";
+  }
+  return devider;
+}
 function hideprepera() {
   let prepareObj = document.getElementById("prepare");
   prepareObj.style.display = "none";
@@ -123,7 +136,8 @@ function getTitleLine(InputFlag = "coord") {
   console.log("trying to get the title Title line from", InputFlag, "data");
   let inhalt = document.getElementById("text_box").value;
   let lines = inhalt.split("\n");
-  let firstline = lines[0].split(",");
+  let devider = getCSVDevider();
+  let firstline = lines[0].split(devider);
   let titleline = new Array();
   console.log("first line is:", firstline);
   let dimension = firstline.length;
@@ -161,10 +175,6 @@ function getTitleLine(InputFlag = "coord") {
 
 /*Creat the drop-down Menu accroding to the title line */
 function CreateColFlagSelector(idx = 0, titleline) {
-  console.log(
-    "creating the ColFlag selector accroding to the titleline",
-    titleline,
-  );
   let ColFlagMenu = document.createElement("select");
   let firstOption = document.createElement("option");
   let dimension = titleline.length;
@@ -181,7 +191,7 @@ function CreateColFlagSelector(idx = 0, titleline) {
 }
 
 /** This will check the first line and delete the axises */
-function isCoordindat(txt_inhalt) {
+function isCoordindat(txt_inhalt, devider = ",") {
   let coorindat = [];
   if (txt_inhalt != "") {
     let lines = txt_inhalt.split("\n");
@@ -263,20 +273,32 @@ function MapViewSwitcher() {
   let clusterBox = document.getElementById("InforArea");
   let mapWindows = document.getElementById("chartContainer");
   let switchbutton = document.getElementById("switchbtn");
-  if (switchbutton.innerHTML == "Full Screen") {
-    mapWindows.style.transform = "scale(1)";
-    mapWindows.style.left = "0px";
-    mapWindows.style.top = "10px";
-    clusterBox.style.display = "none";
-    switchbutton.innerHTML = "Exit Full Screen";
-    return 0;
-  } else {
-    mapWindows.style.transform = "scale(0.6)";
-    mapWindows.style.left = "-260px";
-    mapWindows.style.top = "-120px";
-    clusterBox.style.display = "";
-    switchbutton.innerHTML = "Full Screen";
-    return 0;
+  mapWindows.style.transform = "scale(1.3)";
+  /* Enter full screen */
+  if (mapWindows.requestFullscreen) {
+    mapWindows.requestFullscreen();
+  } else if (mapWindows.mozRequestFullScreen) {
+    /* Firefox */
+    mapWindows.mozRequestFullScreen();
+  } else if (mapWindows.webkitRequestFullscreen) {
+    /* Chrome, Safari and Opera */
+    mapWindows.webkitRequestFullscreen();
+  } else if (mapWindows.msRequestFullscreen) {
+    /* IE/Edge */
+    mapWindows.msRequestFullscreen();
+  }
+  /* Exit full-screen */
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    /* Firefox */
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) {
+    /* Chrome, Safari and Opera */
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) {
+    /* IE/Edge */
+    document.msExitFullscreen();
   }
 }
 
@@ -298,6 +320,26 @@ function getDataFromInputTable(datenflag) {
   return selectedColumns;
 }
 
+//get the header names of the flag columns for the clusterInfoBox
+//returns an array with 2 elements (non-numerical flags, numerical flags)
+//each containing the headers for numflags or nonnumflags
+function getFlagColumnNames(header, nonnumIndices, numIndices) {
+  header = header.split(",");
+  let flagColumnNames = [];
+  let tmp = [];
+  nonnumIndices.forEach((index) => {
+    tmp.push(header[index]);
+  });
+  flagColumnNames.push(tmp);
+  let tmp2 = [];
+  numIndices.forEach((index) => {
+    tmp2.push(header[index]);
+  });
+  flagColumnNames.push(tmp2);
+
+  return flagColumnNames;
+}
+
 function dealwithrun() {
   let punktdata = "";
   let matchflag = true;
@@ -305,26 +347,27 @@ function dealwithrun() {
   let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
   let data_type = functionFlag;
   let dataColumns = getDataFromInputTable("distance information");
-  console.log("yoyojqaodfjnaqoidjqaiwdipoqwajkdwqwdqwd");
-  console.log(scalingMethod);
-  console.log(functionFlag);
-  console.log(dataColumns);
-  console.log(data_type);
-  console.log("yoyojqaodfjnaqoidjqaiwdipoqwajkdwqwdqwd");
   //read data from text box
   punktdata = getinputdata();
   // Split the CSV content into lines considering CR and LF as line endings
   var lines = punktdata.split(/\r?\n/);
+  //get the devider
+  var devider = getCSVDevider();
 
   var points_array = [];
   var nonnumflags_array = [];
   var numflags_array = [];
   var nonnumflagsIdxName = getDataFromInputTable("non-numerical flags");
   var numflagsIdxName = getDataFromInputTable("numericial flags");
+  var flagColumnNames = getFlagColumnNames(
+    lines[0],
+    nonnumflagsIdxName,
+    numflagsIdxName,
+  );
   //assigning flag values to the flags arrays
   //if flagColumns is empty, the array will be empty
   for (let i = 1; i < lines.length; i++) {
-    let line = lines[i].split(",");
+    let line = lines[i].split(devider);
     let FlagValues = [];
     nonnumflagsIdxName.forEach((flagIdxName) => {
       FlagValues.push(line[flagIdxName]);
@@ -335,6 +378,8 @@ function dealwithrun() {
       //throw error if the value is not a number
       number = parseFloat(line[flagIdxName]);
       if (isNaN(number)) {
+        console.log(number);
+        console.log(line[flagIdxName]);
         alert(
           `All numflag values must be valid numbers. number "${
             number + 1
@@ -364,7 +409,7 @@ function dealwithrun() {
       //check if the data is coordinate data
       //
       console.log("function as Euc");
-      punktdata = isCoordindat(punktdata);
+      punktdata = isCoordindat(punktdata, devider);
       if (Boolean(punktdata)) {
         console.log("match the euc");
       } else {
@@ -374,7 +419,7 @@ function dealwithrun() {
       //initailize non-flattened (nested) array from lines
       //ignore the header
       for (let i = 1; i < lines.length; i++) {
-        let line = lines[i].split(",");
+        let line = lines[i].split(devider);
         let lineAxisValues = [];
         dataColumns.forEach((columnIndex) => {
           lineAxisValues.push(line[columnIndex]);
@@ -393,7 +438,7 @@ function dealwithrun() {
       //initailize non-flattened (nested) array from lines
       //ignore the header
       for (let i = 1; i < lines.length; i++) {
-        let line = lines[i].split(",");
+        let line = lines[i].split(devider);
         let lineAxisValues = [];
         dataColumns.forEach((columnIndex) => {
           points_array.push(line[columnIndex]);
@@ -408,6 +453,10 @@ function dealwithrun() {
       console.log("Input data doesn't match the distance function");
   }
 
+  if (points_array[points_array.length - 1] == undefined) {
+    points_array.pop();
+  }
+
   if (matchflag) {
     hideprepera();
     showresult();
@@ -417,6 +466,7 @@ function dealwithrun() {
       nonnumflags_array,
       numflags_array,
       scalingMethod,
+      flagColumnNames,
     );
   } else {
     alert("Input data dosen't match the distance function");

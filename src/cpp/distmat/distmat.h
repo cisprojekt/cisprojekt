@@ -1,6 +1,12 @@
 // Copyright [year] <Copyright Owner>
+
 #ifndef SRC_CPP_DISTMAT_DISTMAT_H_
 #define SRC_CPP_DISTMAT_DISTMAT_H_
+
+#include <string>
+#include <vector>
+
+#include "../dv_main.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -38,6 +44,10 @@ MatrixXd distanceMatrix(std::vector<std::string> strings);
  * @param pointB Second point
  * @return dist Euclidean distance between two points
  */
+
+MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
+                        int bitset_size);
+
 double euclideanDistance(VectorXd pointA, VectorXd pointB);
 
 /**
@@ -47,6 +57,10 @@ double euclideanDistance(VectorXd pointA, VectorXd pointB);
  * @return dist Euclidean distance between two points
  */
 double tanimotoDistance(std::string fingerprintA, std::string fingerprintB);
+
+double tanimotoDistanceBitwise(boost::dynamic_bitset<> fingerprintA,
+                               boost::dynamic_bitset<> fingerprintB,
+                               int bitset_size);
 
 extern "C" {
 double calculateEuclideanDistance(double *vector1, double *vector2,
