@@ -1,5 +1,5 @@
 // Copyright [year] <Copyright Owner>
-#include "src/cpp/dv_main.h"
+#include "dv_main.h"
 
 #include <time.h>
 

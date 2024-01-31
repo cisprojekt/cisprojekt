@@ -144,11 +144,11 @@ async function initializeMap(
       flagColumnNames,
       numflags_array,
     );
-  } else if (type == "tanimotoFingerprints" || type == "editDistance") {
+  } else if (type == "tanimotoFingerprints" || type == "edit-distance") {
     // convert type information to int
     if (type == "tanimotoFingerprints") {
       type = 0;
-    } else if (type == "editDistance") {
+    } else if (type == "edit-distance") {
       type = 1;
     }
 
