@@ -1,5 +1,5 @@
 // Copyright [year] <Copyright Owner>
-#include "dv_main.h"
+#include "src/cpp/dv_main.h"
 
 #include <time.h>
 
@@ -61,18 +61,18 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
   MatrixXd resultMDS;
 
   switch (calcScalingMethod) {
-    case 1:
-      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
-      break;
-    case 2:
-      resultMDS = calculateMDSscikit(nStrings, distMatMDS);
-      break;
-    case 3:
-      resultMDS = calculateMDSglimmer(nStrings, distMatMDS);
-      break;
-    default:
-      printf("no valid scaling algorithm was chosen");
-      break;
+  case 1:
+    resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+    break;
+  case 2:
+    resultMDS = calculateMDSscikit(nStrings, distMatMDS);
+    break;
+  case 3:
+    resultMDS = calculateMDSglimmer(nStrings, distMatMDS);
+    break;
+  default:
+    printf("no valid scaling algorithm was chosen");
+    break;
   }
   std::cout << "Scaling finished" << std::endl;
   // std::cout << resultMDS << std::endl;
@@ -153,18 +153,18 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
     std::cout << "distancematrix calculated" << std::endl;
     MatrixXd resultMDS;
     switch (calcScalingMethod) {
-      case 1:
-        resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
-        break;
-      case 2:
-        resultMDS = calculateMDSscikit(nPoints, distMatMDS);
-        break;
-      case 3:
-        resultMDS = calculateMDSglimmer(nPoints, distMatMDS);
-        break;
-      default:
-        printf("no valid scaling algorithm was chosen");
-        break;
+    case 1:
+      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+      break;
+    case 2:
+      resultMDS = calculateMDSscikit(nPoints, distMatMDS);
+      break;
+    case 3:
+      resultMDS = calculateMDSglimmer(nPoints, distMatMDS);
+      break;
+    default:
+      printf("no valid scaling algorithm was chosen");
+      break;
     }
     std::cout << "scaling finished" << std::endl;
     // Overwrite points with the new configuration
