@@ -54,7 +54,7 @@ function getinputdata() {
 function readFileContents() {
   let fileInput = document.getElementById("dataFile");
   let file = fileInput.files[0];
-  if (file && file.name.endsWith(".csv")) {
+  if (file && (file.name.endsWith(".csv") || file.name.endsWith(".json"))) {
     var reader = new FileReader();
 
     reader.onload = function (e) {
@@ -488,4 +488,17 @@ function deletedatenandfunc() {
 function back2input() {
   hideresult();
   showprepare();
+}
+
+// Import JSON file and call mapFunctions
+function importFile() {
+  // Read Textbox
+  var data = JSON.parse(getinputdata());
+
+  // Hide elements
+  hideprepera();
+  showresult();
+
+  // Call map
+  mapFunctions(data[0], data[1], data[2], data[3], data[4]);
 }
