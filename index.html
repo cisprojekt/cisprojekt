@@ -69,6 +69,10 @@
         display: none;
         margin: auto;
       }
+
+      .directRunBtn {
+        display: none;
+      }
     </style>
   </head>
 </html>
@@ -93,13 +97,21 @@
       <!-- Formal and real button for add data -->
       <div>
         <button type="button" id="addDataButton">Add Data</button>
+        <button
+          type="button"
+          id="directRun"
+          class="directRunBtn"
+          onclick="importFile();"
+        >
+          Run Directly
+        </button>
       </div>
 
       <input
         type="file"
         id="dataFile"
         name="dataFile"
-        accept=".CSV"
+        accept=".CSV,.JSON"
         style="display: none"
       />
 
@@ -263,13 +275,9 @@
       >
         <button
           id="switchbtn"
-          ;
           type="button"
-          ;
           value="preview"
-          ;
           style="position: relative; float: left; margin-left: 5px; z-index: 5"
-          ;
           onclick="MapViewSwitcher()"
         >
           Full Screen
@@ -280,6 +288,13 @@
           onclick="window.location.reload();"
         >
           Restart
+        </button>
+        <button
+          id="ExportButton"
+          style="position: relative; float: left; z-index: 5"
+          onclick="exportFile();"
+        >
+          Export
         </button>
         <div
           id="chartContainer"
