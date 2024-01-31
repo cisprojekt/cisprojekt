@@ -1,6 +1,7 @@
 // Copyright [year] <Copyright Owner>
 #include "src/cpp/dv_main.h"
 
+#include <emscripten.h>
 #include <time.h>
 
 #include <boost/dynamic_bitset.hpp>

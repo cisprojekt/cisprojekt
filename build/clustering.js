@@ -23,7 +23,7 @@ if (ENVIRONMENT_IS_NODE) {
   var fs = require("fs");
   var nodePath = require("path");
   if (ENVIRONMENT_IS_WORKER) {
-    scriptDirectory = require("path").dirname(scriptDirectory) + "/";
+    scriptDirectory = nodePath.dirname(scriptDirectory) + "/";
   } else {
     scriptDirectory = __dirname + "/";
   }
@@ -46,7 +46,7 @@ if (ENVIRONMENT_IS_NODE) {
       : nodePath.normalize(filename);
     fs.readFile(filename, binary ? undefined : "utf8", (err, data) => {
       if (err) onerror(err);
-      else onload(data.buffer);
+      else onload(binary ? data.buffer : data);
     });
   };
   if (!Module["thisProgram"] && process.argv.length > 1) {
@@ -115,7 +115,6 @@ if (ENVIRONMENT_IS_NODE) {
       xhr.send(null);
     };
   }
-  setWindowTitle = (title) => (document.title = title);
 } else {
 }
 var out = Module["print"] || console.log.bind(console);
@@ -3276,21 +3275,23 @@ var stringToUTF8OnStack = (str) => {
 };
 var ccall = (ident, returnType, argTypes, args, opts) => {
   var toC = {
-    string: function (str) {
+    string: (str) => {
       var ret = 0;
       if (str !== null && str !== undefined && str !== 0) {
         ret = stringToUTF8OnStack(str);
       }
       return ret;
     },
-    array: function (arr) {
+    array: (arr) => {
       var ret = stackAlloc(arr.length);
       writeArrayToMemory(arr, ret);
       return ret;
     },
   };
   function convertReturnValue(ret) {
-    if (returnType === "string") return UTF8ToString(ret);
+    if (returnType === "string") {
+      return UTF8ToString(ret);
+    }
     if (returnType === "boolean") return Boolean(ret);
     return ret;
   }
