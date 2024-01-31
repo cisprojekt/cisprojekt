@@ -2,14 +2,15 @@
 #include "src/cpp/distmat/distmat.h"
 
 #include <emscripten.h>
-#include <Eigen/Dense>
 #include <time.h>
 
+#include <Eigen/Dense>
+#include <algorithm>
+#include <boost/dynamic_bitset.hpp>
 #include <cmath>
 #include <iostream>
 #include <map>
 #include <random>
-#include <boost/dynamic_bitset.hpp>
 
 #include "../dv_main.h"
 #include "../external/hclust/fastcluster.h"
@@ -34,14 +35,18 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
   return distMat;
 }
 
-MatrixXd distanceMatrix(std::vector<std::string> strings) {
+MatrixXd distanceMatrix(std::vector<std::string> strings, int type) {
   int n = strings.size();
   MatrixXd distMat(n, n);
   for (int i = 0; i < n; i++) {
-  std::cout << "DistMat did row " << i << "from " << n << std::endl;
+    std::cout << "DistMat did row " << i << "from " << n << std::endl;
     for (int j = 0; j < n; j++) {
       // TODO(Jonas): Implement other distance functions
-      distMat(i, j) = tanimotoDistance(strings[i], strings[j]);
+      if (type == 0) {
+        distMat(i, j) = tanimotoDistance(strings[i], strings[j]);
+      } else if (type == 1) {
+        distMat(i, j) = editdistance(strings[i], strings[j]);
+      }
     }
   }
 
@@ -58,13 +63,14 @@ MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
   boost::dynamic_bitset<> comparestring
   for (int i = 0; i < n*n; i++) {
   if (i % 1000000 == 0) {
-    std::cout << "DistMat did " << i/1000000 << "M elements from " << n*n << std::endl;
+    std::cout << "DistMat did " << i/1000000 << "M elements from " << n*n <<
+  std::endl;
   }
   if (i % n == 0) {
     comparestring = bitstrings[i/n];
   }
-  *matrixpointer = tanimotoDistanceBitwise(comparestring, bitstrings[i%n], bitset_size);
-  matrixpointer++;
+  *matrixpointer = tanimotoDistanceBitwise(comparestring, bitstrings[i%n],
+  bitset_size); matrixpointer++;
   }
   */
   for (int i = 0; i < n; i++) {
@@ -72,28 +78,28 @@ MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
     std::vector<boost::dynamic_bitset<>>::iterator bitstringptr;
     for (bitstringptr = bitstrings.begin(); bitstringptr < bitstrings.end();
          bitstringptr++) {
-      *matrixpointer = tanimotoDistanceBitwise(comparestring, *bitstringptr,
-                                               bitset_size);
+      *matrixpointer =
+          tanimotoDistanceBitwise(comparestring, *bitstringptr, bitset_size);
       matrixpointer++;
     }
   }
   /*
-  *matrixpointer = tanimotoDistanceBitwise(comparestring, bitstrings[i%n], bitset_size);
-  matrixpointer++;
+  *matrixpointer = tanimotoDistanceBitwise(comparestring, bitstrings[i%n],
+  bitset_size); matrixpointer++;
   }
   */
-/*  
-  std::vector<boost::dynamic_bitset<>>::iterator bitstringptr; 
-    for (bitstringptr = bitstrings.begin(); bitstringptr < bitstrings.end(); bitstringptr++) {
-      *matrixpointer = tanimotoDistanceBitwise(comparestring, *bitstringptr, bitset_size);
-      matrixpointer++;
+  /*
+    std::vector<boost::dynamic_bitset<>>::iterator bitstringptr;
+      for (bitstringptr = bitstrings.begin(); bitstringptr < bitstrings.end();
+    bitstringptr++) { *matrixpointer = tanimotoDistanceBitwise(comparestring,
+    *bitstringptr, bitset_size); matrixpointer++;
+      }
     }
-  }
-*/
+  */
   clock_t start_time2 = clock();
   std::cout << "distanceMatrix_bitstring needed "
-  << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC)
-  << "s to calculate\n";
+            << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC)
+            << "s to calculate\n";
   return distMat;
 }
 
@@ -119,12 +125,9 @@ double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
   int molA = 0, molB = 0, molC = 0;
   // We assume both fingerprints have equal length
   for (std::string::size_type i = 0; i < fingerprintA.size(); i++) {
-    if (fingerprintA[i] == '1')
-      molA++;
-    if (fingerprintB[i] == '1')
-      molB++;
-    if (fingerprintA[i] == '1' && fingerprintB[i] == '1')
-      molC++;
+    if (fingerprintA[i] == '1') molA++;
+    if (fingerprintB[i] == '1') molB++;
+    if (fingerprintA[i] == '1' && fingerprintB[i] == '1') molC++;
   }
 
   double dist = 1 - (static_cast<double>(molC) / (molA + molB - molC));
@@ -132,6 +135,37 @@ double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
     dist = 0;
   }
   return dist;
+}
+
+int editdistance(std::string seq1, std::string seq2) {
+  int len_seq1 = seq1.length() + 1;
+  int len_seq2 = seq2.length() + 1;
+
+  // Create a matrix to store the edit distances between substrings
+  std::vector<std::vector<int>> matrix(len_seq1, std::vector<int>(len_seq2, 0));
+
+  // Initialize the matrix
+  for (int i = 0; i < len_seq1; ++i) {
+    matrix[i][0] = i;
+  }
+  for (int j = 0; j < len_seq2; ++j) {
+    matrix[0][j] = j;
+  }
+
+  // Fill in the matrix based on the edit distances
+  for (int i = 1; i < len_seq1; ++i) {
+    for (int j = 1; j < len_seq2; ++j) {
+      int cost = (seq1[i - 1] == seq2[j - 1]) ? 0 : 1;
+      matrix[i][j] = std::min({
+          matrix[i - 1][j] + 1,        // Deletion
+          matrix[i][j - 1] + 1,        // Insertion
+          matrix[i - 1][j - 1] + cost  // Substitution
+      });
+    }
+  }
+
+  // The bottom-right cell of the matrix contains the Levenshtein distance
+  return matrix[len_seq1 - 1][len_seq2 - 1];
 }
 
 extern "C" {
@@ -244,9 +278,9 @@ double haversine(double lat1, double lon1, double lat2, double lon2) {
   double dlon = lon2 - lon1;
 
   // Haversine formula
-  double a = std::sin(dlat / 2) * std::sin(dlat / 2) +
-             std::cos(lat1) * std::cos(lat2) * std::sin(dlon / 2) *
-             std::sin(dlon / 2);
+  double a =
+      std::sin(dlat / 2) * std::sin(dlat / 2) +
+      std::cos(lat1) * std::cos(lat2) * std::sin(dlon / 2) * std::sin(dlon / 2);
   double c = 2 * std::atan2(sqrt(a), sqrt(1 - a));
   double distance = EarthRadiusKm * c;
 

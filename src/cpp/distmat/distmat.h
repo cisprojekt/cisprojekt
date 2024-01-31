@@ -3,8 +3,8 @@
 #ifndef SRC_CPP_DISTMAT_DISTMAT_H_
 #define SRC_CPP_DISTMAT_DISTMAT_H_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "../dv_main.h"
 
@@ -85,5 +85,12 @@ double toRadians(double degree);
  * @return distance using the haversine formula
  */
 double haversine(double lat1, double lon1, double lat2, double lon2);
+
+int editdistance(std::string seq1, std::string seq2);
+/**
+ * @brief Calculate edit distance between two strings using the unit cost
+ * @param str1 First sequence
+ * @param str2 Second sequence
+ */
 
 #endif  // SRC_CPP_DISTMAT_DISTMAT_H_

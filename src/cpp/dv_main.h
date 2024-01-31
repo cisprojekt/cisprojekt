@@ -23,13 +23,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <Eigen/Dense>
 
+#include <Eigen/Dense>
+#include <boost/dynamic_bitset.hpp>
 #include <cmath>
 #include <iostream>
 #include <map>
 #include <random>
-#include <boost/dynamic_bitset.hpp>
 
 #include "distmat/distmat.h"
 #include "external/hclust/fastcluster.h"
@@ -43,7 +43,7 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
                                int calcScalingMethod, int bool_bit,
-                               double *resultPoints);
+                               double *resultPoints, int type);
 
 /**
  * @brief Webassembly function, will apply multidimensional scaling and
@@ -57,6 +57,11 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
  * @param nPoints Number of points
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
+ * @param calcDistMethod Distance calculation method
+ * @param calcScalingMethod Scaling method
+ * @param bool_bit
+ * @param resultPoints Resulting points after multidimensional scaling
+ * @param type Type of distance calculation 0 = tanimoto, 1 = editdistance
  */
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,

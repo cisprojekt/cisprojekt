@@ -81,7 +81,7 @@ function selectDataType() {
       fun_slector.style.display = "none";
       break;
     case "Seq":
-      distance_func_list = ["For sequence", "Hamming"];
+      distance_func_list = ["For sequence", "Hamming", "edit-distance"];
       break;
     case "ChemInfo":
       distance_func_list = ["For chemicial data", "Tanimoto"];
@@ -107,6 +107,7 @@ function changedistancefunclist(distance_func_list) {
     Tanimoto: "Tanimoto Coefficient",
     Euclidean: "Euclidean Distance",
     "earth-dist": "earth-dist",
+    "edit-distance": "edit-distance",
   };
 
   for (let i = 0; i < distance_func_list.length; i++) {
@@ -124,7 +125,6 @@ function clean_fun_slector() {
 }
 
 function getfunctionflag() {
-  // goofy ahh code 💀
   let funcSelector = document.getElementById("D_function");
   let funcIndex = funcSelector.selectedIndex;
   let funcFlag = funcSelector.options[funcIndex].value;
@@ -420,11 +420,15 @@ function dealwithrun() {
       }
       console.log(points_array);
       break;
+    case "edit-distance":
     case "Tanimoto":
       //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
       //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
       //refactor this delete switch case
       type = "tanimotoFingerprints";
+      if (functionFlag == "edit-distance") {
+        type = "edit-distance";
+      }
       console.log("function as Tani");
       //cluster the data
       //initailize non-flattened (nested) array from lines
