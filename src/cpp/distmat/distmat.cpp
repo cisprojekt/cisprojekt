@@ -1,5 +1,4 @@
 // Copyright [year] <Copyright Owner>
-
 #include "src/cpp/distmat/distmat.h"
 
 #include <emscripten.h>

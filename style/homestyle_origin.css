@@ -118,19 +118,6 @@ button {
   border-color: transparent;
 }
 
-.label {
-  width: 300px;
-  height: 30px;
-  background-image: url("../style/folder/label.png");
-  font-size: 20px;
-  font-weight: bold;
-  color: #41438e;
-  line-height: 30px;
-  padding-left: 5px;
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
 body.dark-mode {
   background-color: black;
   color: white;

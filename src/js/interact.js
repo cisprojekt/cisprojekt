@@ -179,10 +179,6 @@ function getTitleLine(InputFlag = "coord") {
 
 /*Creat the drop-down Menu accroding to the title line */
 function CreateColFlagSelector(idx = 0, titleline) {
-  console.log(
-    "creating the ColFlag selector accroding to the titleline",
-    titleline,
-  );
   let ColFlagMenu = document.createElement("select");
   let firstOption = document.createElement("option");
   let dimension = titleline.length;
@@ -281,20 +277,32 @@ function MapViewSwitcher() {
   let clusterBox = document.getElementById("InforArea");
   let mapWindows = document.getElementById("chartContainer");
   let switchbutton = document.getElementById("switchbtn");
-  if (switchbutton.innerHTML == "Full Screen") {
-    mapWindows.style.transform = "scale(1)";
-    mapWindows.style.left = "0px";
-    mapWindows.style.top = "10px";
-    clusterBox.style.display = "none";
-    switchbutton.innerHTML = "Exit Full Screen";
-    return 0;
-  } else {
-    mapWindows.style.transform = "scale(0.6)";
-    mapWindows.style.left = "-260px";
-    mapWindows.style.top = "-120px";
-    clusterBox.style.display = "";
-    switchbutton.innerHTML = "Full Screen";
-    return 0;
+  mapWindows.style.transform = "scale(1.3)";
+  /* Enter full screen */
+  if (mapWindows.requestFullscreen) {
+    mapWindows.requestFullscreen();
+  } else if (mapWindows.mozRequestFullScreen) {
+    /* Firefox */
+    mapWindows.mozRequestFullScreen();
+  } else if (mapWindows.webkitRequestFullscreen) {
+    /* Chrome, Safari and Opera */
+    mapWindows.webkitRequestFullscreen();
+  } else if (mapWindows.msRequestFullscreen) {
+    /* IE/Edge */
+    mapWindows.msRequestFullscreen();
+  }
+  /* Exit full-screen */
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    /* Firefox */
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) {
+    /* Chrome, Safari and Opera */
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) {
+    /* IE/Edge */
+    document.msExitFullscreen();
   }
 }
 

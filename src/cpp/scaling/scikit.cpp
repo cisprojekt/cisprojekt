@@ -17,8 +17,8 @@ int n = 0;
 
 double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
                          const Eigen::MatrixXd &x,
-                         const Eigen::MatrixXd &x_inter,
-                         int n_samples, bool init = false, bool metric = true,
+                         const Eigen::MatrixXd &x_inter, int n_samples,
+                         bool init = false, bool metric = true,
                          int n_components = 2, int max_iter = 1000,
                          bool verbose = 0, double eps = 1e-5,
                          int random_state = 0, bool normalized_stress = false) {
@@ -26,20 +26,20 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
   srand(time(NULL));
   if (!init) {
     for (int it = 0; it < n_samples; it++) {
-      const_cast<MatrixXd&>(x_inter)(it, 0) = drand48();
-      const_cast<MatrixXd&>(x_inter)(it, 1) = drand48();
+      const_cast<MatrixXd &>(x_inter)(it, 0) = drand48();
+      const_cast<MatrixXd &>(x_inter)(it, 1) = drand48();
     }
   } else {
-    const_cast<MatrixXd&>(x_inter)(0, 0) = 0.0;
-    const_cast<MatrixXd&>(x_inter)(0, 1) = 0.0;
-    const_cast<MatrixXd&>(x_inter)(1, 0) = 1.0;
-    const_cast<MatrixXd&>(x_inter)(1, 1) = -1.0;
-    const_cast<MatrixXd&>(x_inter)(2, 0) = -1.0;
-    const_cast<MatrixXd&>(x_inter)(2, 1) = 1.0;
-    const_cast<MatrixXd&>(x_inter)(3, 0) = 1.0;
-    const_cast<MatrixXd&>(x_inter)(3, 1) = 1.0;
-    const_cast<MatrixXd&>(x_inter)(4, 0) = -1.0;
-    const_cast<MatrixXd&>(x_inter)(4, 1) = -1.0;
+    const_cast<MatrixXd &>(x_inter)(0, 0) = 0.0;
+    const_cast<MatrixXd &>(x_inter)(0, 1) = 0.0;
+    const_cast<MatrixXd &>(x_inter)(1, 0) = 1.0;
+    const_cast<MatrixXd &>(x_inter)(1, 1) = -1.0;
+    const_cast<MatrixXd &>(x_inter)(2, 0) = -1.0;
+    const_cast<MatrixXd &>(x_inter)(2, 1) = 1.0;
+    const_cast<MatrixXd &>(x_inter)(3, 0) = 1.0;
+    const_cast<MatrixXd &>(x_inter)(3, 1) = 1.0;
+    const_cast<MatrixXd &>(x_inter)(4, 0) = -1.0;
+    const_cast<MatrixXd &>(x_inter)(4, 1) = -1.0;
   }
   double old_stress = 1e15;
   // Eigen::MatrixXd disparities(n_samples,n_samples); //need in non-metric case
@@ -49,9 +49,8 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
   for (int it = 0; it < max_iter; it++) {
     for (int f = 0; f < n_samples; f++) {
       for (int g = 0; g < n_samples; g++) {
-        dis(f, g) =
-            sqrt(pow(x_inter(f, 0) - x_inter(g, 0), 2) +
-                 pow(x_inter(f, 1) - x_inter(g, 1), 2));
+        dis(f, g) = sqrt(pow(x_inter(f, 0) - x_inter(g, 0), 2) +
+                         pow(x_inter(f, 1) - x_inter(g, 1), 2));
       }
     }
     /*
@@ -91,17 +90,17 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
     // Eigen::MatrixXd B(n_samples, n_samples);
     Eigen::MatrixXd ratio(n_samples, n_samples);
 
-    ratio.array() = -1.0*(dissimilarities.array() / dis.array());
+    ratio.array() = -1.0 * (dissimilarities.array() / dis.array());
     // B.array() = -ratio.array();
 
     for (int i = 0; i < n_samples; i++) {
-      ratio(i, i) += -1.0*(ratio.col(i).sum());
+      ratio(i, i) += -1.0 * (ratio.col(i).sum());
       // B(i, i) += sum;
     }
     // Eigen::MatrixXd X_c(2, n_samples);
     // X_c = x_inter;
-    const_cast<MatrixXd&>(x_inter) = ratio * x_inter;
-    const_cast<MatrixXd&>(x_inter).array() = 1.0 / n_samples * x_inter.array();
+    const_cast<MatrixXd &>(x_inter) = ratio * x_inter;
+    const_cast<MatrixXd &>(x_inter).array() = 1.0 / n_samples * x_inter.array();
     Eigen::MatrixXd x_sq(n_samples, 2);
     x_sq = (x_inter.array()) * (x_inter.array());
     Eigen::VectorXd interm(n_samples);
@@ -117,8 +116,7 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
   return stress;
 }
 void scikit_mds_multi(const Eigen::MatrixXd &dissimilarities,
-                      const Eigen::MatrixXd &x,
-                      const Eigen::MatrixXd &x_inter,
+                      const Eigen::MatrixXd &x, const Eigen::MatrixXd &x_inter,
                       int n_iterations, int n_samples, bool init = false,
                       bool metric = true, int n_components = 2,
                       int max_iter = 1000, bool verbose = 0, double eps = 1e-5,
@@ -131,8 +129,8 @@ void scikit_mds_multi(const Eigen::MatrixXd &dissimilarities,
                                random_state, normalized_stress);
     if (stress < min_stress) {
       for (int k = 0; k < n_samples; k++) {
-        const_cast<MatrixXd&>(x)(k, 0) = const_cast<MatrixXd&>(x_inter)(k, 0);
-        const_cast<MatrixXd&>(x)(k, 1) = const_cast<MatrixXd&>(x_inter)(k, 1);
+        const_cast<MatrixXd &>(x)(k, 0) = const_cast<MatrixXd &>(x_inter)(k, 0);
+        const_cast<MatrixXd &>(x)(k, 1) = const_cast<MatrixXd &>(x_inter)(k, 1);
       }
       min_stress = stress;
     }
@@ -188,7 +186,7 @@ MatrixXd calculateMDSscikit(int n, const MatrixXd &distanceMatrix) {
                    normalized_stress);
   clock_t start_time2 = clock();
   std::cout << "Scikit-MDS needed "
-  << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC)
-  << "s for scaling\n";
+            << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC)
+            << "s for scaling\n";
   return x;
 }
