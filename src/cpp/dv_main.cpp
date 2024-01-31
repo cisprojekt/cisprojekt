@@ -1,6 +1,7 @@
 // Copyright [year] <Copyright Owner>
 #include "src/cpp/dv_main.h"
 
+#include <emscripten.h>
 #include <time.h>
 
 #include <boost/dynamic_bitset.hpp>
@@ -8,6 +9,68 @@
 #include <vector>
 
 using Eigen::MatrixXd;
+
+EMSCRIPTEN_KEEPALIVE
+extern "C" void clusterCustom(double *distMat, double *height, int *merge,
+                              int *labels, int n, int maxIterations,
+                              int zoomLevels, int calcDistMethod,
+                              double *resultPoints, int calcScalingMethod) {
+  // Convert input distMat to Eigen matrix
+  MatrixXd distMatMDS = distanceMatrix(distMat, n);
+  MatrixXd resultMDS;
+
+  switch (calcScalingMethod) {
+    case 1:
+      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+      break;
+    case 2:
+      resultMDS = calculateMDSscikit(n, distMatMDS);
+      break;
+    case 3:
+      resultMDS = calculateMDSglimmer(n, distMatMDS);
+      break;
+    default:
+      printf("no valid scaling algorithm was chosen");
+      break;
+  }
+
+  // Overwrite points with the new configuration
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < 2; j++) {
+      resultPoints[i * 2 + j] = resultMDS(i, j);
+    }
+  }
+
+  // Create condensed distance matrix to work with hclust-cpp
+  int k = 0;
+  for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+      distMat[k] = euclideanDistance(resultMDS.row(i), resultMDS.row(j));
+      k++;
+    }
+  }
+
+  // Do the clustering
+  hclust_fast(n, distMatMDS, calcDistMethod, merge, height);
+
+  // Find maximum distance in order to create good cuts of dendrogram
+  // TODO(Jonas): Check if its always last element
+  double maxHeight = 0;
+  for (int i = 0; i < n - 1; i++) {
+    if (height[i] > maxHeight) {
+      maxHeight = height[i];
+    }
+  }
+
+  // For each zoomlevel calculate a labels assignment
+  int *oneLabel = new int[n];
+  for (int i = 0; i < zoomLevels; i++) {
+    cutree_cdist(n, merge, height, (i + 1) * maxHeight / zoomLevels, oneLabel);
+    std::memcpy(labels + i * n, oneLabel, n * sizeof(int));
+  }
+
+  delete[] oneLabel;
+}
 
 EMSCRIPTEN_KEEPALIVE
 extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
@@ -61,18 +124,18 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
   MatrixXd resultMDS;
 
   switch (calcScalingMethod) {
-  case 1:
-    resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
-    break;
-  case 2:
-    resultMDS = calculateMDSscikit(nStrings, distMatMDS);
-    break;
-  case 3:
-    resultMDS = calculateMDSglimmer(nStrings, distMatMDS);
-    break;
-  default:
-    printf("no valid scaling algorithm was chosen");
-    break;
+    case 1:
+      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+      break;
+    case 2:
+      resultMDS = calculateMDSscikit(nStrings, distMatMDS);
+      break;
+    case 3:
+      resultMDS = calculateMDSglimmer(nStrings, distMatMDS);
+      break;
+    default:
+      printf("no valid scaling algorithm was chosen");
+      break;
   }
   std::cout << "Scaling finished" << std::endl;
   // std::cout << resultMDS << std::endl;
@@ -153,18 +216,18 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
     std::cout << "distancematrix calculated" << std::endl;
     MatrixXd resultMDS;
     switch (calcScalingMethod) {
-    case 1:
-      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
-      break;
-    case 2:
-      resultMDS = calculateMDSscikit(nPoints, distMatMDS);
-      break;
-    case 3:
-      resultMDS = calculateMDSglimmer(nPoints, distMatMDS);
-      break;
-    default:
-      printf("no valid scaling algorithm was chosen");
-      break;
+      case 1:
+        resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+        break;
+      case 2:
+        resultMDS = calculateMDSscikit(nPoints, distMatMDS);
+        break;
+      case 3:
+        resultMDS = calculateMDSglimmer(nPoints, distMatMDS);
+        break;
+      default:
+        printf("no valid scaling algorithm was chosen");
+        break;
     }
     std::cout << "scaling finished" << std::endl;
     // Overwrite points with the new configuration

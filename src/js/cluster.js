@@ -16,8 +16,141 @@ async function initializeMap(
   console.log("Starting Clustering Program");
   console.log(type);
 
+  // For custom inputs
+  if (type == "custom") {
+    console.log(inputPoints);
+
+    let n = inputPoints.length;
+
+    // Custom distance function
+    let customFunction;
+
+    // Read functon from textarea and eval
+    customFunction = eval(document.getElementById("distFunction").value);
+
+    console.log(n);
+    let zoomLevels = 20;
+    let pointsToPlot = [];
+    let maxIterations = 5;
+
+    let resultPoints = new Float64Array(n * 2);
+
+    let resultPointsBuf = Module._malloc(
+      n * 2 * Float64Array.BYTES_PER_ELEMENT,
+    );
+
+    // Fill distance matrix
+    let distMat = new Float64Array((n * (n - 1)) / 2);
+    let idx = 0;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        distMat[idx++] = customFunction(inputPoints[i], inputPoints[j]);
+      }
+    }
+
+    console.log(distMat);
+
+    let distMatBuf = Module._malloc(
+      ((n * (n - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT,
+    );
+    Module.HEAPF64.set(distMat, distMatBuf / distMat.BYTES_PER_ELEMENT);
+
+    let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
+    let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
+    let labelsBuf = Module._malloc(
+      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
+    );
+
+    Module.HEAPF64.set(
+      resultPoints,
+      resultPointsBuf / resultPoints.BYTES_PER_ELEMENT,
+    );
+
+    // Actual function call to cluster
+    Module.ccall(
+      "clusterCustom",
+      null,
+      [
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+      ],
+      [
+        distMatBuf,
+        heightBuf,
+        mergeBuf,
+        labelsBuf,
+        n,
+        maxIterations,
+        zoomLevels,
+        1,
+        resultPointsBuf,
+        scalingMethod,
+      ],
+    );
+
+    let labelsResult = new Int32Array(
+      Module.HEAP32.subarray(
+        labelsBuf / Int32Array.BYTES_PER_ELEMENT,
+        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels,
+      ),
+    );
+    let pointsResult = new Float64Array(
+      Module.HEAPF64.subarray(
+        resultPointsBuf / Float64Array.BYTES_PER_ELEMENT,
+        resultPointsBuf / Float64Array.BYTES_PER_ELEMENT + n * 2,
+      ),
+    );
+
+    for (var i = 0; i < n * 2; i += 2) {
+      pointsToPlot.push({
+        x: pointsResult[i] * n * 2,
+        y: pointsResult[i + 1] * n * 2,
+      });
+    }
+
+    console.log(labelsResult);
+
+    // Free memory
+    Module._free(resultPointsBuf);
+    Module._free(distMatBuf);
+    Module._free(heightBuf);
+    Module._free(mergeBuf);
+    Module._free(resultPointsBuf);
+
+    var clusterInfos = getClusterInfo(
+      zoomLevels,
+      labelsResult,
+      n,
+      numflags_array, // Holds an array for each point, holding the numflag values for that point
+      nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+    );
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+
+    // Call the function of map to plot
+    mapFunctions(
+      labelsResult,
+      pointsToPlot,
+      n,
+      zoomLevels,
+      clusterInfos,
+      flagColumnNames,
+      numflags_array,
+    );
+  }
+
   // For euclidean inputs
-  if (type == "euclidean" || type == "earth-dist") {
+  else if (type == "euclidean" || type == "earth-dist") {
     let isSperical = false;
     if (type == "earth-dist") {
       isSperical = true;

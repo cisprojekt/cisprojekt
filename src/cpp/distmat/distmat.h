@@ -24,6 +24,8 @@ using Eigen::VectorXd;
 
 // clang-format on
 
+MatrixXd distanceMatrix(double *distMatFilled, int n);
+
 /**
  * @brief Calculate a square distance matrix for points
  * @param points Points in Euclidean space

@@ -1,3 +1,5 @@
+var exportFile;
+
 function mapFunctions(
   labelsResult,
   pointsToPlot,
@@ -7,6 +9,25 @@ function mapFunctions(
   flagColumnNames,
   numflags_array,
 ) {
+  // Export function parameters to a JSON file
+  // will be saved as 'result.json'
+  exportFile = function () {
+    var a = window.document.createElement("a");
+    var jsonText = JSON.stringify([
+      labelsResult,
+      pointsToPlot,
+      n,
+      zoomLevels,
+      clusterInfos,
+    ]);
+    a.href = window.URL.createObjectURL(
+      new Blob([jsonText], { type: "application/json" }),
+    );
+    a.download = "result.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
   //initialize
   var data = [];
   var y_coord = 0;
@@ -64,7 +85,7 @@ function mapFunctions(
       averages.push({
         x: sums[label].x / sums[label].count,
         y: sums[label].y / sums[label].count,
-        r: sums[label].count,
+        r: Math.sqrt(sums[label].count) * 1.7,
         l: label,
       });
     }
@@ -95,6 +116,7 @@ function mapFunctions(
     .append("svg")
     .attr("width", width)
     .attr("height", height)
+    .style("background-color", "white")
     .on("mousemove", function (event) {
       var mouseCoords = d3.pointer(event);
       var invertedCoords = d3.zoomTransform(this).invert(mouseCoords); // calculating the true mouse coordinates accounting für zoom and drag on a svg
@@ -262,6 +284,7 @@ function mapFunctions(
               })
               .transition()
               .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
+            d3.select(this).lower();
           }
           //if the same point is clicked again dont select it again
           //else select the point

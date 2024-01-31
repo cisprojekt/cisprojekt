@@ -12,19 +12,76 @@
 
   <body>
     <header>
-      <h1>IMPACT.</h1>
-      <p id="welcome">Manual for use of the website</p>
+      <h1>SCOUT.</h1>
+      <p id="welcome">SCOUT User Manual</p>
     </header>
     <main>
       <div id="manual_text">
-        <h2>How to use:</h2>
+        <h2>Introduction</h2>
+        <p>
+          SCOUT is a powerful tool that allows you to upload data in CSV format,
+          cluster the data according to individual distance information, and
+          visualize the results.
+        </p>
+
+        <h2>Getting Started</h2>
+
+        <h3>Step 1: Uploading Your CSV File</h3>
+        <ol>
+          <li>
+            Locate the section titled "Upload your CSV file" at the top left of
+            the SCOUT interface.
+          </li>
+          <li>Click on the input field and a dialog box will open.</li>
+          <li>Navigate to the location of your CSV file on your computer.</li>
+          <li>
+            Select the file and click `Open` to upload it into the SCOUT system.
+          </li>
+        </ol>
+
+        <h2>Clustering Data</h2>
+
+        <h3>Step 2: Choosing Clustering Options</h3>
+        <ol>
+          <li>Locate the middle section titled "Choose Clustering".</li>
+          <li>Click on the "Add Data" button to add data for clustering.</li>
+          <li>
+            Use the "Select CSV-Divider" option to select specific dividers
+            within your CSV file.
+          </li>
+          <li>
+            Choose the appropriate "Data Type" and "Scaling Algorithm" for your
+            data from the dropdown menus.
+          </li>
+        </ol>
+
+        <h2>Flag Matching</h2>
+
+        <h3>Step 3: Running Flag Match</h3>
+        <ol>
+          <li>Locate the bottom section titled "Flag Match".</li>
+          <li>Use the "Flag Check" button to check flags in your data.</li>
+          <li>
+            If necessary, use the "Delete All" button to remove all entries.
+          </li>
+          <li>Click on the "Run" button to start the flag match process.</li>
+        </ol>
+
+        <p>
+          Remember, SCOUT is a powerful tool, but the quality of the results
+          depends heavily on the appropriateness of the distance measure and
+          visualization type for your specific dataset. Always ensure your
+          choices align with your data and the insights you hope to gain.
+        </p>
+
+        <p>Enjoy exploring your data with SCOUT!</p>
       </div>
       <div style="text-align: center">
         <button id="start" onclick="window.location.href='home.html'">
           Home Page
         </button>
         <button id="start" onclick="window.location.href='index.html'">
-          Data Visualizer
+          Main Page
         </button>
       </div>
     </main>

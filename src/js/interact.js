@@ -54,7 +54,7 @@ function getinputdata() {
 function readFileContents() {
   let fileInput = document.getElementById("dataFile");
   let file = fileInput.files[0];
-  if (file && file.name.endsWith(".csv")) {
+  if (file && (file.name.endsWith(".csv") || file.name.endsWith(".json"))) {
     var reader = new FileReader();
 
     reader.onload = function (e) {
@@ -66,6 +66,10 @@ function readFileContents() {
     };
 
     reader.readAsText(file);
+
+    if (file.name.endsWith(".json")) {
+      document.getElementById("directRun").style.display = "inline";
+    }
   } else {
     alert("Please select a valid CSV file.");
   }
@@ -89,6 +93,9 @@ function selectDataType() {
     case "Vector":
       distance_func_list = ["earth-dist", "Euclidean"];
       break;
+    case "Custom":
+      distance_func_list = ["Custom"];
+      break;
     default:
       fun_slector.style.display = "none";
       break;
@@ -108,6 +115,7 @@ function changedistancefunclist(distance_func_list) {
     Euclidean: "Euclidean Distance",
     "earth-dist": "earth-dist",
     "edit-distance": "edit-distance",
+    Custom: "Custom",
   };
 
   for (let i = 0; i < distance_func_list.length; i++) {
@@ -175,10 +183,6 @@ function getTitleLine(InputFlag = "coord") {
 
 /*Creat the drop-down Menu accroding to the title line */
 function CreateColFlagSelector(idx = 0, titleline) {
-  console.log(
-    "creating the ColFlag selector accroding to the titleline",
-    titleline,
-  );
   let ColFlagMenu = document.createElement("select");
   let firstOption = document.createElement("option");
   let dimension = titleline.length;
@@ -277,20 +281,32 @@ function MapViewSwitcher() {
   let clusterBox = document.getElementById("InforArea");
   let mapWindows = document.getElementById("chartContainer");
   let switchbutton = document.getElementById("switchbtn");
-  if (switchbutton.innerHTML == "Full Screen") {
-    mapWindows.style.transform = "scale(1)";
-    mapWindows.style.left = "0px";
-    mapWindows.style.top = "10px";
-    clusterBox.style.display = "none";
-    switchbutton.innerHTML = "Exit Full Screen";
-    return 0;
-  } else {
-    mapWindows.style.transform = "scale(0.6)";
-    mapWindows.style.left = "-260px";
-    mapWindows.style.top = "-120px";
-    clusterBox.style.display = "";
-    switchbutton.innerHTML = "Full Screen";
-    return 0;
+  mapWindows.style.transform = "scale(1.3)";
+  /* Enter full screen */
+  if (mapWindows.requestFullscreen) {
+    mapWindows.requestFullscreen();
+  } else if (mapWindows.mozRequestFullScreen) {
+    /* Firefox */
+    mapWindows.mozRequestFullScreen();
+  } else if (mapWindows.webkitRequestFullscreen) {
+    /* Chrome, Safari and Opera */
+    mapWindows.webkitRequestFullscreen();
+  } else if (mapWindows.msRequestFullscreen) {
+    /* IE/Edge */
+    mapWindows.msRequestFullscreen();
+  }
+  /* Exit full-screen */
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    /* Firefox */
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) {
+    /* Chrome, Safari and Opera */
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) {
+    /* IE/Edge */
+    document.msExitFullscreen();
   }
 }
 
@@ -392,6 +408,20 @@ function dealwithrun() {
     case "noChoice":
       alert("Please choose a distance function");
       break;
+    case "Custom":
+      type = "custom";
+      console.log("function is custom");
+      for (let i = 1; i < lines.length; i++) {
+        let line = lines[i].split(devider);
+        let lineAxisValues = [];
+        dataColumns.forEach((columnIndex) => {
+          lineAxisValues.push(line[columnIndex]);
+        });
+        points_array.push(lineAxisValues);
+      }
+      console.log(points_array);
+
+      break;
     case "earth-dist":
     case "Euclidean":
       type = "euclidean";
@@ -492,4 +522,17 @@ function deletedatenandfunc() {
 function back2input() {
   hideresult();
   showprepare();
+}
+
+// Import JSON file and call mapFunctions
+function importFile() {
+  // Read Textbox
+  var data = JSON.parse(getinputdata());
+
+  // Hide elements
+  hideprepera();
+  showresult();
+
+  // Call map
+  mapFunctions(data[0], data[1], data[2], data[3], data[4]);
 }
