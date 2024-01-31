@@ -3,8 +3,8 @@
 #ifndef SRC_CPP_DISTMAT_DISTMAT_H_
 #define SRC_CPP_DISTMAT_DISTMAT_H_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "../dv_main.h"
 
@@ -23,6 +23,8 @@ using Eigen::VectorXd;
  */
 
 // clang-format on
+
+MatrixXd distanceMatrix(double *distMatFilled, int n);
 
 /**
  * @brief Calculate a square distance matrix for points

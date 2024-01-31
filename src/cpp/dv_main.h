@@ -23,13 +23,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <Eigen/Dense>
 
+#include <Eigen/Dense>
+#include <boost/dynamic_bitset.hpp>
 #include <cmath>
 #include <iostream>
 #include <map>
 #include <random>
-#include <boost/dynamic_bitset.hpp>
 
 #include "distmat/distmat.h"
 #include "external/hclust/fastcluster.h"
@@ -37,6 +37,11 @@
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+
+extern "C" void clusterCustom(double *distMat, double *height, int *merge,
+                              int *labels, int n, int maxIterations,
+                              int zoomLevels, int calcDistMethod,
+                              double *resultPoint, int calcScalingMethod);
 
 extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
