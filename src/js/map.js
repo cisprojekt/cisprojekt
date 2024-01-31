@@ -85,7 +85,7 @@ function mapFunctions(
       averages.push({
         x: sums[label].x / sums[label].count,
         y: sums[label].y / sums[label].count,
-        r: Math.sqrt(sums[label].count)*1.7,
+        r: Math.sqrt(sums[label].count) * 1.7,
         l: label,
       });
     }
@@ -284,7 +284,7 @@ function mapFunctions(
               })
               .transition()
               .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
-              d3.select(this).lower();
+            d3.select(this).lower();
           }
           //if the same point is clicked again dont select it again
           //else select the point
