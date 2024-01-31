@@ -91,6 +91,16 @@
       <!-- Formal and real button for add data -->
       <div>
         <button type="button" id="addDataButton">Add Data</button>
+        <button id="myButton" onclick="showCSVDeviderPopUp()">
+          Select CSV-Devider
+        </button>
+        <div id="CSVDeviderPopUp" style="display: none">
+          <input
+            type="text"
+            id="myCSVDeviderInput"
+            placeholder="default is commas"
+          />
+        </div>
       </div>
 
       <input
@@ -100,16 +110,6 @@
         accept=".CSV"
         style="display: none"
       />
-      <button id="myButton" onclick="showCSVDeviderPopUp()">
-        Select CSV-Devider
-      </button>
-      <div id="CSVDeviderPopUp" style="display: none">
-        <input
-          type="text"
-          id="myCSVDeviderInput"
-          placeholder="default is commas"
-        />
-      </div>
 
       <div class="box" id="box-for-check-list">
         <div id="checkFlagArea" style="display: none">
