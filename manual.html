@@ -65,7 +65,20 @@
             If necessary, use the "Delete All" button to remove all entries.
           </li>
           <li>Click on the "Run" button to start the flag match process.</li>
+          <li >
+            Click <span style="color: blue; cursor: pointer; text-decoration: underline;" onclick="toggleFlagExplain()">here</span> to learn more about flags.
+          </li>
         </ol>
+        <div id="FlagExplain" style="overflow: hidden; transition: max-height 0.2s ease-out; max-height: 0; background-color: azure; margin-left: 30px; width: 500px;">
+          <ul style="list-style-type: circle;">
+            <li>distance: Flags for eculidean distance. Please make sure that each dimension in the coordinates is labeled as distance.</li>
+            <li>
+              
+            </li>
+          </ul>
+          
+
+        </div>
 
         <p>
           Remember, SCOUT is a powerful tool, but the quality of the results
@@ -85,5 +98,17 @@
         </button>
       </div>
     </main>
+
+    <script>
+      function toggleFlagExplain(){
+        
+        var ExplainBox = document.getElementById("FlagExplain");
+        if(ExplainBox.style.maxHeight === "0px"){
+          ExplainBox.style.maxHeight = FlagExplain.scrollHeight + "px";
+        } else {
+          ExplainBox.style.maxHeight = "0px";
+        }
+      }
+    </script>
   </body>
 </html>
