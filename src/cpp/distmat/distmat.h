@@ -36,7 +36,7 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical = false);
  * @param strings Molecule fingerprints
  * @return distMat Distance Matrix
  */
-MatrixXd distanceMatrix(std::vector<std::string> strings);
+MatrixXd distanceMatrix(std::vector<std::string> strings, int type);
 
 /**
  * @brief Calculate Euclidean distance between two points
