@@ -148,8 +148,10 @@ async function initializeMap(
     // convert type information to int
     if (type == "tanimotoFingerprints") {
       type = 0;
+      bit_bool = 1;
     } else if (type == "edit-distance") {
       type = 1;
+      bit_bool = 0;
     }
 
     // Create one large string and create array of length of each string
@@ -238,7 +240,7 @@ async function initializeMap(
         zoomLevels,
         1,
         scalingMethod,
-        1,
+        bit_bool,
         resultPointsBuf,
         type,
       ],
