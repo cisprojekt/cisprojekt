@@ -66,10 +66,6 @@ function readFileContents() {
     };
 
     reader.readAsText(file);
-
-    if (file.name.endsWith(".json")) {
-      document.getElementById("directRun").style.display = "inline";
-    }
   } else {
     alert("Please select a valid CSV file.");
   }

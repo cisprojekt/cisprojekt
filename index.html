@@ -93,7 +93,6 @@
       <div class="label">
         <p style="text-align: left">Upload your CSV file</p>
       </div>
-
       <!-- Input Area for data and function -->
       <textarea
         id="text_box"
@@ -101,10 +100,23 @@
         placeholder="Type here..."
         oninput="showDropdowns()"
       ></textarea>
-
       <!-- Formal and real button for add data -->
       <div>
-        <button type="button" id="addDataButton">Add Data</button>
+        <button id="addDataButton" style="width: 200px">Add Data</button>
+        <button
+          id="myButton"
+          style="width: 200px"
+          onclick="showCSVDeviderPopUp()"
+        >
+          Select CSV-Devider
+        </button>
+        <div id="CSVDeviderPopUp" style="display: none">
+          <input
+            type="text"
+            id="myCSVDeviderInput"
+            placeholder="default is commas"
+          />
+        </div>
         <button
           type="button"
           id="directRun"
@@ -132,9 +144,9 @@
           <table id="checkTable" style="border-collapse: collapse">
             <thead>
               <tr>
-                <th>Column number</th>
+                <th>Colum number</th>
                 <th>Column title</th>
-                <th>Data flags</th>
+                <th>Daten flags</th>
               </tr>
             </thead>
 
@@ -144,96 +156,83 @@
       </div>
 
       <div class="box" id="box-for-button-group">
-        <div style="display: grid">
-          <!-- Choose Function Button -->
-          <div style="min-height: 80px">
-            <div class="label">
-              <p style="text-align: left">Choose clustering</p>
-            </div>
-            <select id="DataType" style="width: 200px; margin-top: 20px">
-              <option
-                value="noChoice"
-                onclick="document.getElementById('distFunction').style.display='none'"
-              >
-                Choose your data type
-              </option>
-              <option
-                value="Seq"
-                onclick="document.getElementById('distFunction').style.display='none'"
-              >
-                DNA/RNA Sequence
-              </option>
-              <option
-                value="ChemInfo"
-                onclick="document.getElementById('distFunction').style.display='none'"
-              >
-                Molecule Information
-              </option>
-              <option
-                value="Vector"
-                onclick="document.getElementById('distFunction').style.display='none'"
-              >
-                Vector
-              </option>
-              <option
-                value="Custom"
-                onclick="document.getElementById('distFunction').style.display='inline'"
-              >
-                Custom
-              </option>
-              <!-- value="Vector" was former "Euclidean" -->
-            </select>
-
-            <select id="D_function" style="display: none; width: 200px">
-              <option value="noChoice">Choose a Function</option>
-            </select>
+        <!-- Choose Function Button -->
+        <div style="min-height: 80px">
+          <div class="label">
+            <p style="text-align: left">Choose clustering</p>
           </div>
-
-          <textarea
-            placeholder="Enter custom distance function"
-            id="distFunction"
-            class="distFunc"
-          ></textarea>
+          <select id="DataType" style="width: 200px; margin-top: 20px">
+            <option
+              value="noChoice"
+              onclick="document.getElementById('distFunction').style.display='none'"
+            >
+              Choose your data type
+            </option>
+            <option
+              value="Seq"
+              onclick="document.getElementById('distFunction').style.display='none'"
+            >
+              DNA/RNA Sequence
+            </option>
+            <option
+              value="ChemInfo"
+              onclick="document.getElementById('distFunction').style.display='none'"
+            >
+              Molecule Information
+            </option>
+            <option
+              value="Vector"
+              onclick="document.getElementById('distFunction').style.display='none'"
+            >
+              Vector
+            </option>
+            <option
+              value="Custom"
+              onclick="document.getElementById('distFunction').style.display='inline'"
+            >
+              Custom
+            </option>
+            <!-- value="Vector" was former "Euclidean" -->
+          </select>
 
           <select id="D_function" style="display: none; width: 200px">
             <option value="noChoice">Choose a Function</option>
           </select>
-        </div>
 
-        <div>
-          <select
-            id="Scaling_alg"
-            name="SaclingAlgorithmus"
-            style="width: 200px"
-          >
-            <option value="noChoice">Scaling Algorithm</option>
-            <!-- the following values are supposed to uniqueley indentify their scaling algorithm -->
-            <option value="1">SMACOF</option>
-            <option value="2">SciKit-learn</option>
-            <option value="3">Glimmer</option>
-          </select>
-          <select
-            id="distence_calcu"
-            name="distance_calcu"
-            style="width: 200px"
-          >
-            <option value="noChoice">Distance Calculation</option>
-            <option value="Single">Single</option>
-            <option value="Complete">Complete</option>
-            <option value="Average">Average</option>
-            <option value="Weighted">Weighted</option>
-            <option value="Ward">Ward</option>
-            <option value="Centroid">Centroid</option>
-            <option value="Median">Median</option>
-          </select>
+          <div>
+            <select
+              id="Scaling_alg"
+              name="SaclingAlgorithmus"
+              style="width: 200px"
+            >
+              <option value="noChoice">Scaling Algorithm</option>
+              <!-- the following values are supposed to uniqueley indentify their scaling algorithm -->
+              <option value="1">SMACOF</option>
+              <option value="2">SciKit-learn</option>
+              <option value="3">Glimmer</option>
+            </select>
+            <select
+              id="distence_calcu"
+              name="distance_calcu"
+              style="width: 200px"
+            >
+              <option value="noChoice">Distance Calculation</option>
+              <option value="Single">Single</option>
+              <option value="Complete">Complete</option>
+              <option value="Average">Average</option>
+              <option value="Weighted">Weighted</option>
+              <option value="Ward">Ward</option>
+              <option value="Centroid">Centroid</option>
+              <option value="Median">Median</option>
+            </select>
+          </div>
         </div>
-
+        <br />
         <textarea
           placeholder="Enter custom distance function"
           id="distFunction"
           class="distFunc"
         ></textarea>
-
         <div>
           <div class="label">
             <p style="text-align: left">Table Interpretation</p>
@@ -251,13 +250,11 @@
             Delete All
           </button>
         </div>
-
         <div>
           <div class="label">
             <p style="text-align: left">Get your map now</p>
           </div>
         </div>
-
         <div>
           <!-- Run function Button -->
           <button
