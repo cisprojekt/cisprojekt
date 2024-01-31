@@ -69,6 +69,10 @@
         display: none;
         margin: auto;
       }
+
+      .directRunBtn {
+        display: none;
+      }
     </style>
   </head>
 </html>
@@ -101,23 +105,21 @@
       <!-- Formal and real button for add data -->
       <div>
         <button type="button" id="addDataButton">Add Data</button>
-        <button id="myButton" onclick="showCSVDeviderPopUp()">
-          Select CSV-Divider
+        <button
+          type="button"
+          id="directRun"
+          class="directRunBtn"
+          onclick="importFile();"
+        >
+          Run Directly
         </button>
-        <div id="CSVDeviderPopUp" style="display: none">
-          <input
-            type="text"
-            id="myCSVDeviderInput"
-            placeholder="default is commas"
-          />
-        </div>
       </div>
 
       <input
         type="file"
         id="dataFile"
         name="dataFile"
-        accept=".CSV"
+        accept=".CSV,.JSON"
         style="display: none"
       />
 
@@ -142,44 +144,57 @@
       </div>
 
       <div class="box" id="box-for-button-group">
-        <!-- Choose Function Button -->
-        <div style="min-height: 80px">
-          <div class="label">
-            <p style="text-align: left">Choose clustering</p>
+        <div style="display: grid">
+          <!-- Choose Function Button -->
+          <div style="min-height: 80px">
+            <div class="label">
+              <p style="text-align: left">Choose clustering</p>
+            </div>
+            <select id="DataType" style="width: 200px; margin-top: 20px">
+              <option
+                value="noChoice"
+                onclick="document.getElementById('distFunction').style.display='none'"
+              >
+                Choose your data type
+              </option>
+              <option
+                value="Seq"
+                onclick="document.getElementById('distFunction').style.display='none'"
+              >
+                DNA/RNA Sequence
+              </option>
+              <option
+                value="ChemInfo"
+                onclick="document.getElementById('distFunction').style.display='none'"
+              >
+                Molecule Information
+              </option>
+              <option
+                value="Vector"
+                onclick="document.getElementById('distFunction').style.display='none'"
+              >
+                Vector
+              </option>
+              <option
+                value="Custom"
+                onclick="document.getElementById('distFunction').style.display='inline'"
+              >
+                Custom
+              </option>
+              <!-- value="Vector" was former "Euclidean" -->
+            </select>
+
+            <select id="D_function" style="display: none; width: 200px;">
+              <option value="noChoice">Choose a Function</option>
+            </select>
+
           </div>
-          <select id="DataType" style="width: 200px; margin-top: 20px">
-            <option
-              value="noChoice"
-              onclick="document.getElementById('distFunction').style.display='none'"
-            >
-              Choose your data type
-            </option>
-            <option
-              value="Seq"
-              onclick="document.getElementById('distFunction').style.display='none'"
-            >
-              DNA/RNA Sequence
-            </option>
-            <option
-              value="ChemInfo"
-              onclick="document.getElementById('distFunction').style.display='none'"
-            >
-              Molecule Information
-            </option>
-            <option
-              value="Vector"
-              onclick="document.getElementById('distFunction').style.display='none'"
-            >
-              Vector
-            </option>
-            <option
-              value="Custom"
-              onclick="document.getElementById('distFunction').style.display='inline'"
-            >
-              Custom
-            </option>
-            <!-- value="Vector" was former "Euclidean" -->
-          </select>
+          
+          <textarea
+            placeholder="Enter custom distance function"
+            id="distFunction"
+            class="distFunc"
+          ></textarea>
 
           <select id="D_function" style="display: none; width: 200px">
             <option value="noChoice">Choose a Function</option>
@@ -187,8 +202,7 @@
         </div>
 
         <div>
-          <select
-            id="Scaling_alg"
+          <select id="Scaling_alg"
             name="SaclingAlgorithmus"
             style="width: 200px"
           >
@@ -291,13 +305,9 @@
       >
         <button
           id="switchbtn"
-          ;
           type="button"
-          ;
           value="preview"
-          ;
           style="position: relative; float: left; margin-left: 5px; z-index: 5"
-          ;
           onclick="MapViewSwitcher()"
         >
           Full Screen
@@ -308,6 +318,13 @@
           onclick="window.location.reload();"
         >
           Restart
+        </button>
+        <button
+          id="ExportButton"
+          style="position: relative; float: left; z-index: 5"
+          onclick="exportFile();"
+        >
+          Export
         </button>
         <div
           id="chartContainer"
