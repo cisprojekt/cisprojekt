@@ -26,6 +26,7 @@
         text-shadow: 1px 1px 20px rgba(255, 255, 255, 1);
         margin: 10px 20px;
       }
+
       textarea {
         width: 70%;
         height: 100%;
@@ -66,6 +67,7 @@
 
       .distFunc {
         display: none;
+        margin: auto;
       }
     </style>
   </head>
@@ -129,11 +131,36 @@
               <p style="text-align: left">Choose clustering</p>
             </div>
             <select id="DataType" style="width: 200px; margin-top: 20px">
-              <option value="noChoice">Choose your data type</option>
-              <option value="Seq">DNA/RNA Sequence</option>
-              <option value="ChemInfo">Molecule Information</option>
-              <option value="Vector">Vector</option>
-              <option value="Custom">Custom</option>
+              <option
+                value="noChoice"
+                onclick="document.getElementById('distFunction').style.display='none'"
+              >
+                Choose your data type
+              </option>
+              <option
+                value="Seq"
+                onclick="document.getElementById('distFunction').style.display='none'"
+              >
+                DNA/RNA Sequence
+              </option>
+              <option
+                value="ChemInfo"
+                onclick="document.getElementById('distFunction').style.display='none'"
+              >
+                Molecule Information
+              </option>
+              <option
+                value="Vector"
+                onclick="document.getElementById('distFunction').style.display='none'"
+              >
+                Vector
+              </option>
+              <option
+                value="Custom"
+                onclick="document.getElementById('distFunction').style.display='inline'"
+              >
+                Custom
+              </option>
               <!-- value="Vector" was former "Euclidean" -->
             </select>
 
@@ -149,6 +176,12 @@
               <option value="3">Glimmer</option>
             </select>
           </div>
+          <br />
+          <textarea
+            placeholder="Enter custom distance function"
+            id="distFunction"
+            class="distFunc"
+          ></textarea>
           <div>
             <div class="label">
               <p style="text-align: left">Table Interpretation</p>
