@@ -26,6 +26,7 @@
         text-shadow: 1px 1px 20px rgba(255, 255, 255, 1);
         margin: 10px 20px;
       }
+
       textarea {
         width: 70%;
         height: 100%;
@@ -66,21 +67,29 @@
 
       .distFunc {
         display: none;
+        margin: auto;
       }
     </style>
   </head>
 </html>
 
 <body>
-  <header>
-    <h1>SCOUT.</h1>
-  </header>
+  <nav>
+    <div class="logo">
+      <span>SCOUT.</span>
+    </div>
+    <ul>
+      <li><a href="home.html">Home Page</a></li>
+      <li><a href="manual.html">Manual</a></li>
+    </ul>
+  </nav>
 
   <main style="text-align: center">
     <div class="box" id="prepare" style="z-index: 2">
       <div class="label">
         <p style="text-align: left">Upload your CSV file</p>
       </div>
+
       <!-- Input Area for data and function -->
       <textarea
         id="text_box"
@@ -88,11 +97,12 @@
         placeholder="Type here..."
         oninput="showDropdowns()"
       ></textarea>
+
       <!-- Formal and real button for add data -->
       <div>
         <button type="button" id="addDataButton">Add Data</button>
         <button id="myButton" onclick="showCSVDeviderPopUp()">
-          Select CSV-Devider
+          Select CSV-Divider
         </button>
         <div id="CSVDeviderPopUp" style="display: none">
           <input
@@ -120,9 +130,9 @@
           <table id="checkTable" style="border-collapse: collapse">
             <thead>
               <tr>
-                <th>Colum number</th>
+                <th>Column number</th>
                 <th>Column title</th>
-                <th>Daten flags</th>
+                <th>Data flags</th>
               </tr>
             </thead>
 
@@ -132,64 +142,109 @@
       </div>
 
       <div class="box" id="box-for-button-group">
-        <div style="display: grid">
-          <!-- Choose Function Button -->
-          <div style="min-height: 80px">
-            <div class="label">
-              <p style="text-align: left">Choose clustering</p>
-            </div>
-            <select id="DataType" style="width: 200px; margin-top: 20px">
-              <option value="noChoice">Choose your data type</option>
-              <option value="Seq">DNA/RNA Sequence</option>
-              <option value="ChemInfo">Molecule Information</option>
-              <option value="Vector">Vector</option>
-              <!-- value="Vector" was former "Euclidean" -->
-            </select>
-
-            <select id="D_function" style="display: none">
-              <option value="noChoice">Choose a Function</option>
-            </select>
-
-            <select id="Scaling_alg" name="SaclingAlgorithmus">
-              <option value="noChoice">Add scaling algorithmus</option>
-              <!-- the following values are supposed to uniqueley indentify their scaling algorithm -->
-              <option value="1">SMACOF</option>
-              <option value="2">SciKit-learn</option>
-              <option value="3">Glimmer</option>
-            </select>
+        <!-- Choose Function Button -->
+        <div style="min-height: 80px">
+          <div class="label">
+            <p style="text-align: left">Choose clustering</p>
           </div>
-          <div>
-            <div class="label">
-              <p style="text-align: left">Table Interpretation</p>
-            </div>
-            <!-- Flag check button -->
-            <button
-              id="colFlag_button"
-              onclick="ColFlagCheck()"
-              style="margin-top: 20px"
+          <select id="DataType" style="width: 200px; margin-top: 20px">
+            <option
+              value="noChoice"
+              onclick="document.getElementById('distFunction').style.display='none'"
             >
-              Table Interpretation
-            </button>
-          </div>
-          <div>
-            <div class="label">
-              <p style="text-align: left">Get your map now</p>
-            </div>
-          </div>
-          <div>
-            <!-- Delete All Button -->
-            <button id="deleAllButton" onclick="deletedatenandfunc()">
-              Delete All
-            </button>
-            <!-- Run function Button -->
-            <button
-              id="runFuncButton"
-              onclick="dealwithrun()"
-              style="margin-top: 20px"
+              Choose your data type
+            </option>
+            <option
+              value="Seq"
+              onclick="document.getElementById('distFunction').style.display='none'"
             >
-              Run
-            </button>
+              DNA/RNA Sequence
+            </option>
+            <option
+              value="ChemInfo"
+              onclick="document.getElementById('distFunction').style.display='none'"
+            >
+              Molecule Information
+            </option>
+            <option
+              value="Vector"
+              onclick="document.getElementById('distFunction').style.display='none'"
+            >
+              Vector
+            </option>
+            <option
+              value="Custom"
+              onclick="document.getElementById('distFunction').style.display='inline'"
+            >
+              Custom
+            </option>
+            <!-- value="Vector" was former "Euclidean" -->
+          </select>
+
+          <select id="D_function" style="display: none">
+            <option value="noChoice">Choose a Function</option>
+          </select>
+        </div>
+
+        <div>
+          <select id="Scaling_alg" name="SaclingAlgorithmus">
+            <option value="noChoice">Scaling Algorithm</option>
+            <!-- the following values are supposed to uniqueley indentify their scaling algorithm -->
+            <option value="1">SMACOF</option>
+            <option value="2">SciKit-learn</option>
+            <option value="3">Glimmer</option>
+          </select>
+          <select id="distence_calcu" name="distance_calcu">
+            <option value="noChoice">Distance Calculation</option>
+            <option value="Single">Single</option>
+            <option value="Complete">Complete</option>
+            <option value="Average">Average</option>
+            <option value="Weighted">Weighted</option>
+            <option value="Ward">Ward</option>
+            <option value="Centroid">Centroid</option>
+            <option value="Median">Median</option>
+          </select>
+        </div>
+
+        <textarea
+          placeholder="Enter custom distance function"
+          id="distFunction"
+          class="distFunc"
+        ></textarea>
+
+        <div>
+          <div class="label">
+            <p style="text-align: left">Table Interpretation</p>
           </div>
+          <!-- Flag check button -->
+          <button
+            id="colFlag_button"
+            onclick="ColFlagCheck()"
+            style="margin-top: 20px"
+          >
+            Flag Check
+          </button>
+          <!-- Delete All Button -->
+          <button id="deleAllButton" onclick="deletedatenandfunc()">
+            Delete All
+          </button>
+        </div>
+
+        <div>
+          <div class="label">
+            <p style="text-align: left">Get your map now</p>
+          </div>
+        </div>
+
+        <div>
+          <!-- Run function Button -->
+          <button
+            id="runFuncButton"
+            onclick="dealwithrun()"
+            style="margin-top: 20px"
+          >
+            Run
+          </button>
         </div>
       </div>
     </div>
@@ -269,16 +324,7 @@
     </div>
   </noscript>
 
-  <footer>
-    <div style="text-align: right; margin-right: 30px">
-      <!-- Back Button -->
-      <img
-        src="./style/folder/home-50.png"
-        alt="home"
-        onclick="window.open('home.html')"
-      />
-    </div>
-  </footer>
+  <footer></footer>
 </body>
 
 <script>
