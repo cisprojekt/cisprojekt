@@ -158,7 +158,12 @@ MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt, double eps, int dim) {
     // TODO(Jonas): Step 8: End while-loop if eps small enough
   }
 
-  return XUpdated;
+  // Normalize to [-1, 1]
+  MatrixXd normalizedMat = XUpdated;
+  double minVal = XUpdated.minCoeff();
+  double maxVal = XUpdated.maxCoeff();
+  normalizedMat = 2.0 * (XUpdated.array() - minVal) / (maxVal - minVal) - 1.0;
+  return normalizedMat;
 }
 
 MatrixXd createRandomPoints(int n, int m) {
