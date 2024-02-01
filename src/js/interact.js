@@ -27,13 +27,7 @@ function hideresult() {
   let resultObj = document.getElementById("result");
   let switchbutton = document.getElementById("switchbtn");
   resultObj.style.display = "none";
-  if (switchbutton.innerHTML == "Full Screen") {
-    mapWindows.style.transform = "scale(1)";
-    mapWindows.style.left = "0px";
-    mapWindows.style.top = "10px";
-    clusterBox.style.display = "none";
-    switchbutton.innerHTML = "Exit Full Screen";
-  }
+
   return 0;
 }
 
@@ -126,7 +120,7 @@ function changedistancefunclist(distance_func_list) {
     Hamming: "Hamming Distance",
     Tanimoto: "Tanimoto Coefficient",
     Euclidean: "Euclidean Distance",
-    "earth-dist": "earth-dist",
+    "earth-dist": "Earth Distance",
     "edit-distance": "Edit Distance (unit cost)",
     Custom: "Custom",
     Preclustered: "Preclustered",
@@ -295,7 +289,7 @@ function MapViewSwitcher() {
   let clusterBox = document.getElementById("InforArea");
   let mapWindows = document.getElementById("chartContainer");
   let switchbutton = document.getElementById("switchbtn");
-  mapWindows.style.transform = "scale(1.3)";
+  mapWindows.style.transform = "scale(1)";
   /* Enter full screen */
   if (mapWindows.requestFullscreen) {
     mapWindows.requestFullscreen();
