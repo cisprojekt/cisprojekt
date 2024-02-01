@@ -96,6 +96,8 @@ function selectDataType() {
     case "Custom":
       distance_func_list = ["Custom"];
       break;
+    case "Preclustered":
+      distance_func_list = ["Preclustered"];
     default:
       fun_slector.style.display = "none";
       break;
@@ -115,6 +117,7 @@ function changedistancefunclist(distance_func_list) {
     Euclidean: "Euclidean Distance",
     "earth-dist": "Earth Distance",
     Custom: "Custom",
+    Preclustered: "Preclustered",
   };
 
   for (let i = 0; i < distance_func_list.length; i++) {
@@ -449,6 +452,22 @@ function dealwithrun() {
         points_array.push(lineAxisValues);
       }
       console.log(points_array);
+      break;
+    case "Preclustered":
+      type = "preclustered";
+      console.log("preclustered");
+      //cluster the data
+      //initailize non-flattened (nested) array from lines
+      //ignore the header
+      for (let i = 1; i < lines.length; i++) {
+        let line = lines[i].split(devider);
+        let lineAxisValues = [];
+        dataColumns.forEach((columnIndex) => {
+          points_array.push(line[columnIndex]);
+        });
+      }
+      console.log(points_array);
+
       break;
     case "Tanimoto":
       //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
