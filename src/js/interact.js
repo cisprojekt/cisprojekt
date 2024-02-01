@@ -66,10 +66,6 @@ function readFileContents() {
     };
 
     reader.readAsText(file);
-
-    if (file.name.endsWith(".json")) {
-      document.getElementById("directRun").style.display = "inline";
-    }
   } else {
     alert("Please select a valid CSV file.");
   }
@@ -113,7 +109,7 @@ function changedistancefunclist(distance_func_list) {
     Hamming: "Hamming Distance",
     Tanimoto: "Tanimoto Coefficient",
     Euclidean: "Euclidean Distance",
-    "earth-dist": "earth-dist",
+    "earth-dist": "Earth Distance",
     Custom: "Custom",
   };
 
@@ -256,9 +252,9 @@ function ColFlagCheck() {
   let guide_info = document.getElementById("flag_guide");
   guide_info.innerHTML =
     dimension +
-    " Columns are detected in your file, \
-  please choose for every column that you want to ues, one of the following flags: </br> \
-  name(1), distance information(2), non-numerical flags(3), numericial flags(4)";
+    " Columns are detected in your file. \
+    </br> Please choose for every column, that you want to use, one of the following flags: </br> \
+  1. Name </br> 2. Distance information </br> 3. Non-numerical flags </br> 4. Numericial flags";
 
   for (let d = 1; d < dimension + 1; d++) {
     console.log(d + " Cloumn");
@@ -503,7 +499,7 @@ function dealwithrun() {
 }
 
 function deletedatenandfunc() {
-  let weep = confirm("Are you sure to weep all the data and choosen function?");
+  let weep = confirm("Delete all the data and the chosen function?");
   if (weep) {
     document.getElementById("text_box").value = "";
     document.getElementById("flag_guide").innerHTML = "";
