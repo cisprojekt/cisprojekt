@@ -301,8 +301,15 @@ async function initializeMap(
       flagColumnNames,
       numflags_array,
     );
-  } else if (type == "tanimotoFingerprints") {
-    // For fingerprints input
+  } else if (type == "tanimotoFingerprints" || type == "edit-distance") {
+    // convert type information to int
+    if (type == "tanimotoFingerprints") {
+      type = 0;
+      bit_bool = 1;
+    } else if (type == "edit-distance") {
+      type = 1;
+      bit_bool = 0;
+    }
 
     // Create one large string and create array of length of each string
     let n = inputPoints.length;
@@ -376,6 +383,7 @@ async function initializeMap(
         "number",
         "number",
         "number",
+        "number",
       ],
       [
         stringOnHeap,
@@ -389,8 +397,9 @@ async function initializeMap(
         zoomLevels,
         1,
         scalingMethod,
-        1,
+        bit_bool,
         resultPointsBuf,
+        type,
       ],
     );
     console.log("Calculations finished");

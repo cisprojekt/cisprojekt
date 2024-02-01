@@ -69,7 +69,6 @@ if (ENVIRONMENT_IS_NODE) {
     process.exitCode = status;
     throw toThrow;
   };
-  Module["inspect"] = () => "[Emscripten Module object]";
 } else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
   if (ENVIRONMENT_IS_WORKER) {
     scriptDirectory = self.location.href;
@@ -132,11 +131,6 @@ if (typeof WebAssembly != "object") {
 var wasmMemory;
 var ABORT = false;
 var EXITSTATUS;
-function assert(condition, text) {
-  if (!condition) {
-    abort(text);
-  }
-}
 var HEAP8, HEAPU8, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64;
 function updateMemoryViews() {
   var b = wasmMemory.buffer;
@@ -197,15 +191,11 @@ function getUniqueRunDependency(id) {
 }
 function addRunDependency(id) {
   runDependencies++;
-  if (Module["monitorRunDependencies"]) {
-    Module["monitorRunDependencies"](runDependencies);
-  }
+  Module["monitorRunDependencies"]?.(runDependencies);
 }
 function removeRunDependency(id) {
   runDependencies--;
-  if (Module["monitorRunDependencies"]) {
-    Module["monitorRunDependencies"](runDependencies);
-  }
+  Module["monitorRunDependencies"]?.(runDependencies);
   if (runDependencies == 0) {
     if (runDependencyWatcher !== null) {
       clearInterval(runDependencyWatcher);
@@ -219,9 +209,7 @@ function removeRunDependency(id) {
   }
 }
 function abort(what) {
-  if (Module["onAbort"]) {
-    Module["onAbort"](what);
-  }
+  Module["onAbort"]?.(what);
   what = "Aborted(" + what + ")";
   err(what);
   ABORT = true;
@@ -402,47 +390,49 @@ function ___assert_fail(condition, filename, line, func) {
       ],
   );
 }
-function ExceptionInfo(excPtr) {
-  this.excPtr = excPtr;
-  this.ptr = excPtr - 24;
-  this.set_type = function (type) {
+class ExceptionInfo {
+  constructor(excPtr) {
+    this.excPtr = excPtr;
+    this.ptr = excPtr - 24;
+  }
+  set_type(type) {
     HEAPU32[((this.ptr + 4) >>> 2) >>> 0] = type;
-  };
-  this.get_type = function () {
+  }
+  get_type() {
     return HEAPU32[((this.ptr + 4) >>> 2) >>> 0];
-  };
-  this.set_destructor = function (destructor) {
+  }
+  set_destructor(destructor) {
     HEAPU32[((this.ptr + 8) >>> 2) >>> 0] = destructor;
-  };
-  this.get_destructor = function () {
+  }
+  get_destructor() {
     return HEAPU32[((this.ptr + 8) >>> 2) >>> 0];
-  };
-  this.set_caught = function (caught) {
+  }
+  set_caught(caught) {
     caught = caught ? 1 : 0;
     HEAP8[((this.ptr + 12) >>> 0) >>> 0] = caught;
-  };
-  this.get_caught = function () {
+  }
+  get_caught() {
     return HEAP8[((this.ptr + 12) >>> 0) >>> 0] != 0;
-  };
-  this.set_rethrown = function (rethrown) {
+  }
+  set_rethrown(rethrown) {
     rethrown = rethrown ? 1 : 0;
     HEAP8[((this.ptr + 13) >>> 0) >>> 0] = rethrown;
-  };
-  this.get_rethrown = function () {
+  }
+  get_rethrown() {
     return HEAP8[((this.ptr + 13) >>> 0) >>> 0] != 0;
-  };
-  this.init = function (type, destructor) {
+  }
+  init(type, destructor) {
     this.set_adjusted_ptr(0);
     this.set_type(type);
     this.set_destructor(destructor);
-  };
-  this.set_adjusted_ptr = function (adjustedPtr) {
+  }
+  set_adjusted_ptr(adjustedPtr) {
     HEAPU32[((this.ptr + 16) >>> 2) >>> 0] = adjustedPtr;
-  };
-  this.get_adjusted_ptr = function () {
+  }
+  get_adjusted_ptr() {
     return HEAPU32[((this.ptr + 16) >>> 2) >>> 0];
-  };
-  this.get_exception_ptr = function () {
+  }
+  get_exception_ptr() {
     var isPointer = ___cxa_is_pointer_type(this.get_type());
     if (isPointer) {
       return HEAPU32[(this.excPtr >>> 2) >>> 0];
@@ -450,7 +440,7 @@ function ExceptionInfo(excPtr) {
     var adjusted = this.get_adjusted_ptr();
     if (adjusted !== 0) return adjusted;
     return this.excPtr;
-  };
+  }
 }
 var exceptionLast = 0;
 var uncaughtExceptionCount = 0;
@@ -915,53 +905,51 @@ var MEMFS = {
     if (FS.isBlkdev(mode) || FS.isFIFO(mode)) {
       throw new FS.ErrnoError(63);
     }
-    if (!MEMFS.ops_table) {
-      MEMFS.ops_table = {
-        dir: {
-          node: {
-            getattr: MEMFS.node_ops.getattr,
-            setattr: MEMFS.node_ops.setattr,
-            lookup: MEMFS.node_ops.lookup,
-            mknod: MEMFS.node_ops.mknod,
-            rename: MEMFS.node_ops.rename,
-            unlink: MEMFS.node_ops.unlink,
-            rmdir: MEMFS.node_ops.rmdir,
-            readdir: MEMFS.node_ops.readdir,
-            symlink: MEMFS.node_ops.symlink,
-          },
-          stream: { llseek: MEMFS.stream_ops.llseek },
+    MEMFS.ops_table ||= {
+      dir: {
+        node: {
+          getattr: MEMFS.node_ops.getattr,
+          setattr: MEMFS.node_ops.setattr,
+          lookup: MEMFS.node_ops.lookup,
+          mknod: MEMFS.node_ops.mknod,
+          rename: MEMFS.node_ops.rename,
+          unlink: MEMFS.node_ops.unlink,
+          rmdir: MEMFS.node_ops.rmdir,
+          readdir: MEMFS.node_ops.readdir,
+          symlink: MEMFS.node_ops.symlink,
         },
-        file: {
-          node: {
-            getattr: MEMFS.node_ops.getattr,
-            setattr: MEMFS.node_ops.setattr,
-          },
-          stream: {
-            llseek: MEMFS.stream_ops.llseek,
-            read: MEMFS.stream_ops.read,
-            write: MEMFS.stream_ops.write,
-            allocate: MEMFS.stream_ops.allocate,
-            mmap: MEMFS.stream_ops.mmap,
-            msync: MEMFS.stream_ops.msync,
-          },
+        stream: { llseek: MEMFS.stream_ops.llseek },
+      },
+      file: {
+        node: {
+          getattr: MEMFS.node_ops.getattr,
+          setattr: MEMFS.node_ops.setattr,
         },
-        link: {
-          node: {
-            getattr: MEMFS.node_ops.getattr,
-            setattr: MEMFS.node_ops.setattr,
-            readlink: MEMFS.node_ops.readlink,
-          },
-          stream: {},
+        stream: {
+          llseek: MEMFS.stream_ops.llseek,
+          read: MEMFS.stream_ops.read,
+          write: MEMFS.stream_ops.write,
+          allocate: MEMFS.stream_ops.allocate,
+          mmap: MEMFS.stream_ops.mmap,
+          msync: MEMFS.stream_ops.msync,
         },
-        chrdev: {
-          node: {
-            getattr: MEMFS.node_ops.getattr,
-            setattr: MEMFS.node_ops.setattr,
-          },
-          stream: FS.chrdev_stream_ops,
+      },
+      link: {
+        node: {
+          getattr: MEMFS.node_ops.getattr,
+          setattr: MEMFS.node_ops.setattr,
+          readlink: MEMFS.node_ops.readlink,
         },
-      };
-    }
+        stream: {},
+      },
+      chrdev: {
+        node: {
+          getattr: MEMFS.node_ops.getattr,
+          setattr: MEMFS.node_ops.setattr,
+        },
+        stream: FS.chrdev_stream_ops,
+      },
+    };
     var node = FS.createNode(parent, name, mode, dev);
     if (FS.isDir(node.mode)) {
       node.node_ops = MEMFS.ops_table.dir.node;
@@ -1098,10 +1086,7 @@ var MEMFS = {
     },
     readdir(node) {
       var entries = [".", ".."];
-      for (var key in node.contents) {
-        if (!node.contents.hasOwnProperty(key)) {
-          continue;
-        }
+      for (var key of Object.keys(node.contents)) {
         entries.push(key);
       }
       return entries;
@@ -1223,10 +1208,6 @@ var asyncLoad = (url, onload, onerror, noRunDep) => {
   readAsync(
     url,
     (arrayBuffer) => {
-      assert(
-        arrayBuffer,
-        `Loading data file "${url}" failed (no arrayBuffer).`,
-      );
       onload(new Uint8Array(arrayBuffer));
       if (dep) removeRunDependency(dep);
     },
@@ -1272,16 +1253,16 @@ var FS_createPreloadedFile = (
   var dep = getUniqueRunDependency(`cp ${fullname}`);
   function processData(byteArray) {
     function finish(byteArray) {
-      if (preFinish) preFinish();
+      preFinish?.();
       if (!dontCreateFile) {
         FS_createDataFile(parent, name, byteArray, canRead, canWrite, canOwn);
       }
-      if (onload) onload();
+      onload?.();
       removeRunDependency(dep);
     }
     if (
       FS_handledByPreloadPlugin(byteArray, fullname, finish, () => {
-        if (onerror) onerror();
+        onerror?.();
         removeRunDependency(dep);
       })
     ) {
@@ -1291,7 +1272,7 @@ var FS_createPreloadedFile = (
   }
   addRunDependency(dep);
   if (typeof url == "string") {
-    asyncLoad(url, (byteArray) => processData(byteArray), onerror);
+    asyncLoad(url, processData, onerror);
   } else {
     processData(url);
   }
@@ -1612,9 +1593,7 @@ var FS = {
     open(stream) {
       var device = FS.getDevice(stream.node.rdev);
       stream.stream_ops = device.stream_ops;
-      if (stream.stream_ops.open) {
-        stream.stream_ops.open(stream);
-      }
+      stream.stream_ops.open?.(stream);
     },
     llseek() {
       throw new FS.ErrnoError(70);
@@ -2503,7 +2482,7 @@ var FS = {
         stream.seekable = false;
       },
       close(stream) {
-        if (output && output.buffer && output.buffer.length) {
+        if (output?.buffer?.length) {
           output(10);
         }
       },
@@ -3164,7 +3143,7 @@ function _strftime(s, maxsize, format, tm) {
     "%d": (date) => leadingNulls(date.tm_mday, 2),
     "%e": (date) => leadingSomething(date.tm_mday, 2, " "),
     "%g": (date) => getWeekBasedYear(date).toString().substring(2),
-    "%G": (date) => getWeekBasedYear(date),
+    "%G": getWeekBasedYear,
     "%H": (date) => leadingNulls(date.tm_hour, 2),
     "%I": (date) => {
       var twelveHour = date.tm_hour;
@@ -3424,6 +3403,7 @@ var _clusterStrings = (Module["_clusterStrings"] = (
   a10,
   a11,
   a12,
+  a13,
 ) =>
   (_clusterStrings = Module["_clusterStrings"] = wasmExports["t"])(
     a0,
@@ -3439,6 +3419,7 @@ var _clusterStrings = (Module["_clusterStrings"] = (
     a10,
     a11,
     a12,
+    a13,
   ));
 var _clusterPoints = (Module["_clusterPoints"] = (
   a0,
@@ -3468,8 +3449,6 @@ var _clusterPoints = (Module["_clusterPoints"] = (
     a10,
     a11,
   ));
-var ___errno_location = () =>
-  (___errno_location = wasmExports["__errno_location"])();
 var stackSave = () => (stackSave = wasmExports["w"])();
 var stackRestore = (a0) => (stackRestore = wasmExports["x"])(a0);
 var stackAlloc = (a0) => (stackAlloc = wasmExports["y"])(a0);
@@ -3480,9 +3459,6 @@ function applySignatureConversions(wasmExports) {
   var makeWrapper_pp = (f) => (a0) => f(a0) >>> 0;
   var makeWrapper_p = (f) => () => f() >>> 0;
   wasmExports["s"] = makeWrapper_pp(wasmExports["s"]);
-  wasmExports["__errno_location"] = makeWrapper_p(
-    wasmExports["__errno_location"],
-  );
   wasmExports["w"] = makeWrapper_p(wasmExports["w"]);
   wasmExports["y"] = makeWrapper_pp(wasmExports["y"]);
   return wasmExports;

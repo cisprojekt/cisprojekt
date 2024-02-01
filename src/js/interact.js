@@ -44,6 +44,17 @@ function showresult() {
 
 function getinputdata() {
   let textinput = document.getElementById("text_box").value;
+
+  const lastChar = textinput.slice(-1);
+  const secondLastChar = textinput.slice(-2, -1);
+
+  if (lastChar === "\n" && secondLastChar !== "\r") {
+    // Remove the last newline character(s)
+    textinput = textinput.slice(0, -2);
+  } else if (lastChar === "\r") {
+    textinput = textinput.slice(0, -1);
+  }
+
   if (textinput == "") {
     return false;
   } else {
@@ -85,7 +96,7 @@ function selectDataType() {
       fun_slector.style.display = "none";
       break;
     case "Seq":
-      distance_func_list = ["For sequence", "Hamming"];
+      distance_func_list = ["For sequence", "Hamming", "edit-distance"];
       break;
     case "ChemInfo":
       distance_func_list = ["For chemicial data", "Tanimoto"];
@@ -115,7 +126,8 @@ function changedistancefunclist(distance_func_list) {
     Hamming: "Hamming Distance",
     Tanimoto: "Tanimoto Coefficient",
     Euclidean: "Euclidean Distance",
-    "earth-dist": "Earth Distance",
+    "earth-dist": "earth-dist",
+    "edit-distance": "Edit Distance (unit cost)",
     Custom: "Custom",
     Preclustered: "Preclustered",
   };
@@ -135,7 +147,6 @@ function clean_fun_slector() {
 }
 
 function getfunctionflag() {
-  // goofy ahh code 💀
   let funcSelector = document.getElementById("D_function");
   let funcIndex = funcSelector.selectedIndex;
   let funcFlag = funcSelector.options[funcIndex].value;
@@ -469,11 +480,15 @@ function dealwithrun() {
       console.log(points_array);
 
       break;
+    case "edit-distance":
     case "Tanimoto":
       //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
       //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
       //refactor this delete switch case
       type = "tanimotoFingerprints";
+      if (functionFlag == "edit-distance") {
+        type = "edit-distance";
+      }
       console.log("function as Tani");
       //cluster the data
       //initailize non-flattened (nested) array from lines

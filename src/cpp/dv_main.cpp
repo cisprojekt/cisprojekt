@@ -75,7 +75,7 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
                                int calcScalingMethod, int bool_bit,
-                               double *resultPoints) {
+                               double *resultPoints, int type) {
   // Split the long string into smaller strings
   // and put them in a vector
   clock_t start_time1 = clock();
@@ -115,7 +115,7 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
 
     // For now we assume the input are fingerprints, not SMILES
     std::cout << "start distanceMatrix" << std::endl;
-    distMatMDS = distanceMatrix(stringVector);
+    distMatMDS = distanceMatrix(stringVector, type);
   }
   std::cout << "distanceMatrix finished" << std::endl;
   MatrixXd resultMDS;
