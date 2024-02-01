@@ -111,8 +111,8 @@ async function initializeMap(
 
     for (var i = 0; i < n * 2; i += 2) {
       pointsToPlot.push({
-        x: pointsResult[i] * n * 2,
-        y: pointsResult[i + 1] * n * 2,
+        x: pointsResult[i],
+        y: pointsResult[i + 1],
       });
     }
 
@@ -141,6 +141,30 @@ async function initializeMap(
     mapFunctions(
       labelsResult,
       pointsToPlot,
+      n,
+      zoomLevels,
+      clusterInfos,
+      flagColumnNames,
+      numflags_array,
+    );
+  } else if (type == "preclustered") {
+    var dataJson = JSON.parse(document.getElementById("distFunction").value);
+
+    let n = dataJson[1].length;
+    let zoomLevels = 20;
+
+    var clusterInfos = getClusterInfo(
+      zoomLevels,
+      Object.values(dataJson[0]),
+      n,
+      numflags_array, // Holds an array for each point, holding the numflag values for that point
+      nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+    );
+
+    // Call the function of map to plot
+    mapFunctions(
+      dataJson[0],
+      dataJson[1],
       n,
       zoomLevels,
       clusterInfos,
@@ -387,8 +411,8 @@ async function initializeMap(
     // Create array for map
     for (var i = 0; i < n * 2; i += 2) {
       pointsToPlot.push({
-        x: pointsResult[i] * n * 2,
-        y: pointsResult[i + 1] * n * 2,
+        x: pointsResult[i],
+        y: pointsResult[i + 1],
       });
     }
 

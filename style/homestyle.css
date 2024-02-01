@@ -148,3 +148,11 @@ footer.dark-mode {
 button.dark-mode {
   background-color: #6c6ea0;
 }
+
+.divider {
+  width: 10%;
+  font-size: larger;
+  font-family: sans-serif;
+  background-color: #d8d8d8;
+  border-radius: 5px;
+}

@@ -16,7 +16,6 @@
 
 // clang-format on
 
-#include <emscripten.h>
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
