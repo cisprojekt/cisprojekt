@@ -111,8 +111,8 @@ async function initializeMap(
 
     for (var i = 0; i < n * 2; i += 2) {
       pointsToPlot.push({
-        x: pointsResult[i] * n * 2,
-        y: pointsResult[i + 1] * n * 2,
+        x: pointsResult[i],
+        y: pointsResult[i + 1],
       });
     }
 
@@ -411,8 +411,8 @@ async function initializeMap(
     // Create array for map
     for (var i = 0; i < n * 2; i += 2) {
       pointsToPlot.push({
-        x: pointsResult[i] * n * 2,
-        y: pointsResult[i + 1] * n * 2,
+        x: pointsResult[i],
+        y: pointsResult[i + 1],
       });
     }
 
