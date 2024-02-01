@@ -61,7 +61,7 @@
       }
 
       #mapHTMLContainer {
-        transform: scale(0.6);
+        transform: scale(1);
         position: relative;
       }
 
@@ -276,7 +276,7 @@
     </div>
 
     <!-- Here for result, will only be showed after click -->
-    <div id="result">
+    <div id="result" style="margin-left: 20px">
       <!-- Information Box -->
       <!-- <div id="InforArea" style="text-align: left; border: none; width: 30%">
         <table id="InforList" style="padding: 5px; border: 1px solid">
@@ -293,7 +293,12 @@
       </div> -->
       <div
         id="clusterInfoBox"
-        style="text-align: left; border: 1px solid; width: 30%"
+        style="
+          text-align: left;
+          border: 1px solid;
+          width: 30%;
+          background-color: rgba(165, 165, 165, 0.6);
+        "
       ></div>
 
       <!-- map Container with .js
@@ -339,7 +344,7 @@
             left: -260px;
             top: -120px;
             width: 1330px;
-            transform: scale(0.6);
+            transform: scale(1);
           "
         ></div>
       </div>

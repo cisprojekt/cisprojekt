@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include <Eigen/Dense>
+#include <algorithm>
 #include <boost/dynamic_bitset.hpp>
 #include <cmath>
 #include <iostream>
@@ -47,14 +48,18 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
   return distMat;
 }
 
-MatrixXd distanceMatrix(std::vector<std::string> strings) {
+MatrixXd distanceMatrix(std::vector<std::string> strings, int type) {
   int n = strings.size();
   MatrixXd distMat(n, n);
   for (int i = 0; i < n; i++) {
     std::cout << "DistMat did row " << i << "from " << n << std::endl;
     for (int j = 0; j < n; j++) {
       // TODO(Jonas): Implement other distance functions
-      distMat(i, j) = tanimotoDistance(strings[i], strings[j]);
+      if (type == 0) {
+        distMat(i, j) = tanimotoDistance(strings[i], strings[j]);
+      } else if (type == 1) {
+        distMat(i, j) = editdistance(strings[i], strings[j]);
+      }
     }
   }
 
@@ -143,6 +148,37 @@ double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
     dist = 0;
   }
   return dist;
+}
+
+int editdistance(std::string seq1, std::string seq2) {
+  int len_seq1 = seq1.length() + 1;
+  int len_seq2 = seq2.length() + 1;
+
+  // Create a matrix to store the edit distances between substrings
+  std::vector<std::vector<int>> matrix(len_seq1, std::vector<int>(len_seq2, 0));
+
+  // Initialize the matrix
+  for (int i = 0; i < len_seq1; ++i) {
+    matrix[i][0] = i;
+  }
+  for (int j = 0; j < len_seq2; ++j) {
+    matrix[0][j] = j;
+  }
+
+  // Fill in the matrix based on the edit distances
+  for (int i = 1; i < len_seq1; ++i) {
+    for (int j = 1; j < len_seq2; ++j) {
+      int cost = (seq1[i - 1] == seq2[j - 1]) ? 0 : 1;
+      matrix[i][j] = std::min({
+          matrix[i - 1][j] + 1,        // Deletion
+          matrix[i][j - 1] + 1,        // Insertion
+          matrix[i - 1][j - 1] + cost  // Substitution
+      });
+    }
+  }
+
+  // The bottom-right cell of the matrix contains the Levenshtein distance
+  return matrix[len_seq1 - 1][len_seq2 - 1];
 }
 
 extern "C" {

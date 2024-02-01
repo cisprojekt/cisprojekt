@@ -38,7 +38,7 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical = false);
  * @param strings Molecule fingerprints
  * @return distMat Distance Matrix
  */
-MatrixXd distanceMatrix(std::vector<std::string> strings);
+MatrixXd distanceMatrix(std::vector<std::string> strings, int type);
 
 /**
  * @brief Calculate Euclidean distance between two points
@@ -87,5 +87,12 @@ double toRadians(double degree);
  * @return distance using the haversine formula
  */
 double haversine(double lat1, double lon1, double lat2, double lon2);
+
+/**
+ * @brief Calculate edit distance between two strings using the unit cost
+ * @param str1 First sequence
+ * @param str2 Second sequence
+ */
+int editdistance(std::string seq1, std::string seq2);
 
 #endif  // SRC_CPP_DISTMAT_DISTMAT_H_
