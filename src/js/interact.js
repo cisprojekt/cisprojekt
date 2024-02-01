@@ -48,11 +48,11 @@ function getinputdata() {
   const lastChar = textinput.slice(-1);
   const secondLastChar = textinput.slice(-2, -1);
 
-  if ((lastChar === '\n' && secondLastChar !== '\r')) {
+  if (lastChar === "\n" && secondLastChar !== "\r") {
     // Remove the last newline character(s)
-    textinput= textinput.slice(0, -2);
-  } else if (lastChar === '\r'){
-    textinput= textinput.slice(0, -1);
+    textinput = textinput.slice(0, -2);
+  } else if (lastChar === "\r") {
+    textinput = textinput.slice(0, -1);
   }
 
   if (textinput == "") {
