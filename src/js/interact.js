@@ -464,22 +464,22 @@ function dealwithrun() {
       }
       console.log(points_array);
       break;
-      case "Preclustered":
-        type = "preclustered";
-        console.log("preclustered");
-        //cluster the data
-        //initailize non-flattened (nested) array from lines
-        //ignore the header
-        for (let i = 1; i < lines.length; i++) {
-          let line = lines[i].split(devider);
-          let lineAxisValues = [];
-          dataColumns.forEach((columnIndex) => {
-            points_array.push(line[columnIndex]);
-          });
-        }
-        console.log(points_array);
-  
-        break;
+    case "Preclustered":
+      type = "preclustered";
+      console.log("preclustered");
+      //cluster the data
+      //initailize non-flattened (nested) array from lines
+      //ignore the header
+      for (let i = 1; i < lines.length; i++) {
+        let line = lines[i].split(devider);
+        let lineAxisValues = [];
+        dataColumns.forEach((columnIndex) => {
+          points_array.push(line[columnIndex]);
+        });
+      }
+      console.log(points_array);
+
+      break;
     case "edit-distance":
     case "Tanimoto":
       //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
