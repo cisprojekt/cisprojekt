@@ -1,7 +1,6 @@
 // Copyright [year] <Copyright Owner>
 #include "src/cpp/distmat/distmat.h"
 
-#include <emscripten.h>
 #include <time.h>
 
 #include <Eigen/Dense>
@@ -183,7 +182,6 @@ int editdistance(std::string seq1, std::string seq2) {
 }
 
 extern "C" {
-EMSCRIPTEN_KEEPALIVE
 double calculateEuclideanDistance(double *vector1, double *vector2,
                                   int string_length) {
   double sumOfSquares = 0.0;
@@ -196,7 +194,6 @@ double calculateEuclideanDistance(double *vector1, double *vector2,
   return distance;
 }
 
-EMSCRIPTEN_KEEPALIVE
 double *calculateEuclideanDistanceMatrix(double *array, int num_points,
                                          int dimension) {
   double **distanceArray = new double *[num_points];
@@ -230,7 +227,6 @@ double *calculateEuclideanDistanceMatrix(double *array, int num_points,
   return flatArray;
 }
 
-EMSCRIPTEN_KEEPALIVE
 int calculateHammingDistance(char *str1, char *str2, int string_length) {
   int distance = 0;
   for (size_t i = 0; i < string_length; i++) {
@@ -242,7 +238,6 @@ int calculateHammingDistance(char *str1, char *str2, int string_length) {
   return distance;
 }
 
-EMSCRIPTEN_KEEPALIVE
 int *calculateHammingDistanceMatrix(char **array, int num_strings,
                                     int string_length) {
   int **distanceArray = new int *[num_strings];

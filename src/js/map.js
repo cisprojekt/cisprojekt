@@ -44,10 +44,10 @@ function mapFunctions(
   var currentZoomLevel = 1.0;
   var button_zoom_level = 1.0; // starting layer of points which are generated
   var x_axis_width = width; // length of x-axis in pixels
-  var x_max = 15; //initial domain shown on x axis starting with 0
+  var x_max = 2; //initial domain shown on x axis starting with 0
 
   var y_axis_width = height; // length of y-axis in pixels
-  var y_max = 15; //initial domain shown on y axis starting with 0
+  var y_max = 2; //initial domain shown on y axis starting with 0
 
   var info_height = 30; // gives fixed size to all info svgs
   var info_width = 150; // gives fixed size to all info svgs
@@ -253,10 +253,10 @@ function mapFunctions(
         })
 
         .attr("cx", function (d) {
-          return d.x;
+          return x(d.x);
         })
         .attr("cy", function (d) {
-          return d.y;
+          return y(d.y);
         })
         //save the label of the point
         .attr("data-id", function (d) {

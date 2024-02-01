@@ -24,14 +24,14 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 8%;
+  padding: 18px;
   transition: background 1s;
 }
 
 nav .logo {
   display: flex;
   align-items: center;
-  font-size: 30px;
+  font-size: 40px;
   font-weight: 600;
   color: black;
   text-shadow: 1px 1px 20px rgba(255, 255, 255, 1);
@@ -50,11 +50,11 @@ nav ul li a {
 }
 
 nav:hover .logo {
-  color: #969fe2;
+  color: #41438e;
 }
 
 nav:hover ul li a {
-  color: #969fe2;
+  color: #41438e;
 }
 
 .content {
@@ -147,4 +147,12 @@ footer.dark-mode {
 
 button.dark-mode {
   background-color: #6c6ea0;
+}
+
+.divider {
+  width: 10%;
+  font-size: larger;
+  font-family: sans-serif;
+  background-color: #d8d8d8;
+  border-radius: 5px;
 }

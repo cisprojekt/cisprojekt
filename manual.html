@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <mate name="viewport" content="width=device-width" />
-    <title>IMPACT.</title>
+    <title>SCOUT.</title>
     <link href="style/homestyle.css" rel="stylesheet" />
     <link href="style/actionstyle.css" rel="stylesheet" />
     <script src="script/mainscript.js" defer></script>
@@ -65,7 +65,54 @@
             If necessary, use the "Delete All" button to remove all entries.
           </li>
           <li>Click on the "Run" button to start the flag match process.</li>
+          <li>
+            Click
+            <span
+              style="color: blue; cursor: pointer; text-decoration: underline"
+              onclick="toggleFlagExplain()"
+              >here</span
+            >
+            to learn more about flags.
+          </li>
         </ol>
+        <div
+          id="FlagExplain"
+          style="
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            max-height: 0;
+            margin-left: 30px;
+            width: 500px;
+          "
+        >
+          <ul style="list-style-type: circle">
+            <li>
+              <span
+                style="font-style: italic; background-color: rgb(198, 244, 244)"
+                >name</span
+              >:
+            </li>
+            <li>
+              <span
+                style="font-style: italic; background-color: rgb(198, 244, 244)"
+                >distance information</span
+              >: Flags for eculidean distance. Please make sure that each
+              dimension in the coordinates is labeled as distance.
+            </li>
+            <li>
+              <span
+                style="font-style: italic; background-color: rgb(198, 244, 244)"
+                >numerical flags</span
+              >:
+            </li>
+            <li>
+              <span
+                style="font-style: italic; background-color: rgb(198, 244, 244)"
+                >non-numerical flags</span
+              >:
+            </li>
+          </ul>
+        </div>
 
         <p>
           Remember, SCOUT is a powerful tool, but the quality of the results
@@ -77,13 +124,24 @@
         <p>Enjoy exploring your data with SCOUT!</p>
       </div>
       <div style="text-align: center">
-        <button id="start" onclick="window.location.href='home.html'">
+        <button id="start" onclick="window.location.href='index.html'">
           Home Page
         </button>
-        <button id="start" onclick="window.location.href='index.html'">
+        <button id="start" onclick="window.location.href='home.html'">
           Main Page
         </button>
       </div>
     </main>
+
+    <script>
+      function toggleFlagExplain() {
+        var ExplainBox = document.getElementById("FlagExplain");
+        if (ExplainBox.style.maxHeight === "0px") {
+          ExplainBox.style.maxHeight = FlagExplain.scrollHeight + "px";
+        } else {
+          ExplainBox.style.maxHeight = "0px";
+        }
+      }
+    </script>
   </body>
 </html>

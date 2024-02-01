@@ -1,7 +1,6 @@
 // Copyright [year] <Copyright Owner>
 #include "src/cpp/dv_main.h"
 
-#include <emscripten.h>
 #include <time.h>
 
 #include <boost/dynamic_bitset.hpp>
@@ -10,7 +9,6 @@
 
 using Eigen::MatrixXd;
 
-EMSCRIPTEN_KEEPALIVE
 extern "C" void clusterCustom(double *distMat, double *height, int *merge,
                               int *labels, int n, int maxIterations,
                               int zoomLevels, int calcDistMethod,
@@ -72,7 +70,6 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
   delete[] oneLabel;
 }
 
-EMSCRIPTEN_KEEPALIVE
 extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
                                int *labels, int nStrings, int maxIterations,
@@ -186,7 +183,6 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
             << "s in total\n";
 }
 
-EMSCRIPTEN_KEEPALIVE
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
