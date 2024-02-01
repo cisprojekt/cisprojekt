@@ -3468,39 +3468,13 @@ var _clusterPoints = (Module["_clusterPoints"] = (
     a10,
     a11,
   ));
-var _calculateEuclideanDistance = (Module["_calculateEuclideanDistance"] = (
-  a0,
-  a1,
-  a2,
-) =>
-  (_calculateEuclideanDistance = Module["_calculateEuclideanDistance"] =
-    wasmExports["w"])(a0, a1, a2));
-var _calculateEuclideanDistanceMatrix = (Module[
-  "_calculateEuclideanDistanceMatrix"
-] = (a0, a1, a2) =>
-  (_calculateEuclideanDistanceMatrix = Module[
-    "_calculateEuclideanDistanceMatrix"
-  ] =
-    wasmExports["x"])(a0, a1, a2));
-var _calculateHammingDistance = (Module["_calculateHammingDistance"] = (
-  a0,
-  a1,
-  a2,
-) =>
-  (_calculateHammingDistance = Module["_calculateHammingDistance"] =
-    wasmExports["y"])(a0, a1, a2));
-var _calculateHammingDistanceMatrix = (Module[
-  "_calculateHammingDistanceMatrix"
-] = (a0, a1, a2) =>
-  (_calculateHammingDistanceMatrix = Module["_calculateHammingDistanceMatrix"] =
-    wasmExports["z"])(a0, a1, a2));
 var ___errno_location = () =>
   (___errno_location = wasmExports["__errno_location"])();
-var stackSave = () => (stackSave = wasmExports["A"])();
-var stackRestore = (a0) => (stackRestore = wasmExports["B"])(a0);
-var stackAlloc = (a0) => (stackAlloc = wasmExports["C"])(a0);
+var stackSave = () => (stackSave = wasmExports["w"])();
+var stackRestore = (a0) => (stackRestore = wasmExports["x"])(a0);
+var stackAlloc = (a0) => (stackAlloc = wasmExports["y"])(a0);
 var ___cxa_is_pointer_type = (a0) =>
-  (___cxa_is_pointer_type = wasmExports["D"])(a0);
+  (___cxa_is_pointer_type = wasmExports["z"])(a0);
 function applySignatureConversions(wasmExports) {
   wasmExports = Object.assign({}, wasmExports);
   var makeWrapper_pp = (f) => (a0) => f(a0) >>> 0;
@@ -3509,8 +3483,8 @@ function applySignatureConversions(wasmExports) {
   wasmExports["__errno_location"] = makeWrapper_p(
     wasmExports["__errno_location"],
   );
-  wasmExports["A"] = makeWrapper_p(wasmExports["A"]);
-  wasmExports["C"] = makeWrapper_pp(wasmExports["C"]);
+  wasmExports["w"] = makeWrapper_p(wasmExports["w"]);
+  wasmExports["y"] = makeWrapper_pp(wasmExports["y"]);
   return wasmExports;
 }
 Module["ccall"] = ccall;

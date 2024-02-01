@@ -1,1 +1,2 @@
 SpacesBeforeTrailingComments: 2
+AllowShortIfStatementsOnASingleLine: true

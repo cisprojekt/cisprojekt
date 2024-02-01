@@ -147,6 +147,30 @@ async function initializeMap(
       flagColumnNames,
       numflags_array,
     );
+  } else if (type == "preclustered") {
+    var dataJson = JSON.parse(document.getElementById("distFunction").value);
+
+    let n = dataJson[1].length;
+    let zoomLevels = 20;
+
+    var clusterInfos = getClusterInfo(
+      zoomLevels,
+      Object.values(dataJson[0]),
+      n,
+      numflags_array, // Holds an array for each point, holding the numflag values for that point
+      nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+    );
+
+    // Call the function of map to plot
+    mapFunctions(
+      dataJson[0],
+      dataJson[1],
+      n,
+      zoomLevels,
+      clusterInfos,
+      flagColumnNames,
+      numflags_array,
+    );
   }
 
   // For euclidean inputs

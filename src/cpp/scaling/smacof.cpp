@@ -1,5 +1,4 @@
 // Copyright [year] <Copyright Owner>
-#include <emscripten.h>
 
 #include <Eigen/Dense>
 #include <cmath>
