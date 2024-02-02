@@ -4,7 +4,7 @@ let wasmReady = new Promise((resolve) => {
 });
 
 // inputPointsis NOT flattened!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-async function initializeMap(
+async function calculateClusters(
   inputPoints,
   type,
   nonnumflags_array,
@@ -278,7 +278,6 @@ async function initializeMap(
     // -----------------------------------------------------------------
     // -----------------------------------------------------------------
 
-    console.log("moooooooooooooooooin");
     var clusterInfos = getClusterInfo(
       zoomLevels,
       labelsResult,
@@ -435,7 +434,6 @@ async function initializeMap(
 
     // -----------------------------------------------------------------
 
-    console.log("moooooooooooooooooin");
     var clusterInfos = getClusterInfo(
       zoomLevels,
       labelsResult,
@@ -533,7 +531,6 @@ class Cluster {
     var totalPercent = 0;
     var totalValue = 0;
     // If the pie of this nonnumflag has not yet been calculated before, or there are not enough slices in it
-    // console.log(`Deciding ${nonnumflagCounterIndex}`)
     if (
       this._pies[nonnumflagCounterIndex] == null ||
       (this._pies[nonnumflagCounterIndex].length - 1 < maxSlices && // more slices allowed
@@ -589,15 +586,11 @@ class Cluster {
         new Slice("other", this.numPoints - totalValue, 100 - totalPercent),
       );
       this._pies[nonnumflagCounterIndex] = pieSlicesArray;
-      // console.log(pieSlicesArray);
 
       return pieSlicesArray;
     }
     // If the pie of this nonnumflag has been calculated before, but the number of Slices is too great
     else if (this._pies[nonnumflagCounterIndex].length - 1 > maxSlices) {
-      console.log(
-        "DOING THE THIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIING",
-      );
       var removeNumber =
         maxSlices - this._pies[nonnumflagCounterIndex].length + 1;
 
@@ -752,9 +745,6 @@ function getClusterInfo(
           clusters[cluster_idx].numPoints;
       }
     }
-    console.log(
-      "-----------------------------------------------------------------",
-    );
     //console.log(clusters);
     clusterInfos[i] = clusters;
 

@@ -4,8 +4,12 @@
 function showCSVDeviderPopUp() {
   document.getElementById("CSVDeviderPopUp").style.display = "block";
 }
-//function to get the csv devider from the pop up
-//default is ","
+
+/**
+ * This function will get the value of the CSV devider from the input field and return it.
+ * If the input field is empty, it will return a comma.
+ * @returns {string} - The CSV devider.
+ */
 function getCSVDevider() {
   let devider = document.getElementById("myCSVDeviderInput").value;
   if (devider == "") {
@@ -52,6 +56,7 @@ function getinputdata() {
   if (textinput == "") {
     return false;
   } else {
+    // Split the input into an array of lines and consider both \r and \n as newline characters
     return textinput;
   }
 }
@@ -140,13 +145,6 @@ function clean_fun_slector() {
   fun_slector.options.length = 1;
 }
 
-function getfunctionflag() {
-  let funcSelector = document.getElementById("D_function");
-  let funcIndex = funcSelector.selectedIndex;
-  let funcFlag = funcSelector.options[funcIndex].value;
-  return funcFlag;
-}
-
 /*When text-area not empty, will read the inhalt and check if the first line is the title line */
 function getTitleLine(InputFlag = "coord") {
   console.log("trying to get the title Title line from", InputFlag, "data");
@@ -211,7 +209,6 @@ function isCoordindat(txt_inhalt, devider = ",") {
   let coorindat = [];
   if (txt_inhalt != "") {
     let lines = txt_inhalt.split("\n");
-    console.log(lines.length);
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
       line = line.split(",");
@@ -221,7 +218,6 @@ function isCoordindat(txt_inhalt, devider = ",") {
     }
   }
   if (coorindat.length > 0) {
-    console.log("get");
     return coorindat.toString;
   }
   return "";
@@ -269,7 +265,6 @@ function ColFlagCheck() {
   1. Name </br> 2. Distance information </br> 3. Non-numerical flags </br> 4. Numericial flags";
 
   for (let d = 1; d < dimension + 1; d++) {
-    console.log(d + " Cloumn");
     let _check_tr = checklist.insertRow();
     let cell_1 = _check_tr.insertCell(0);
     let cell_2 = _check_tr.insertCell(1);
@@ -319,26 +314,53 @@ function MapViewSwitcher() {
 }
 
 /*+++++++++++++++++++++++ function for buttons ++++++++++++++++++++ */
-//this function will read the user input on the selected columns on a specific
-// "DatenFlag" f.e numerical flags will output all the columns that are selected
-// in the dropdown menu for numerical flags
-function getDataFromInputTable(datenflag) {
+
+/**
+ * This function will get the selected columns from the dropdown menus and return them.
+ * @returns {Array} - An array containing the selected columns. The first element is the data columns, the second element is the numerical flags and the third element is the non-numerical flags.
+ * The selected columns are stored as the index of the column in the CSV file.
+ */
+function getSelectedColumns() {
   let table = document.getElementById("checkTable");
   let rows = table.getElementsByTagName("tr");
-  let selectedColumns = [];
+  let selectedDataColumns = [];
+  let selectedNumFlagColumns = [];
+  let selectedNonNumFlagColumns = [];
   for (let i = 1; i < rows.length; i++) {
     let row = rows[i];
-    if (row.cells[2].getElementsByTagName("select")[0].value == datenflag) {
+    if (
+      row.cells[2].getElementsByTagName("select")[0].value ==
+      "distance information"
+    ) {
       select = row.cells[1].querySelector("select");
-      selectedColumns.push(select.selectedIndex);
+      selectedDataColumns.push(select.selectedIndex);
+    } else if (
+      row.cells[2].getElementsByTagName("select")[0].value == "numericial flags"
+    ) {
+      select = row.cells[1].querySelector("select");
+      selectedNumFlagColumns.push(select.selectedIndex);
+    } else if (
+      row.cells[2].getElementsByTagName("select")[0].value ==
+      "non-numerical flags"
+    ) {
+      select = row.cells[1].querySelector("select");
+      selectedNonNumFlagColumns.push(select.selectedIndex);
     }
   }
-  return selectedColumns;
+  return [
+    selectedDataColumns,
+    selectedNumFlagColumns,
+    selectedNonNumFlagColumns,
+  ];
 }
 
-//get the header names of the flag columns for the clusterInfoBox
-//returns an array with 2 elements (non-numerical flags, numerical flags)
-//each containing the headers for numflags or nonnumflags
+/**
+ * This function will get the names of the flag columns from the header of the CSV file and return them.
+ * @param {string} header - The header of the CSV file.
+ * @param {Array} nonnumIndices - The indices of the non-numerical flag columns.
+ * @param {Array} numIndices - The indices of the numerical flag columns.
+ * @returns {Array} - An array containing the names of the flag columns. The first element is the names of the non-numerical flag columns and the second element is the names of the numerical flag columns.
+ */
 function getFlagColumnNames(header, nonnumIndices, numIndices) {
   header = header.split(",");
   let flagColumnNames = [];
@@ -356,46 +378,44 @@ function getFlagColumnNames(header, nonnumIndices, numIndices) {
   return flagColumnNames;
 }
 
-function dealwithrun() {
-  let punktdata = "";
-  let matchflag = true;
-  let functionFlag = getfunctionflag();
-  let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
-  let data_type = functionFlag;
-  let dataColumns = getDataFromInputTable("distance information");
-  //read data from text box
-  punktdata = getinputdata();
-  // Split the CSV content into lines considering CR and LF as line endings
-  var lines = punktdata.split(/\r?\n/);
-  //get the devider
-  var devider = getCSVDevider();
-
-  var points_array = [];
-  var nonnumflags_array = [];
-  var numflags_array = [];
-  var nonnumflagsIdxName = getDataFromInputTable("non-numerical flags");
-  var numflagsIdxName = getDataFromInputTable("numericial flags");
-  var flagColumnNames = getFlagColumnNames(
-    lines[0],
-    nonnumflagsIdxName,
-    numflagsIdxName,
-  );
-  //assigning flag values to the flags arrays
-  //if flagColumns is empty, the array will be empty
+/**
+ * This function reads the user input on the selected columns.
+ *
+ * @param {Array} lines - The data from the text box.
+ * @param {string} devider - The divider used in the CSV file.
+ * @param {Array} selectedColumns - The selected columns from the dropdown menus. selectedColumns[0] = data columns, selectedColumns[1] = numerical flags, selectedColumns[2] = non-numerical flags.
+ * @returns {Array} - An array containing the data from the text box. The first element is the data columns, the second element is the numerical flags and the third element is the non-numerical flags.
+ */
+function readDataFromLines(lines, devider, selectedColumns, dataType) {
+  let points_array = [];
+  let numflags_array = [];
+  let nonnumflags_array = [];
+  let line = "";
+  let foundValues = [];
+  //decide if pointsarray has to store the data as arrays or not
+  let storeAsArray = false;
+  if (dataType == "Custom" || dataType == "Vector") {
+    storeAsArray = true;
+  }
+  //iterate over the lines and split them by the devider but ignore the first line
   for (let i = 1; i < lines.length; i++) {
-    let line = lines[i].split(devider);
-    let FlagValues = [];
-    nonnumflagsIdxName.forEach((flagIdxName) => {
-      FlagValues.push(line[flagIdxName]);
-    });
-    nonnumflags_array.push(FlagValues);
-    FlagValues = [];
-    numflagsIdxName.forEach((flagIdxName) => {
+    line = lines[i].split(devider);
+    foundValues = [];
+    if (storeAsArray) {
+      selectedColumns[0].forEach((columnIndex) => {
+        foundValues.push(line[columnIndex]);
+      });
+      points_array.push(foundValues);
+      foundValues = [];
+    } else {
+      selectedColumns[0].forEach((columnIndex) => {
+        points_array.push(line[columnIndex]);
+      });
+    }
+    selectedColumns[1].forEach((flagIdxName) => {
       //throw error if the value is not a number
       number = parseFloat(line[flagIdxName]);
       if (isNaN(number)) {
-        console.log(number);
-        console.log(line[flagIdxName]);
         alert(
           `All numflag values must be valid numbers. number "${
             number + 1
@@ -403,32 +423,48 @@ function dealwithrun() {
         );
       }
       if (isNaN(number)) {
-        console.log(line[flagIdxName]);
         assert(!isNaN(number), "All numflag values must be valid numbers");
       }
-      FlagValues.push(number);
+      foundValues.push(number);
     });
-    numflags_array.push(FlagValues);
+    numflags_array.push(foundValues);
+    foundValues = [];
+
+    selectedColumns[2].forEach((flagIdxName) => {
+      foundValues.push(line[flagIdxName]);
+    });
+    nonnumflags_array.push(foundValues);
   }
 
+  return [points_array, numflags_array, nonnumflags_array];
+}
+
+function dealwithrun() {
+  //get all the user input from buttons and text-areas
+  let functionFlag = document.getElementById("D_function").value;
+  let dataType = document.getElementById("DataType").value;
+  let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
+  var lines = getinputdata().split(/\r?\n/);
+  var devider = getCSVDevider();
+  var selectedColumns = getSelectedColumns();
+  //get names of the header columns for the flag columns
+  var flagColumnNames = getFlagColumnNames(
+    lines[0],
+    selectedColumns[2],
+    selectedColumns[1],
+  );
+
+  //DER SWITCH CASE KOMMT WEG SOBALD cluster.js REFACTORED IST
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   var type = "default";
-  switch (data_type) {
+  switch (functionFlag) {
     case "noChoice":
       alert("Please choose a distance function");
       break;
     case "Custom":
       type = "custom";
       console.log("function is custom");
-      for (let i = 1; i < lines.length; i++) {
-        let line = lines[i].split(devider);
-        let lineAxisValues = [];
-        dataColumns.forEach((columnIndex) => {
-          lineAxisValues.push(line[columnIndex]);
-        });
-        points_array.push(lineAxisValues);
-      }
-      console.log(points_array);
-
       break;
     case "earth-dist":
     case "Euclidean":
@@ -436,98 +472,55 @@ function dealwithrun() {
       if (functionFlag == "earth-dist") {
         type = "earth-dist";
       }
-      //check if the data is coordinate data
-      //
-      console.log("function as Euc");
-      punktdata = isCoordindat(punktdata, devider);
-      if (Boolean(punktdata)) {
-        console.log("match the euc");
-      } else {
-        console.log("empty data or data dosen't match");
-      }
-      //cluster the data
-      //initailize non-flattened (nested) array from lines
-      //ignore the header
-      for (let i = 1; i < lines.length; i++) {
-        let line = lines[i].split(devider);
-        let lineAxisValues = [];
-        dataColumns.forEach((columnIndex) => {
-          lineAxisValues.push(line[columnIndex]);
-        });
-        points_array.push(lineAxisValues);
-      }
-      console.log(points_array);
       break;
     case "Preclustered":
       type = "preclustered";
       console.log("preclustered");
-      //cluster the data
-      //initailize non-flattened (nested) array from lines
-      //ignore the header
-      for (let i = 1; i < lines.length; i++) {
-        let line = lines[i].split(devider);
-        let lineAxisValues = [];
-        dataColumns.forEach((columnIndex) => {
-          points_array.push(line[columnIndex]);
-        });
-      }
-      console.log(points_array);
-
       break;
     case "edit-distance":
     case "Tanimoto":
-      //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-      //TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+      //TODO
       //refactor this delete switch case
       type = "tanimotoFingerprints";
       if (functionFlag == "edit-distance") {
         type = "edit-distance";
       }
       console.log("function as Tani");
-      //cluster the data
-      //initailize non-flattened (nested) array from lines
-      //ignore the header
-      for (let i = 1; i < lines.length; i++) {
-        let line = lines[i].split(devider);
-        let lineAxisValues = [];
-        dataColumns.forEach((columnIndex) => {
-          points_array.push(line[columnIndex]);
-        });
-      }
-      console.log(points_array);
-
       break;
     case "Hamming":
       break;
     default:
       console.log("Input data doesn't match the distance function");
   }
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
+  // read the data from the text area and store it in the arrays
+  let points_array = [];
+  let numflags_array = [];
+  let nonnumflags_array = [];
+
+  [points_array, numflags_array, nonnumflags_array] = readDataFromLines(
+    lines,
+    devider,
+    selectedColumns,
+    dataType,
+  );
+  //KANN DAS WEG?
   if (points_array[points_array.length - 1] == undefined) {
     points_array.pop();
   }
-
-  if (matchflag) {
-    hideprepera();
-    showresult();
-    initializeMap(
-      points_array,
-      type,
-      nonnumflags_array,
-      numflags_array,
-      scalingMethod,
-      flagColumnNames,
-    );
-  } else {
-    alert("Input data dosen't match the distance function");
-    return false;
-  }
-
-  /*Send Data and functionflag to IV-Grupp*/
-  /*Should get sth back and send to Map-Gruppp, denn initialis the Map*/
-
-  /*Hied the test-area and buttons*/
-  /*Show Cluster list and map */
+  // initialize the next step which is the calculation of the clusters
+  hideprepera();
+  showresult();
+  calculateClusters(
+    points_array,
+    type,
+    nonnumflags_array,
+    numflags_array,
+    scalingMethod,
+    flagColumnNames,
+  );
 }
 
 function deletedatenandfunc() {
