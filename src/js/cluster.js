@@ -4,7 +4,7 @@ let wasmReady = new Promise((resolve) => {
 });
 
 // inputPointsis NOT flattened!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-async function initializeMap(
+async function calculateClusters(
   inputPoints,
   type,
   nonnumflags_array,

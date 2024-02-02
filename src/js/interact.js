@@ -4,8 +4,12 @@
 function showCSVDeviderPopUp() {
   document.getElementById("CSVDeviderPopUp").style.display = "block";
 }
-//function to get the csv devider from the pop up
-//default is ","
+
+/**
+ * This function will get the value of the CSV devider from the input field and return it.
+ * If the input field is empty, it will return a comma.
+ * @returns {string} - The CSV devider.
+ */
 function getCSVDevider() {
   let devider = document.getElementById("myCSVDeviderInput").value;
   if (devider == "") {
@@ -53,7 +57,7 @@ function getinputdata() {
     return false;
   } else {
     // Split the input into an array of lines and consider both \r and \n as newline characters
-    return textinput.split(/\r?\n/);
+    return textinput;
   }
 }
 
@@ -139,13 +143,6 @@ function changedistancefunclist(distance_func_list) {
 function clean_fun_slector() {
   let fun_slector = document.getElementById("D_function");
   fun_slector.options.length = 1;
-}
-
-function getfunctionflag() {
-  let funcSelector = document.getElementById("D_function");
-  let funcIndex = funcSelector.selectedIndex;
-  let funcFlag = funcSelector.options[funcIndex].value;
-  return funcFlag;
 }
 
 /*When text-area not empty, will read the inhalt and check if the first line is the title line */
@@ -318,9 +315,11 @@ function MapViewSwitcher() {
 
 /*+++++++++++++++++++++++ function for buttons ++++++++++++++++++++ */
 
-//this function will read the user input on the selected columns on a specific
-// "DatenFlag" f.e numerical flags will output all the columns that are selected
-// in the dropdown menu for numerical flags
+/**
+ * This function will get the selected columns from the dropdown menus and return them.
+ * @returns {Array} - An array containing the selected columns. The first element is the data columns, the second element is the numerical flags and the third element is the non-numerical flags.
+ * The selected columns are stored as the index of the column in the CSV file.
+ */
 function getSelectedColumns() {
   let table = document.getElementById("checkTable");
   let rows = table.getElementsByTagName("tr");
@@ -355,9 +354,13 @@ function getSelectedColumns() {
   ];
 }
 
-//get the header names of the flag columns for the clusterInfoBox
-//returns an array with 2 elements (non-numerical flags, numerical flags)
-//each containing the headers for numflags or nonnumflags
+/**
+ * This function will get the names of the flag columns from the header of the CSV file and return them.
+ * @param {string} header - The header of the CSV file.
+ * @param {Array} nonnumIndices - The indices of the non-numerical flag columns.
+ * @param {Array} numIndices - The indices of the numerical flag columns.
+ * @returns {Array} - An array containing the names of the flag columns. The first element is the names of the non-numerical flag columns and the second element is the names of the numerical flag columns.
+ */
 function getFlagColumnNames(header, nonnumIndices, numIndices) {
   header = header.split(",");
   let flagColumnNames = [];
@@ -381,7 +384,7 @@ function getFlagColumnNames(header, nonnumIndices, numIndices) {
  * @param {Array} lines - The data from the text box.
  * @param {string} devider - The divider used in the CSV file.
  * @param {Array} selectedColumns - The selected columns from the dropdown menus. selectedColumns[0] = data columns, selectedColumns[1] = numerical flags, selectedColumns[2] = non-numerical flags.
- * @returns {void}
+ * @returns {Array} - An array containing the data from the text box. The first element is the data columns, the second element is the numerical flags and the third element is the non-numerical flags.
  */
 function readDataFromLines(lines, devider, selectedColumns, dataType) {
   let points_array = [];
@@ -437,30 +440,23 @@ function readDataFromLines(lines, devider, selectedColumns, dataType) {
 }
 
 function dealwithrun() {
-  let functionFlag = getfunctionflag();
+  //get all the user input from buttons and text-areas
+  let functionFlag = document.getElementById("D_function").value;
   let dataType = document.getElementById("DataType").value;
   let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
-
-  var lines = getinputdata();
-  //get the devider
+  var lines = getinputdata().split(/\r?\n/);
   var devider = getCSVDevider();
-
-  //get the selected columns
   var selectedColumns = getSelectedColumns();
-  console.log(selectedColumns);
-  var dataColumns = selectedColumns[0];
-  var numflagsIdxName = selectedColumns[1];
-  var nonnumflagsIdxName = selectedColumns[2];
-
-  var points_array = [];
-  var nonnumflags_array = [];
-  var numflags_array = [];
+  //get names of the header columns for the flag columns
   var flagColumnNames = getFlagColumnNames(
     lines[0],
-    nonnumflagsIdxName,
-    numflagsIdxName,
+    selectedColumns[2],
+    selectedColumns[1],
   );
 
+  //DER SWITCH CASE KOMMT WEG SOBALD cluster.js REFACTORED IST
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   var type = "default";
   switch (functionFlag) {
     case "noChoice":
@@ -496,22 +492,28 @@ function dealwithrun() {
     default:
       console.log("Input data doesn't match the distance function");
   }
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+  // read the data from the text area and store it in the arrays
+  let points_array = [];
+  let numflags_array = [];
+  let nonnumflags_array = [];
+
   [points_array, numflags_array, nonnumflags_array] = readDataFromLines(
     lines,
     devider,
     selectedColumns,
     dataType,
   );
-  console.log(points_array);
-  console.log(numflags_array);
-  console.log(nonnumflags_array);
-
+  //KANN DAS WEG?
   if (points_array[points_array.length - 1] == undefined) {
     points_array.pop();
   }
+  // initialize the next step which is the calculation of the clusters
   hideprepera();
   showresult();
-  initializeMap(
+  calculateClusters(
     points_array,
     type,
     nonnumflags_array,
@@ -519,12 +521,6 @@ function dealwithrun() {
     scalingMethod,
     flagColumnNames,
   );
-
-  /*Send Data and functionflag to IV-Grupp*/
-  /*Should get sth back and send to Map-Gruppp, denn initialis the Map*/
-
-  /*Hied the test-area and buttons*/
-  /*Show Cluster list and map */
 }
 
 function deletedatenandfunc() {
