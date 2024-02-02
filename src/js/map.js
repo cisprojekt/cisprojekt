@@ -442,22 +442,6 @@ function updateClusterInfoBox(
 ) {
   if (selectedPoint != null) {
     const clusterInfoBox = document.getElementById("clusterInfoBox");
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    console.log(zoomLevel);
-    console.log(selectedPoint);
-    console.log(clusterInfos[zoomLevel - 1][selectedPoint]);
-    console.log(clusterInfos);
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
-    console.log(zoomLevel);
-    console.log(selectedPoint);
-    console.log(clusterInfos[zoomLevel - 1][selectedPoint]);
-    console.log(clusterInfos);
     let displayText =
       "ClusterLabel: " +
       clusterInfos[zoomLevel - 1][selectedPoint].label +
@@ -576,9 +560,6 @@ function updateClusterInfoBox(
       clusterInfoBox.appendChild(document.createElement("br"));
     } */
   } else {
-    console.log("No point selected.");
-    console.log("No point selected.");
-    console.log("No point selected.");
     const clusterInfoBox = document.getElementById("clusterInfoBox");
     clusterInfoBox.textContent = "No point selected.";
   }
@@ -644,13 +625,6 @@ function createViolinPlotDiv(
   flagIndex,
   plotWidthPixels,
 ) {
-  console.log(
-    "-----------------------------createViolinPlotDiv log-----------------------------",
-  );
-  console.log(numflagsArray);
-  console.log(clusterPoints);
-  console.log(flagIndex);
-
   // Create a container div for the violin plot
   let violinDiv = document.createElement("div");
   violinDiv.id = `violinPlot_${flagIndex}`;
