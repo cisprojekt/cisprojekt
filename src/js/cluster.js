@@ -4,14 +4,7 @@ let wasmReady = new Promise((resolve) => {
 });
 
 // inputPointsis NOT flattened!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-async function initializeMap(
-  inputPoints,
-  type,
-  nonnumflags_array,
-  numflags_array,
-  scalingMethod,
-  flagColumnNames,
-) {
+async function initializeMap(inputPoints, type, nonnumflags_array, numflags_array, scalingMethod, flagColumnNames) {
   await wasmReady; // Make sure module is loaded
   console.log("Starting Clustering Program");
   console.log(type);
@@ -35,9 +28,7 @@ async function initializeMap(
 
     let resultPoints = new Float64Array(n * 2);
 
-    let resultPointsBuf = Module._malloc(
-      n * 2 * Float64Array.BYTES_PER_ELEMENT,
-    );
+    let resultPointsBuf = Module._malloc(n * 2 * Float64Array.BYTES_PER_ELEMENT);
 
     // Fill distance matrix
     let distMat = new Float64Array((n * (n - 1)) / 2);
@@ -50,63 +41,34 @@ async function initializeMap(
 
     console.log(distMat);
 
-    let distMatBuf = Module._malloc(
-      ((n * (n - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT,
-    );
+    let distMatBuf = Module._malloc(((n * (n - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT);
     Module.HEAPF64.set(distMat, distMatBuf / distMat.BYTES_PER_ELEMENT);
 
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
-    let labelsBuf = Module._malloc(
-      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
-    );
+    let labelsBuf = Module._malloc(n * zoomLevels * Int32Array.BYTES_PER_ELEMENT);
 
-    Module.HEAPF64.set(
-      resultPoints,
-      resultPointsBuf / resultPoints.BYTES_PER_ELEMENT,
-    );
+    Module.HEAPF64.set(resultPoints, resultPointsBuf / resultPoints.BYTES_PER_ELEMENT);
 
     // Actual function call to cluster
     Module.ccall(
       "clusterCustom",
       null,
-      [
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-      ],
-      [
-        distMatBuf,
-        heightBuf,
-        mergeBuf,
-        labelsBuf,
-        n,
-        maxIterations,
-        zoomLevels,
-        1,
-        resultPointsBuf,
-        scalingMethod,
-      ],
+      ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"],
+      [distMatBuf, heightBuf, mergeBuf, labelsBuf, n, maxIterations, zoomLevels, 1, resultPointsBuf, scalingMethod]
     );
 
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
         labelsBuf / Int32Array.BYTES_PER_ELEMENT,
-        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels,
-      ),
+        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels
+      )
     );
     let pointsResult = new Float64Array(
       Module.HEAPF64.subarray(
         resultPointsBuf / Float64Array.BYTES_PER_ELEMENT,
-        resultPointsBuf / Float64Array.BYTES_PER_ELEMENT + n * 2,
-      ),
+        resultPointsBuf / Float64Array.BYTES_PER_ELEMENT + n * 2
+      )
     );
 
     for (var i = 0; i < n * 2; i += 2) {
@@ -130,7 +92,7 @@ async function initializeMap(
       labelsResult,
       n,
       numflags_array, // Holds an array for each point, holding the numflag values for that point
-      nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+      nonnumflags_array // Holds an array for each point, holding the nonnumflag values for that point
     );
     // -----------------------------------------------------------------
     // -----------------------------------------------------------------
@@ -138,15 +100,7 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(
-      labelsResult,
-      pointsToPlot,
-      n,
-      zoomLevels,
-      clusterInfos,
-      flagColumnNames,
-      numflags_array,
-    );
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, flagColumnNames, numflags_array);
   } else if (type == "preclustered") {
     var dataJson = JSON.parse(document.getElementById("distFunction").value);
 
@@ -158,19 +112,11 @@ async function initializeMap(
       Object.values(dataJson[0]),
       n,
       numflags_array, // Holds an array for each point, holding the numflag values for that point
-      nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+      nonnumflags_array // Holds an array for each point, holding the nonnumflag values for that point
     );
 
     // Call the function of map to plot
-    mapFunctions(
-      dataJson[0],
-      dataJson[1],
-      n,
-      zoomLevels,
-      clusterInfos,
-      flagColumnNames,
-      numflags_array,
-    );
+    mapFunctions(dataJson[0], dataJson[1], n, zoomLevels, clusterInfos, flagColumnNames, numflags_array);
   }
 
   // For euclidean inputs
@@ -204,9 +150,7 @@ async function initializeMap(
     let distMatBuf = Module._malloc(n * n * Float64Array.BYTES_PER_ELEMENT);
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
-    let labelsBuf = Module._malloc(
-      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
-    );
+    let labelsBuf = Module._malloc(n * zoomLevels * Int32Array.BYTES_PER_ELEMENT);
 
     // Move input points into heap
     Module.HEAPF64.set(points, pointsBuf / points.BYTES_PER_ELEMENT);
@@ -242,21 +186,21 @@ async function initializeMap(
         1,
         scalingMethod,
         isSperical,
-      ],
+      ]
     );
     console.log("Calculations finished");
     // Copy results into js array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
         labelsBuf / Int32Array.BYTES_PER_ELEMENT,
-        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels,
-      ),
+        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels
+      )
     );
     let pointsResult = new Float64Array(
       Module.HEAPF64.subarray(
         pointsBuf / Float64Array.BYTES_PER_ELEMENT,
-        pointsBuf / Float64Array.BYTES_PER_ELEMENT + n * dim,
-      ),
+        pointsBuf / Float64Array.BYTES_PER_ELEMENT + n * dim
+      )
     );
 
     // Move points into array for map
@@ -284,7 +228,7 @@ async function initializeMap(
       labelsResult,
       n,
       numflags_array, // Holds an array for each point, holding the numflag values for that point
-      nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+      nonnumflags_array // Holds an array for each point, holding the nonnumflag values for that point
     );
     // -----------------------------------------------------------------
     // -----------------------------------------------------------------
@@ -292,15 +236,7 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(
-      labelsResult,
-      pointsToPlot,
-      n,
-      zoomLevels,
-      clusterInfos,
-      flagColumnNames,
-      numflags_array,
-    );
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, flagColumnNames, numflags_array);
   } else if (type == "tanimotoFingerprints" || type == "edit-distance") {
     // convert type information to int
     if (type == "tanimotoFingerprints") {
@@ -337,30 +273,18 @@ async function initializeMap(
     let resultPoints = new Float64Array(n * 2);
 
     // Heaps which wasm uses
-    let resultPointsBuf = Module._malloc(
-      n * 2 * Float64Array.BYTES_PER_ELEMENT,
-    );
-    let lengthOfStringBuf = Module._malloc(
-      lengthOfString.length * lengthOfString.BYTES_PER_ELEMENT,
-    );
+    let resultPointsBuf = Module._malloc(n * 2 * Float64Array.BYTES_PER_ELEMENT);
+    let lengthOfStringBuf = Module._malloc(lengthOfString.length * lengthOfString.BYTES_PER_ELEMENT);
     let distMatBuf = Module._malloc(n * n * Float64Array.BYTES_PER_ELEMENT);
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
-    let labelsBuf = Module._malloc(
-      n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
-    );
+    let labelsBuf = Module._malloc(n * zoomLevels * Int32Array.BYTES_PER_ELEMENT);
 
     // Dont know what this does
-    Module.HEAPF64.set(
-      resultPoints,
-      resultPointsBuf / resultPoints.BYTES_PER_ELEMENT,
-    );
+    Module.HEAPF64.set(resultPoints, resultPointsBuf / resultPoints.BYTES_PER_ELEMENT);
 
     // Move length of string into heap
-    Module.HEAPU32.set(
-      lengthOfString,
-      lengthOfStringBuf / lengthOfString.BYTES_PER_ELEMENT,
-    );
+    Module.HEAPU32.set(lengthOfString, lengthOfStringBuf / lengthOfString.BYTES_PER_ELEMENT);
 
     console.log("lengthOfStringBuf length " + lengthOfString[0]);
     console.log("input lengths " + lengthOfString);
@@ -400,21 +324,21 @@ async function initializeMap(
         bit_bool,
         resultPointsBuf,
         type,
-      ],
+      ]
     );
     console.log("Calculations finished");
     // Copy results into js array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
         labelsBuf / Int32Array.BYTES_PER_ELEMENT,
-        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels,
-      ),
+        labelsBuf / Int32Array.BYTES_PER_ELEMENT + n * zoomLevels
+      )
     );
     let pointsResult = new Float64Array(
       Module.HEAPF64.subarray(
         resultPointsBuf / Float64Array.BYTES_PER_ELEMENT,
-        resultPointsBuf / Float64Array.BYTES_PER_ELEMENT + n * 2,
-      ),
+        resultPointsBuf / Float64Array.BYTES_PER_ELEMENT + n * 2
+      )
     );
 
     // Create array for map
@@ -436,28 +360,24 @@ async function initializeMap(
     // -----------------------------------------------------------------
 
     console.log("moooooooooooooooooin");
-    var clusterInfos = getClusterInfo(
-      zoomLevels,
-      labelsResult,
-      n,
-      numflags_array,
-      nonnumflags_array,
-    );
+    var clusterInfos = getClusterInfo(zoomLevels, labelsResult, n, numflags_array, nonnumflags_array);
     // -----------------------------------------------------------------
 
     // Call the function of map to plot
-    mapFunctions(
-      labelsResult,
-      pointsToPlot,
-      n,
-      zoomLevels,
-      clusterInfos,
-      flagColumnNames,
-      numflags_array,
-    );
+    mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos, flagColumnNames, numflags_array);
   }
 }
 
+/**
+ * Represents a slice of a pie chart.
+ *
+ * @property {string} name - The name of the slice.
+ * @property {number} value - The numerical value of the slice.
+ * @property {number} percentage - The percentage that this slice represents out of the total.
+ *
+ * @example
+ * const slice = new Slice('Example Slice', 10, 25);
+ */
 class Slice {
   constructor(name, value, percentage) {
     this.name = name;
@@ -465,6 +385,44 @@ class Slice {
     this.percentage = percentage;
   }
 }
+
+/**
+ * @typedef {Object} NonnumflagCounter
+ * @property {string} key - The different values that appear for that nonnumflag.
+ * @property {number} value - The number of points which take up that value.
+ */
+/** A class that holds the information of a cluster.
+ *
+ * Also contains information on which pie charts should be calculated and how many slices they should have.
+ * However, the actual calculation happens not at construction, but in the getPie method.
+ * This method may be called at any time for any flag, so this is not binding.
+ * For more information on how pie charts are calculated and cached, see the getPie method.
+ *
+ * @property {number} label - The label of the cluster corresponding to the label in the labelsResult array.
+ * @property {number} numPoints - The number of points in the cluster.
+ * @property {NonnumflagCounter[]} nonnumflagCounters - An array of maps, the i'th map corresponds to the i'th nonnumflag.
+ * Each map counts the occurrences of the different values which occur for that nonnumflag.
+ * @property {number[]} numflagSums - An array which contains the sum of each numflag.
+ * @property {number[]} numflagAverages - An array which contains the average of each numflag.
+ * @property {number[]} numflagMins - An array which contains the minimum of each numflag.
+ * @property {number[]} numflagMaxs - An array which contains the maximum of each numflag.
+ * @property {number[]} pointIndices - An array of the indices from the currentLabels array of the points in the cluster.
+ * The i'th element corresponds to the index in currentLabels of the i'th point in the cluster.
+ * 
+ * @property {number[]} pieFlagIndices - An array of the indices of the nonnumflags for which pie charts could be of interest.
+ * 
+ * This is not binding, as pie charts are not calculated at construction, but may be used as information when getting pie charts for the cluster.
+ * This allows for a potential dynamic implementation, where pie charts are only calculated for specific nonnumflags, even on a per-cluster basis.
+ * 
+ * If empty, pie charts will be calculated for each flag. To calcululate none, set pieMaxNumSlicesDefault<=0.
+ * 
+ * @property {number} pieMaxNumSlicesDefault - The maximum number of slices (excluding the automatic "other" slice) to be calculated.
+ * 
+ * This is not binding, as pie charts are not calculated at construction, but used as default when calling the getPie method.
+ *  
+ * @example
+ * const cluster = new Cluster(label, numPoints, nonnumflagCounters, numflagSums, numflagAverages, numflagMins, numflagMaxs, pointIndices, pieFlagIndices, pieMaxNumSlicesDefault);
+ */
 class Cluster {
   constructor(
     label,
@@ -475,88 +433,89 @@ class Cluster {
     numflagMins = [],
     numflagMaxs = [],
     pointIndices = [],
-    pieFlagIndices = [], // empty means it will calculate the pie charts for each flag. To calcululate none, set pieMaxNumSlicesDefault<=0
-    pieMaxNumSlicesDefault = 5,
+    pieFlagIndices = [],
+    pieMaxNumSlicesDefault = 5
   ) {
-    // label is the label of the cluster corresponding to the label in the labelsResult array
+    // Set the properties of the cluster
     this.label = label;
-    // numPoints is the number of points in the cluster
     this.numPoints = numPoints;
-    // nonnumflagCounters is an array of dictionaries which count the occurences of each existent nonnumflag-value of one nonnumflag
-    // the first array element corresponds to the first selected nonnumflag, the second to the second nonnumflag, ...
     this.nonnumflagCounters = nonnumflagCounters;
-    // numflagSums is an array which contains the sum of each numflag
-    // the first array element corresponds to the first selected numflag, the second to the second numflag, ...
     this.numflagSums = numflagSums;
-    // numflagAverages is an array which contains the average of each numflag
     this.numflagAverages = numflagAverages;
-    // numflagMins is an array which contains the minimum of each numflag
     this.numflagMins = numflagMins;
-    // numflagMaxs is an array which contains the maximum of each numflag
     this.numflagMaxs = numflagMaxs;
-    // this.pointIndices = pointIndices;
     this.pointIndices = pointIndices;
-
-    this.pieMaxNumSlicesDefault = pieMaxNumSlicesDefault;
     this.pieFlagIndices = pieFlagIndices;
-
-    this._pies = new Array(nonnumflagCounters.length)
-      .fill(null)
-      .map(() => null);
-    /* this.pies = new Proxy(this._pies, {
-
-      get: function (target, idx) {
-        var pie = target[idx];
-        if (pie == null) {
-        }
-        return target[idx];
-      },
-    }); */
+    this.pieMaxNumSlicesDefault = pieMaxNumSlicesDefault;
+    // Initialiize empty pies cache
+    /**
+     * @private
+     * @type {Array}
+     * Cache for pie charts for the nonnumflags.
+     */
+    this._pies = new Array(nonnumflagCounters.length).fill(null).map(() => null);
   }
+
+  /**
+   * Getter method for the name of the cluster.
+   *
+   * @returns {string} - "Cluster #" + `this.label`.
+   */
   get name() {
     return "Cluster #" + this.label;
   }
 
   /**
-  - `nonnumflagCounterIndex`: The index of the nonnumflag in this.nonnumflagCounters for which to get the pie chart.
-
-  - `maxSlices` __(optional)__: The maximum number of slices (excluding the automatic "other" slice) to be calculated.
-
-  ## Returns
-
-  - Array with with instances of Slice class, in descending order by Slice.value, with the last element always being the "other" slice
-  */
+   * Returns a pie chart on the cluster for a given nonnumflag.
+   *
+   * The pie chart is represented as an array of {@link Slice} instances, ordered in descending order by their value.
+   * The last slice is always the "other" slice, which represents all other values not included in the top slices.
+   * The maximum number of slices can be specified, excluding the "other" slice.
+   *
+   * @param {number} nonnumflagCounterIndex - The index of the nonnumflag in `this.nonnumflagCounters` for which to get the pie chart.
+   * @param {number} [maxSlices=this.pieMaxNumSlicesDefault] - The maximum number of slices (excluding the automatic "other" slice) to be calculated.
+   * @returns {Array<Slice>} - Array of {@link Slice} instances, in descending order by `Slice.value`, with the last element always being the "other" slice.
+   *
+   * ### On implementation:
+   *
+   * The cluster class uses a form of caching to avoid unnecessary computations of pie charts.
+   *
+   * The piechart with the largest number of slices yet calculated is stored for each nonnumflag in the `Cluster._pies` array.
+   * When getPie is called, it first checks if the pie has already been calculated:
+   *
+   * 1. If not, it calculates it and stores it in the `Cluster._pies` array.
+   *
+   * 2. If the pie has been calculated before, but the number of slices is too great, it removes the smaller slices and adjusts the "other" slice.
+   *
+   * 3. If the pie has been calculated before and the number of slices is too small, it recalculates the pie with the new number of slices.
+   *
+   * Current implementation of scenario 3 is not ideal, as it recalcualtes the pie from scratch instead of adjusting the percentages of the existing slices and adding
+   * new ones. This is especially true as the Charts.js library used to display the pie charts does not use the percentage values of the
+   * slices and instead calculates them anew; Though it is still sensical to have the percentages on hand for possible future usecases.
+   * If a feature gets implemented where calculations of upwards scaling pie charts are a possibility, the necessary maximum number of slices should either
+   * be calculated and thus cached early or this method should be adjusted to not recalculate pie charts from scratch that already have a smaller version cached.
+   */
   getPie(nonnumflagCounterIndex, maxSlices = this.pieMaxNumSlicesDefault) {
     if (nonnumflagCounterIndex >= this.nonnumflagCounters.length) {
-      throw "given nonnumflagCounterIndex is >= this.nonnumflagCounters.length";
+      throw "The given nonnumflagCounterIndex is >= this.nonnumflagCounters.length.";
     }
     var totalPercent = 0;
     var totalValue = 0;
     // If the pie of this nonnumflag has not yet been calculated before, or there are not enough slices in it
-    // console.log(`Deciding ${nonnumflagCounterIndex}`)
     if (
       this._pies[nonnumflagCounterIndex] == null ||
       (this._pies[nonnumflagCounterIndex].length - 1 < maxSlices && // more slices allowed
-        this.nonnumflagCounters[nonnumflagCounterIndex].size >
-          this._pies[nonnumflagCounterIndex].length - 1) // more slices possible)
+        this.nonnumflagCounters[nonnumflagCounterIndex].size > this._pies[nonnumflagCounterIndex].length - 1) // more slices possible)
     ) {
-      // console.log(`Creating new pie at nonnumflagCounterIndex: ${nonnumflagCounterIndex}`);
-      // Find at most maxSlices biggest pie Slices  and store them in pieSlicesArray sorted desc with an added "other" Slice
+      // Find at most maxSlices biggest pie Slices and store them in pieSlicesArray sorted desc with an added "other" Slice.
+      // Where each slice corresponds to a value (string) the nonnumflag takes up at some point in the cluster,
+      // and the slices value is the number of points in the cluster which take up that value (string).
       var pieSlicesArray = [];
       var smallestIdx = null;
       var idx = 0;
-      // console.log("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-      // console.log("this.nonnumflagCounters:");
-      /* this.nonnumflagCounters.forEach((map, index) => {
-        console.log(`Index ${index}:`);
-        map.forEach((value, key) => {
-          console.log(`${key}: ${value}`);
-        });
-      }); */
-      // console.log(`this.nonnumflagCounters[nonnumflagCounterIndex]: ${this.nonnumflagCounters[nonnumflagCounterIndex]}`);
-      // console.log(`this.nonnumflagCounters[nonnumflagCounterIndex].type: ${this.nonnumflagCounters[nonnumflagCounterIndex].type}`);
+      // Iterate over the nonnumflag different values and add (up to) maxSlices of them as a Slice to the pieSlicesArray
       for (let key of this.nonnumflagCounters[nonnumflagCounterIndex].keys()) {
-        // console.log(`key: ${key}`);
+        // Case where the number of slices is not yet maxSlices
         if (pieSlicesArray.length <= maxSlices) {
           var value = this.nonnumflagCounters[nonnumflagCounterIndex].get(key);
           totalValue += value;
@@ -572,8 +531,7 @@ class Cluster {
           }
         } else {
           if (smallestIdx != null) {
-            var value =
-              this.nonnumflagCounters[nonnumflagCounterIndex].get(key);
+            var value = this.nonnumflagCounters[nonnumflagCounterIndex].get(key);
             totalValue += value;
             var percent = (100 * value) / this.numPoints;
             totalPercent += percent;
@@ -585,9 +543,7 @@ class Cluster {
         idx++;
       }
       pieSlicesArray.sort((s1, s2) => (s1.value > s2.value ? -1 : 0)); // Sort descendingly by value
-      pieSlicesArray.push(
-        new Slice("other", this.numPoints - totalValue, 100 - totalPercent),
-      );
+      pieSlicesArray.push(new Slice("other", this.numPoints - totalValue, 100 - totalPercent));
       this._pies[nonnumflagCounterIndex] = pieSlicesArray;
       // console.log(pieSlicesArray);
 
@@ -596,29 +552,20 @@ class Cluster {
     // If the pie of this nonnumflag has been calculated before, but the number of Slices is too great
     else if (this._pies[nonnumflagCounterIndex].length - 1 > maxSlices) {
       console.log(
-        "DOING THE THIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIING",
+        "DOING THE THIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIING"
       );
-      var removeNumber =
-        maxSlices - this._pies[nonnumflagCounterIndex].length + 1;
+      var removeNumber = maxSlices - this._pies[nonnumflagCounterIndex].length + 1;
 
       var extraValue = 0;
       var extraPercent = 0;
-      for (
-        var i = this._pies[nonnumflagCounterIndex].length - 2;
-        i >= maxSlices;
-        i--
-      ) {
+      for (var i = this._pies[nonnumflagCounterIndex].length - 2; i >= maxSlices; i--) {
         extraValue += this._pies[nonnumflagCounterIndex][i].value;
         extraPercent += this._pies[nonnumflagCounterIndex][i].percent;
       }
 
       var pieView = this._pies[nonnumflagCounterIndex].slice(0, maxSlices); // slice is not in place, splice is in place
       // Copy over the "other" slice
-      pieView.push(
-        this._pies[nonnumflagCounterIndex][
-          this._pies[nonnumflagCounterIndex].length - 1
-        ],
-      );
+      pieView.push(this._pies[nonnumflagCounterIndex][this._pies[nonnumflagCounterIndex].length - 1]);
 
       // Adjust the "other" slice to the new pie
       pieView[pieView.length - 1].value += extraValue;
@@ -640,7 +587,7 @@ function getClusterInfo(
   labelsResult,
   n,
   numflags_array, // Holds an array for each point, holding the numflag values for that point
-  nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+  nonnumflags_array // Holds an array for each point, holding the nonnumflag values for that point
 ) {
   // Create an array for each Zoomlevel which contais the info of the clusters
   var clusterInfos = new Array(zoom);
@@ -680,8 +627,8 @@ function getClusterInfo(
           new Array(numNumColumns).fill(0),
           new Array(numNumColumns).fill(Infinity),
           new Array(numNumColumns).fill(-Infinity),
-          [],
-        ),
+          []
+        )
     );
     // console.log(`SOAGDUIGDJSHAVBDIHSAPDMNJSHABVDUOSALKDBJHUSABGDOISHALKDHBSOADHLKSANLDKAS`);
     // console.log(`clusters: ${clusters}`);
@@ -702,17 +649,13 @@ function getClusterInfo(
     // flags is array of values of the flag columns of the i'th point in labels
     // counting the nonnumflags of each cluster
     var point_idx = 0;
-    nonnumflags_array.forEach((flags) => {
+    nonnumflags_array.forEach((flagValues) => {
       let cluster_idx = currentLabels[point_idx];
       flag_idx = 0;
-      flags.forEach((flag) => {
+      flagValues.forEach((flag) => {
         if (clusters[cluster_idx].nonnumflagCounters[flag_idx].has(flag)) {
-          var currentValue =
-            clusters[cluster_idx].nonnumflagCounters[flag_idx].get(flag);
-          clusters[cluster_idx].nonnumflagCounters[flag_idx].set(
-            flag,
-            currentValue + 1,
-          );
+          var currentValue = clusters[cluster_idx].nonnumflagCounters[flag_idx].get(flag);
+          clusters[cluster_idx].nonnumflagCounters[flag_idx].set(flag, currentValue + 1);
         } else {
           clusters[cluster_idx].nonnumflagCounters[flag_idx].set(flag, 1);
         }
@@ -725,21 +668,21 @@ function getClusterInfo(
     // flags is a list of values of the selceted columns of the i'th point in numflags_array
     // calculating average, max, min of numflags
     var numflags_array_idx = -1;
-    numflags_array.forEach((flags) => {
+    numflags_array.forEach((flagValues) => {
       numflags_array_idx++;
 
       let cluster_idx = currentLabels[numflags_array_idx];
 
       flag_idx = -1;
-      flags.forEach((flag) => {
+      flagValues.forEach((flagValue) => {
         flag_idx++;
 
-        clusters[cluster_idx].numflagSums[flag_idx] += flag;
-        if (flag > clusters[cluster_idx].numflagMaxs[flag_idx]) {
-          clusters[cluster_idx].numflagMaxs[flag_idx] = flag;
+        clusters[cluster_idx].numflagSums[flag_idx] += flagValue;
+        if (flagValue > clusters[cluster_idx].numflagMaxs[flag_idx]) {
+          clusters[cluster_idx].numflagMaxs[flag_idx] = flagValue;
         }
-        if (flag < clusters[cluster_idx].numflagMins[flag_idx]) {
-          clusters[cluster_idx].numflagMins[flag_idx] = flag;
+        if (flagValue < clusters[cluster_idx].numflagMins[flag_idx]) {
+          clusters[cluster_idx].numflagMins[flag_idx] = flagValue;
         }
       });
     });
@@ -748,13 +691,10 @@ function getClusterInfo(
     for (let cluster_idx = 0; cluster_idx < largestLabel + 1; cluster_idx++) {
       for (let flag_idx = 0; flag_idx < numNumColumns; flag_idx++) {
         clusters[cluster_idx].numflagAverages[flag_idx] =
-          clusters[cluster_idx].numflagSums[flag_idx] /
-          clusters[cluster_idx].numPoints;
+          clusters[cluster_idx].numflagSums[flag_idx] / clusters[cluster_idx].numPoints;
       }
     }
-    console.log(
-      "-----------------------------------------------------------------",
-    );
+    console.log("-----------------------------------------------------------------");
     //console.log(clusters);
     clusterInfos[i] = clusters;
 
@@ -795,5 +735,4 @@ function getClusterInfo(
       //console.log(`/////////////////////////////////////////////////////`);
     });
   }
-  return clusterInfos.reverse();
 }
