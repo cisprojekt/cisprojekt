@@ -31,9 +31,9 @@
 #define V_SET_SIZE 8        // number of close neighbors
 #define S_SET_SIZE 12       // number of randomly chosen neighbors
 #define USE_GLUT 0          // comment this when timing tests are done
-#define MAX_ITERATION 200  // maximum number of iterations
+#define MAX_ITERATION 1000  // maximum number of iterations
 #define COSCLEN 51          // length of cosc filter
-#define EPS 1.e-05f         // termination threshold
+#define EPS 1.e-12f         // termination threshold
 #define MIN_SET_SIZE 1000   // recursion termination condition
 #define DEC_FACTOR 8        // decimation factor
 
@@ -537,9 +537,9 @@ void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix) {
 }
 
 void init_embedding(float *embedding) {
+  unsigned int seed = time(NULL);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < n_embedding_dims; j++) {
-      unsigned int seed = time(NULL);
       embedding[i * (n_embedding_dims) + j] =
       static_cast<float>(rand_r(&seed) % 10000) / 10000.f - 0.5f;
     }
