@@ -85,7 +85,7 @@ function mapFunctions(
       averages.push({
         x: sums[label].x / sums[label].count,
         y: sums[label].y / sums[label].count,
-        r: Math.log10(sums[label].count+1),
+        r: Math.log10(sums[label].count + 1),
         l: label,
       });
     }
