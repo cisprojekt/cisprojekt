@@ -232,8 +232,37 @@
               <option value="5">Ward</option>
               <option value="6">Centroid</option>
             </select>
-          </div>
+			<select id="zoom_mode" name="zoom_mode" style="width: 200px">
+              <option value="noChoice">Zoom Mode</option>
+              <option 
+				value="auto"	  
+				onclick="showZoomAutoPopup()"
+			  > 
+				Automatic
+			  </option>
+              <option 
+				value="custom"
+				onclick="showZoomCustomPopup()"		  
+			  >
+				Custom
+			  </option>
+            </select>
+		  <div id="AutoZoomPopUp" style="display: none; margin-left: 400px">
+          <input
+            type="text"
+            id="AutoZoomInput"
+            placeholder="number zoomlevels"
+            class="zoomlevel"
+          />
         </div>
+		<div id="CustomZoomPopUp" style="display: none; margin-left: 400px">
+		  <input
+            type="text"
+            id="CustomZoomInput"
+            placeholder="number new clusters/level"
+            class="zoomlevel"
+          />
+</div>
         <br />
         <textarea
           placeholder="Enter custom distance function"

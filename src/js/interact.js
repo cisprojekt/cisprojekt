@@ -120,10 +120,10 @@ function changedistancefunclist(distance_func_list) {
 
   //information(names) we display in the dropdown menu for the distance functions
   let func_dic = {
-    Seq: "example for Sequence",
-    ChemInfo: "example for Chemicial data",
+    Seq: "example for sequence",
+    ChemInfo: "example for chemical data",
     Hamming: "Hamming Distance",
-    Tanimoto: "Tanimoto Coefficient",
+    Tanimoto: "Tanimoto Distance",
     Euclidean: "Euclidean Distance",
     "earth-dist": "Earth Distance",
     "edit-distance": "Edit Distance (unit cost)",
@@ -144,7 +144,42 @@ function clean_fun_slector() {
   let fun_slector = document.getElementById("D_function");
   fun_slector.options.length = 1;
 }
+function showZoomAutoPopup() {
+  if (document.getElementById("CustomZoomPopUp").style.display == "block") {
+	  document.getElementById("CustomZoomPopUp").style.display = "none";
+  }
+  document.getElementById("AutoZoomPopUp").style.display = "block";
+}
+function showZoomCustomPopup() {
+  if (document.getElementById("AutoZoomPopUp").style.display == "block") {
+	  document.getElementById("AutoZoomPopUp").style.display = "none";
+  }
+  document.getElementById("CustomZoomPopUp").style.display = "block";
+}
 
+function getAutoZoomlevel() {
+  let zoomLevel = document.getElementById("AutoZoomInput").value;
+  if (zoomLevel == "") {
+    zoomLevel = "20";
+  }
+  return parseInt(zoomLevel);
+}
+
+function getCustomZoomlevel() {
+  let clustPerLevel = document.getElementById("CustomZoomInput").value;
+  if (clustPerLevel == "") {
+    clustPerLevel = "20";
+  }
+  return parseInt(clustPerLevel);
+}
+
+function getZoomMode() {
+  var zoomMode = 0;
+  if (document.getElementById("CustomZoomPopUp").style.display == "block") {
+	  zoomMode = 1;
+  }
+  return zoomMode;
+}
 /*When text-area not empty, will read the inhalt and check if the first line is the title line */
 function getTitleLine(InputFlag = "coord") {
   console.log("trying to get the title Title line from", InputFlag, "data");
@@ -445,6 +480,14 @@ function dealwithrun() {
   let dataType = document.getElementById("DataType").value;
   let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
   let distMethod = parseInt(document.getElementById("Distance_calcu").value);
+  let zoomMode = getZoomMode();
+  var zoomNumber = 20;
+  if (zoomMode == 0) {
+	  zoomNumber = getAutoZoomlevel();
+  }
+  if (zoomMode == 1) {
+	  zoomNumber = getCustomZoomlevel();
+  }
   var lines = getinputdata().split(/\r?\n/);
   var devider = getCSVDevider();
   var selectedColumns = getSelectedColumns();
@@ -522,6 +565,8 @@ function dealwithrun() {
     scalingMethod,
     distMethod,
     flagColumnNames,
+	zoomMode,
+	zoomNumber,
   );
 }
 

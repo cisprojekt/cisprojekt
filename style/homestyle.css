@@ -156,3 +156,11 @@ button.dark-mode {
   background-color: #d8d8d8;
   border-radius: 5px;
 }
+
+.zoomlevel {
+  width: 10%;
+  font-size: normal;
+  font-family: sans-serif;
+  background-color: #d8d8d8;
+  border-radius: 5px;
+}
