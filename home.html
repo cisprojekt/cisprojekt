@@ -232,6 +232,31 @@
               <option value="5">Ward</option>
               <option value="6">Centroid</option>
             </select>
+            <select id="zoom_mode" name="zoom_mode" style="width: 200px">
+              <option value="noChoice">Zoom Mode</option>
+              <option value="auto" onclick="showZoomAutoPopup()">
+                Automatic
+              </option>
+              <option value="custom" onclick="showZoomCustomPopup()">
+                Custom
+              </option>
+            </select>
+            <div id="AutoZoomPopUp" style="display: none; margin-left: 400px">
+              <input
+                type="text"
+                id="AutoZoomInput"
+                placeholder="number zoomlevels"
+                class="zoomlevel"
+              />
+            </div>
+            <div id="CustomZoomPopUp" style="display: none; margin-left: 400px">
+              <input
+                type="text"
+                id="CustomZoomInput"
+                placeholder="number new clusters/level"
+                class="zoomlevel"
+              />
+            </div>
           </div>
         </div>
         <br />
@@ -240,38 +265,38 @@
           id="distFunction"
           class="distFunc"
         ></textarea>
-        <div>
-          <div class="label">
-            <p style="text-align: left">Table Interpretation</p>
-          </div>
-          <!-- Flag check button -->
-          <button
-            id="colFlag_button"
-            onclick="ColFlagCheck()"
-            style="margin-top: 20px"
-          >
-            Flag Check
-          </button>
-          <!-- Delete All Button -->
-          <button id="deleAllButton" onclick="deletedatenandfunc()">
-            Delete All
-          </button>
+      </div>
+      <div>
+        <div class="label">
+          <p style="text-align: left">Table Interpretation</p>
         </div>
-        <div>
-          <div class="label">
-            <p style="text-align: left">Get your map now</p>
-          </div>
+        <!-- Flag check button -->
+        <button
+          id="colFlag_button"
+          onclick="ColFlagCheck()"
+          style="margin-top: 20px"
+        >
+          Flag Check
+        </button>
+        <!-- Delete All Button -->
+        <button id="deleAllButton" onclick="deletedatenandfunc()">
+          Delete All
+        </button>
+      </div>
+      <div>
+        <div class="label">
+          <p style="text-align: left">Get your map now</p>
         </div>
-        <div>
-          <!-- Run function Button -->
-          <button
-            id="runFuncButton"
-            onclick="dealwithrun()"
-            style="margin-top: 20px"
-          >
-            Run
-          </button>
-        </div>
+      </div>
+      <div>
+        <!-- Run function Button -->
+        <button
+          id="runFuncButton"
+          onclick="dealwithrun()"
+          style="margin-top: 20px"
+        >
+          Run
+        </button>
       </div>
     </div>
 

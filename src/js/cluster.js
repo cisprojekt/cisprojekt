@@ -12,6 +12,8 @@ async function calculateClusters(
   scalingMethod,
   distMethod,
   flagColumnNames,
+  zoomMode,
+  zoomNumber,
 ) {
   await wasmReady; // Make sure module is loaded
   console.log("Starting Clustering Program");
@@ -23,11 +25,20 @@ async function calculateClusters(
   var tProgressStep = 0.0;
   //open progress_bar
 
+  let n = inputPoints.length;
+  var zoomLevels = 1;
+  if (zoomMode == 0) {
+    zoomLevels = zoomNumber;
+  }
+  if (zoomMode == 1) {
+    zoomLevels = Math.ceil(n / zoomNumber);
+  }
+  if (zoomMode == 2) {
+    zoomLevels = Math.ceil(Math.log(n / 2) / Math.log(zoomNumber));
+  }
   // For custom inputs
   if (type == "custom") {
     console.log(inputPoints);
-
-    let n = inputPoints.length;
 
     // Custom distance function
     let customFunction;
@@ -36,7 +47,6 @@ async function calculateClusters(
     customFunction = eval(document.getElementById("distFunction").value);
 
     console.log(n);
-    let zoomLevels = 20;
     let pointsToPlot = [];
     let maxIterations = 5;
 
@@ -108,6 +118,8 @@ async function calculateClusters(
         "number",
         "number",
         "number",
+        "number",
+        "number",
       ],
       [
         distMatBuf,
@@ -115,6 +127,8 @@ async function calculateClusters(
         mergeBuf,
         labelsBuf,
         n,
+        zoomMode,
+        zoomNumber,
         maxIterations,
         zoomLevels,
         distMethod,
@@ -187,7 +201,6 @@ async function calculateClusters(
     totalprogress = 0.99;
 
     let n = dataJson[1].length;
-    let zoomLevels = 20;
 
     var clusterInfos = getClusterInfo(
       zoomLevels,
@@ -225,7 +238,6 @@ async function calculateClusters(
     let flatInputPoints = inputPoints.flat();
 
     // For now hardcoded
-    var zoomLevels = 20;
     maxIterations = 5;
 
     // Stores the input points
@@ -281,6 +293,8 @@ async function calculateClusters(
         "number",
         "number",
         "number",
+        "number",
+        "number",
       ],
       [
         pointsBuf,
@@ -290,6 +304,8 @@ async function calculateClusters(
         mergeBuf,
         labelsBuf,
         n,
+        zoomMode,
+        zoomNumber,
         maxIterations,
         zoomLevels,
         distMethod,
@@ -386,7 +402,6 @@ async function calculateClusters(
     console.log("lengthBytes " + lengthBytes);
     console.log("Number points " + n);
     // For now hardcoded
-    let zoomLevels = 20;
     let pointsToPlot = [];
     let maxIterations = 5;
 
@@ -457,6 +472,8 @@ async function calculateClusters(
         "number",
         "number",
         "number",
+        "number",
+        "number",
       ],
       [
         stringOnHeap,
@@ -466,6 +483,8 @@ async function calculateClusters(
         mergeBuf,
         labelsBuf,
         n,
+        zoomMode,
+        zoomNumber,
         maxIterations,
         zoomLevels,
         distMethod,

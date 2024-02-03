@@ -38,14 +38,18 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 extern "C" void clusterCustom(double *distMat, double *height, int *merge,
-                              int *labels, int n, int maxIterations,
+                              int *labels, int n,
+                              int zoomMode, int zoomNumber,
+                              int maxIterations,
                               int zoomLevels, int calcDistMethod,
                               double *resultPoint, int calcScalingMethod,
                               float *totalprogress, float *partialprogress);
 
 extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
-                               int *labels, int nStrings, int maxIterations,
+                               int *labels, int nStrings,
+                               int zoomMode, int zoomNumber,
+                               int maxIterations,
                                int zoomLevels, int calcDistMethod,
                                int calcScalingMethod, int bool_bit,
                                double *resultPoints, int type,
@@ -71,7 +75,9 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
  */
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
-                              int nPoints, int maxIterations, int zoomLevels,
+                              int nPoints,
+                              int zoomMode, int zoomNumber,
+                              int maxIterations, int zoomLevels,
                               int calcDistMethod, int calcScalingMethod,
                               bool isSpherical,
                               float *totalprogress, float *partialprogress);
