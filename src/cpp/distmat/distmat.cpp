@@ -16,9 +16,15 @@
 
 using Eigen::MatrixXd;
 
-MatrixXd distanceMatrix(double *distMatFilled, int n) {
+MatrixXd distanceMatrix(double *distMatFilled, int n,
+                        float *totalprogress, float *partialprogress) {
   MatrixXd distMat(n, n);
+  *partialprogress = 0.0;
+  float tStep = 1/n*0.35;
+  float pStep = 1/n;
   for (int i = 0; i < n; i++) {
+  *totalprogress += tStep;
+  *partialprogress += pStep;
     for (int j = i + 1; j < n; j++) {
       int idx = i * (n - 1) + j - ((i + 1) * (i + 2)) / 2;
       distMat(i, j) = distMatFilled[idx];
@@ -44,14 +50,43 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
       }
     }
   }
+  return distMat;
+}
+
+MatrixXd distanceMatrix(MatrixXd points, bool isSperical,
+                        float *totalprogress, float *partialprogress) {
+  int n = points.rows();
+  MatrixXd distMat(n, n);
+  *partialprogress = 0.0;
+  float tStep = 1/n*0.35;
+  float pStep = 1/n;
+  for (int i = 0; i < n; i++) {
+  *totalprogress += tStep;
+  *partialprogress += pStep;
+    for (int j = 0; j < n; j++) {
+      // TODO(Jonas): Implement other distance functions
+      if (isSperical) {
+        distMat(i, j) =
+            haversine(points(i, 0), points(i, 1), points(j, 0), points(j, 1));
+      } else {
+        distMat(i, j) = euclideanDistance(points.row(i), points.row(j));
+      }
+    }
+  }
 
   return distMat;
 }
 
-MatrixXd distanceMatrix(std::vector<std::string> strings, int type) {
+MatrixXd distanceMatrix(std::vector<std::string> strings, int type,
+                        float *totalprogress, float *partialprogress) {
   int n = strings.size();
   MatrixXd distMat(n, n);
+  *partialprogress = 0.0;
+  float tStep = 1/n*0.35;
+  float pStep = 1/n;
   for (int i = 0; i < n; i++) {
+    *totalprogress += tStep;
+    *partialprogress += pStep;
     std::cout << "DistMat did row " << i << "from " << n << std::endl;
     for (int j = 0; j < n; j++) {
       // TODO(Jonas): Implement other distance functions
@@ -67,11 +102,15 @@ MatrixXd distanceMatrix(std::vector<std::string> strings, int type) {
 }
 
 MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
-                        int bitset_size) {
+                        int bitset_size,
+                        float *totalprogress, float *partialprogress) {
   clock_t start_time1 = clock();
   int n = bitstrings.size();
   MatrixXd distMat(n, n);
   double *matrixpointer = distMat.data();
+  *partialprogress = 0.0;
+  float tStep = 1/n*0.35;
+  float pStep = 1/n;
   /*
   boost::dynamic_bitset<> comparestring
   for (int i = 0; i < n*n; i++) {
@@ -87,12 +126,14 @@ MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
   }
   */
   for (int i = 0; i < n; i++) {
+    *totalprogress += tStep;
+    *partialprogress += pStep;
     boost::dynamic_bitset<> comparestring = bitstrings[i];
     std::vector<boost::dynamic_bitset<>>::iterator bitstringptr;
     for (bitstringptr = bitstrings.begin(); bitstringptr < bitstrings.end();
          bitstringptr++) {
-      *matrixpointer =
-          tanimotoDistanceBitwise(comparestring, *bitstringptr, bitset_size);
+      *matrixpointer = tanimotoDistanceBitwise(comparestring, *bitstringptr,
+                                               bitset_size);
       matrixpointer++;
     }
   }
@@ -130,8 +171,8 @@ double tanimotoDistanceBitwise(boost::dynamic_bitset<> fingerprintA,
   molB = fingerprintB.count();
   molC = fingerprintC.count();
 
-  double dist = 1 - (static_cast<double>(molC) / (molA + molB - molC));
-  return dist;
+  double distance = 1 - (static_cast<double>(molC) / (molA + molB - molC));
+  return distance;
 }
 
 double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
@@ -143,11 +184,11 @@ double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
     if (fingerprintA[i] == '1' && fingerprintB[i] == '1') molC++;
   }
 
-  double dist = 1 - (static_cast<double>(molC) / (molA + molB - molC));
+  double distance = 1 - (static_cast<double>(molC) / (molA + molB - molC));
   if (molA + molB - molC == 0) {
-    dist = 0;
+    distance = 0;
   }
-  return dist;
+  return distance;
 }
 
 int editdistance(std::string seq1, std::string seq2) {
@@ -181,53 +222,7 @@ int editdistance(std::string seq1, std::string seq2) {
   return matrix[len_seq1 - 1][len_seq2 - 1];
 }
 
-extern "C" {
-double calculateEuclideanDistance(double *vector1, double *vector2,
-                                  int string_length) {
-  double sumOfSquares = 0.0;
-  for (size_t i = 0; i < string_length; i++) {
-    double diff = vector2[i] - vector1[i];
-    sumOfSquares += diff * diff;
-  }
-
-  double distance = std::sqrt(sumOfSquares);
-  return distance;
-}
-
-double *calculateEuclideanDistanceMatrix(double *array, int num_points,
-                                         int dimension) {
-  double **distanceArray = new double *[num_points];
-
-  for (size_t i = 0; i < num_points; ++i) {
-    distanceArray[i] = new double[num_points];
-  }
-  for (size_t i = 0; i < num_points; i++) {
-    for (size_t j = 0; j < i + 1; j++) {
-      double distance = calculateEuclideanDistance(
-          array + i * dimension, array + j * dimension, dimension);
-      distanceArray[i][j] = distance;
-      distanceArray[j][i] = distance;
-    }
-  }
-  // flatten the array
-  double *flatArray = new double[num_points * (num_points + 1) / 2];
-  int index = 0;
-  for (size_t i = 0; i < num_points; i++) {
-    for (size_t j = 0; j < num_points; j++) {
-      flatArray[index] = distanceArray[i][j];
-      index++;
-    }
-  }
-  // free memory
-  for (size_t i = 0; i < num_points; ++i) {
-    delete[] distanceArray[i];
-  }
-  delete[] distanceArray;
-
-  return flatArray;
-}
-
-int calculateHammingDistance(char *str1, char *str2, int string_length) {
+int hammingDistance(char *str1, char *str2, int string_length) {
   int distance = 0;
   for (size_t i = 0; i < string_length; i++) {
     if (str1[i] != str2[i]) {
@@ -238,38 +233,6 @@ int calculateHammingDistance(char *str1, char *str2, int string_length) {
   return distance;
 }
 
-int *calculateHammingDistanceMatrix(char **array, int num_strings,
-                                    int string_length) {
-  int **distanceArray = new int *[num_strings];
-
-  for (size_t i = 0; i < num_strings; ++i) {
-    distanceArray[i] = new int[i + 1];
-  }
-  for (size_t i = 0; i < num_strings; i++) {
-    for (size_t j = 0; j < i + 1; j++) {
-      int distance =
-          calculateHammingDistance(array[i], array[j], string_length);
-      distanceArray[i][j] = distance;
-    }
-  }
-  // flatten the array
-  int *flatArray = new int[num_strings * (num_strings + 1) / 2];
-  int index = 0;
-  for (size_t i = 0; i < num_strings; i++) {
-    for (size_t j = 0; j < i + 1; j++) {
-      flatArray[index] = distanceArray[i][j];
-      index++;
-    }
-  }
-  // free memory
-  for (size_t i = 0; i < num_strings; ++i) {
-    delete[] distanceArray[i];
-  }
-  delete[] distanceArray;
-
-  return flatArray;
-}
-}
 
 double toRadians(double degree) { return degree * (M_PI / 180.0); }
 

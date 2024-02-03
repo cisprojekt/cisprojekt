@@ -10,11 +10,18 @@ async function calculateClusters(
   nonnumflags_array,
   numflags_array,
   scalingMethod,
+  distMethod,
   flagColumnNames,
 ) {
   await wasmReady; // Make sure module is loaded
   console.log("Starting Clustering Program");
   console.log(type);
+
+  var totalprogress = 0.0;
+  var partialprogress = 0.0;
+  var pProgressStep = 0.0;
+  var tProgressStep = 0.0;
+  //open progress_bar
 
   // For custom inputs
   if (type == "custom") {
@@ -42,7 +49,12 @@ async function calculateClusters(
     // Fill distance matrix
     let distMat = new Float64Array((n * (n - 1)) / 2);
     let idx = 0;
+    partialprogress = 0.0;
+    pProgressStep = 1 / n;
+    tProgressStep = pProgressStep * 0.4;
     for (let i = 0; i < n; i++) {
+      partialprogress += pProgressStep;
+      globalprogress += tProgressStep;
       for (let j = i + 1; j < n; j++) {
         distMat[idx++] = customFunction(inputPoints[i], inputPoints[j]);
       }
@@ -59,6 +71,19 @@ async function calculateClusters(
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
     let labelsBuf = Module._malloc(
       n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
+    );
+
+    let totalprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+    let partialprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+
+    Module.HEAPF32.set(
+      totalprogress,
+      totalprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
+
+    Module.HEAPF32.set(
+      partialprogress,
+      partialprogressBuf / totalprogress.BYTES_PER_ELEMENT,
     );
 
     Module.HEAPF64.set(
@@ -81,6 +106,8 @@ async function calculateClusters(
         "number",
         "number",
         "number",
+        "number",
+        "number",
       ],
       [
         distMatBuf,
@@ -90,11 +117,15 @@ async function calculateClusters(
         n,
         maxIterations,
         zoomLevels,
-        1,
+        distMethod,
         resultPointsBuf,
         scalingMethod,
+        totalprogressBuf,
+        partialprogressBuf,
       ],
     );
+
+    totalprogress = 0.98;
 
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
@@ -124,6 +155,8 @@ async function calculateClusters(
     Module._free(heightBuf);
     Module._free(mergeBuf);
     Module._free(resultPointsBuf);
+    Module._free(totalprogressBuf);
+    Module._free(partialprogressBuf);
 
     var clusterInfos = getClusterInfo(
       zoomLevels,
@@ -147,8 +180,11 @@ async function calculateClusters(
       flagColumnNames,
       numflags_array,
     );
+    totalprogress = 0.99;
   } else if (type == "preclustered") {
     var dataJson = JSON.parse(document.getElementById("distFunction").value);
+
+    totalprogress = 0.99;
 
     let n = dataJson[1].length;
     let zoomLevels = 20;
@@ -208,14 +244,31 @@ async function calculateClusters(
       n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
 
+    totalprogress = 0.05;
+    let totalprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+    let partialprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+
+    Module.HEAPF32.set(
+      totalprogress,
+      totalprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
+
+    Module.HEAPF32.set(
+      partialprogress,
+      partialprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
+
     // Move input points into heap
     Module.HEAPF64.set(points, pointsBuf / points.BYTES_PER_ELEMENT);
     console.log("Calculations started");
+
     // Actual function call to cluster
     Module.ccall(
       "clusterPoints",
       null,
       [
+        "number",
+        "number",
         "number",
         "number",
         "number",
@@ -239,12 +292,15 @@ async function calculateClusters(
         n,
         maxIterations,
         zoomLevels,
-        1,
+        distMethod,
         scalingMethod,
         isSperical,
+        totalprogressBuf,
+        partialprogressBuf,
       ],
     );
     console.log("Calculations finished");
+    totalprogress = 0.98;
     // Copy results into js array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
@@ -263,13 +319,14 @@ async function calculateClusters(
     for (var i = 0; i < n * 2; i += 2) {
       pointsToPlot.push({ x: pointsResult[i], y: pointsResult[i + 1] });
     }
-    console.log("points to plot " + pointsToPlot);
     // Free memory
     Module._free(pointsBuf);
     Module._free(distMatBuf);
     Module._free(heightBuf);
     Module._free(mergeBuf);
     Module._free(labelsBuf);
+    Module._free(totalprogressBuf);
+    Module._free(partialprogressBuf);
 
     // Create list of Cluster objects
 
@@ -300,6 +357,7 @@ async function calculateClusters(
       flagColumnNames,
       numflags_array,
     );
+    totalprogress = 0.99;
   } else if (type == "tanimotoFingerprints" || type == "edit-distance") {
     // convert type information to int
     if (type == "tanimotoFingerprints") {
@@ -349,6 +407,20 @@ async function calculateClusters(
       n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
 
+    totalprogress = 0.05;
+
+    let totalprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+    let partialprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+
+    Module.HEAPF32.set(
+      totalprogress,
+      totalprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
+
+    Module.HEAPF32.set(
+      partialprogress,
+      partialprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
     // Dont know what this does
     Module.HEAPF64.set(
       resultPoints,
@@ -383,6 +455,8 @@ async function calculateClusters(
         "number",
         "number",
         "number",
+        "number",
+        "number",
       ],
       [
         stringOnHeap,
@@ -394,14 +468,17 @@ async function calculateClusters(
         n,
         maxIterations,
         zoomLevels,
-        1,
+        distMethod,
         scalingMethod,
         bit_bool,
         resultPointsBuf,
         type,
+        totalprogressBuf,
+        partialprogressBuf,
       ],
     );
     console.log("Calculations finished");
+    totalprogress = 0.98;
     // Copy results into js array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
@@ -430,6 +507,8 @@ async function calculateClusters(
     Module._free(heightBuf);
     Module._free(mergeBuf);
     Module._free(lengthOfStringBuf);
+    Module._free(totalprogressBuf);
+    Module._free(partialprogressBuf);
     _free(stringOnHeap);
 
     // -----------------------------------------------------------------
@@ -453,7 +532,9 @@ async function calculateClusters(
       flagColumnNames,
       numflags_array,
     );
+    totalprogress = 0.99;
   }
+  //close progress bar
 }
 
 class Slice {

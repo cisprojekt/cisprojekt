@@ -123,10 +123,12 @@ MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights) {
   return XUpdated;
 }
 
-MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt, double eps, int dim) {
+MatrixXd calculateMDSsmacof(MatrixXd distMat,
+                            float *totalprogress, float *partialprogress,
+                            int maxIt, double eps, int dim) {
   // Counter for iterations
   int k = 0;
-
+  *partialprogress = 0.0;
   // Create weight matrix
   MatrixXd weights = calculateWeights(distMat);
 
@@ -144,7 +146,8 @@ MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt, double eps, int dim) {
   while (k < maxIt) {
     // Step 4: Increase iteration counter
     k++;
-
+    *partialprogress += 1/maxIt;
+    *totalprogress += 1/maxIt*0.4;
     // Step 5: Compute Guttman transformation
     B = calculateB(Z, weights, distMat);
     XUpdated = guttmanTransform(B.rows(), B, Z, weights);

@@ -18,6 +18,8 @@ int n = 0;
 double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
                          const Eigen::MatrixXd &x,
                          const Eigen::MatrixXd &x_inter, int n_samples,
+                         int n_iterations,
+                         float *totalprogress, float *partialprogress,
                          bool init = false, bool metric = true,
                          int n_components = 2, int max_iter = 1000,
                          bool verbose = 0, double eps = 1e-5,
@@ -45,8 +47,12 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
   // Eigen::MatrixXd disparities(n_samples,n_samples); //need in non-metric case
   Eigen::MatrixXd dis(n_samples, n_samples);
   double stress = 0;
+  float pStep = 1/(n_iterations*max_iter);
+  float tStep = 0.4*pStep;
   // isotonic regression
   for (int it = 0; it < max_iter; it++) {
+    *totalprogress += tStep;
+    *partialprogress += pStep;
     for (int f = 0; f < n_samples; f++) {
       for (int g = 0; g < n_samples; g++) {
         dis(f, g) = sqrt(pow(x_inter(f, 0) - x_inter(g, 0), 2) +
@@ -109,6 +115,8 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
     }
     double discrepancy = interm.sum();
     if ((old_stress - stress / discrepancy) < eps) {
+      *partialprogress += pStep*(max_iter - it);
+      *totalprogress += tStep*(max_iter - it);
       break;
     }
     old_stress = stress / discrepancy;
@@ -117,15 +125,20 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
 }
 void scikit_mds_multi(const Eigen::MatrixXd &dissimilarities,
                       const Eigen::MatrixXd &x, const Eigen::MatrixXd &x_inter,
-                      int n_iterations, int n_samples, bool init = false,
+                      int n_iterations,
+                      float *totalprogress, float *partialprogress,
+                      int n_samples, bool init = false,
                       bool metric = true, int n_components = 2,
                       int max_iter = 1000, bool verbose = 0, double eps = 1e-5,
                       int random_state = 0, bool normalized_stress = false) {
   double min_stress = 1e18;
   double stress;
+  *partialprogress = 0.0;
   for (int i = 0; i < n_iterations; i++) {
-    stress = scikit_mds_single(dissimilarities, x, x_inter, n_samples, init,
-                               metric, n_components, max_iter, verbose, eps,
+    stress = scikit_mds_single(dissimilarities, x, x_inter, n_samples,
+                               n_iterations, totalprogress, partialprogress,
+                               init, metric, n_components,
+                               max_iter, verbose, eps,
                                random_state, normalized_stress);
     if (stress < min_stress) {
       for (int k = 0; k < n_samples; k++) {
@@ -162,7 +175,8 @@ void outputCSV(double *embedding) {
   fclose(fp);
 }
 */
-MatrixXd calculateMDSscikit(int n, const MatrixXd &distanceMatrix) {
+MatrixXd calculateMDSscikit(int n, const MatrixXd &distanceMatrix,
+                            float *totalprogress, float *partialprogress) {
   // distmat = delta
   clock_t start_time1 = clock();
   MatrixXd x(n, 2);
@@ -170,7 +184,7 @@ MatrixXd calculateMDSscikit(int n, const MatrixXd &distanceMatrix) {
   // for (int g = 0; g < 2*n; g++) {
   // x_inter[g] = 0.1*g;
   //}
-  int n_iterations = 2;
+  int n_iterations = 5;
   bool init = false;
   bool metric = true;
   int n_samples = n;
@@ -181,9 +195,34 @@ MatrixXd calculateMDSscikit(int n, const MatrixXd &distanceMatrix) {
   int random_state = 0;
   bool normalized_stress = false;
 
-  scikit_mds_multi(distanceMatrix, x, x_inter, n_iterations, n_samples, init,
+  scikit_mds_multi(distanceMatrix, x, x_inter, n_iterations, totalprogress,
+                   partialprogress, n_samples, init,
                    metric, n_components, max_iter, verbose, eps, random_state,
                    normalized_stress);
+  double* matrixpointer = x.data();
+  double min_value = 1e100;
+  double max_value = -1e100;
+  double factor;
+  for (int i = 0; i < 2 * n_samples; i++, matrixpointer++) {
+    if (*matrixpointer < min_value) { min_value = *matrixpointer; }
+    if (*matrixpointer > max_value) { max_value = *matrixpointer; }
+  }
+  /*
+  if (min_value < 0.0) {
+    for (int i = 0; i < N*n_embedding_dims; i++) {
+      g_embed[i] -= min_value; 
+    }
+    max_value -= min_value;
+  }
+  */
+  if (max_value < -min_value) {factor = -min_value;
+  } else { factor = max_value; }
+
+  matrixpointer = x.data();
+
+  for (int i = 0; i < 2 * n_samples; i++, matrixpointer++) {
+    *matrixpointer /= factor;
+  }
   clock_t start_time2 = clock();
   std::cout << "Scikit-MDS needed "
             << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC)
