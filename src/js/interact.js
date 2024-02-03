@@ -146,13 +146,13 @@ function clean_fun_slector() {
 }
 function showZoomAutoPopup() {
   if (document.getElementById("CustomZoomPopUp").style.display == "block") {
-	  document.getElementById("CustomZoomPopUp").style.display = "none";
+    document.getElementById("CustomZoomPopUp").style.display = "none";
   }
   document.getElementById("AutoZoomPopUp").style.display = "block";
 }
 function showZoomCustomPopup() {
   if (document.getElementById("AutoZoomPopUp").style.display == "block") {
-	  document.getElementById("AutoZoomPopUp").style.display = "none";
+    document.getElementById("AutoZoomPopUp").style.display = "none";
   }
   document.getElementById("CustomZoomPopUp").style.display = "block";
 }
@@ -176,7 +176,7 @@ function getCustomZoomlevel() {
 function getZoomMode() {
   var zoomMode = 0;
   if (document.getElementById("CustomZoomPopUp").style.display == "block") {
-	  zoomMode = 1;
+    zoomMode = 1;
   }
   return zoomMode;
 }
@@ -483,11 +483,15 @@ function dealwithrun() {
   let zoomMode = getZoomMode();
   var zoomNumber = 20;
   if (zoomMode == 0) {
-	  zoomNumber = getAutoZoomlevel();
+    zoomNumber = getAutoZoomlevel();
   }
   if (zoomMode == 1) {
-	  zoomNumber = getCustomZoomlevel();
+    zoomNumber = getCustomZoomlevel();
+    if (document.getElementById("CustomZoomInput").value.includes("e")) {
+      zoomMode = 2;
+    }
   }
+
   var lines = getinputdata().split(/\r?\n/);
   var devider = getCSVDevider();
   var selectedColumns = getSelectedColumns();
@@ -565,8 +569,8 @@ function dealwithrun() {
     scalingMethod,
     distMethod,
     flagColumnNames,
-	zoomMode,
-	zoomNumber,
+    zoomMode,
+    zoomNumber,
   );
 }
 

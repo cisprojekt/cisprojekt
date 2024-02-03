@@ -10,7 +10,9 @@
 using Eigen::MatrixXd;
 
 extern "C" void clusterCustom(double *distMat, double *height, int *merge,
-                              int *labels, int n, int maxIterations,
+                              int *labels, int n,
+                              int zoomMode, int zoomNumber,
+                              int maxIterations,
                               int zoomLevels, int calcDistMethod,
                               double *resultPoints, int calcScalingMethod,
                               float *totalprogress, float *partialprogress) {
@@ -69,17 +71,37 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
 
   // For each zoomlevel calculate a labels assignment
   int *oneLabel = new int[n];
-  for (int i = 0; i < zoomLevels; i++) {
-    cutree_cdist(n, merge, height, (i + 1) * maxHeight / zoomLevels, oneLabel);
-    std::memcpy(labels + i * n, oneLabel, n * sizeof(int));
+  if (zoomMode == 0) {
+    for (int i = 0; i < zoomLevels; i++) {
+      cutree_cdist(n, merge, height, (i + 1) * maxHeight / zoomLevels,
+                   oneLabel);
+      std::memcpy(labels + i * n, oneLabel, n * sizeof(int));
+    }
   }
-
+  if (zoomMode == 1) {
+    for (int i = 0; i < zoomLevels; i++) {
+      cutree_k(n, merge, n-(i*zoomNumber),
+               oneLabel);
+      std::memcpy(labels + i * n, oneLabel, n * sizeof(int));
+    }
+  }
+  if (zoomMode == 2) {
+    int numclust = n;
+    for (int i = 0; i < zoomLevels; i++) {
+      cutree_k(n, merge, numclust,
+               oneLabel);
+      std::memcpy(labels + i * n, oneLabel, n * sizeof(int));
+      numclust = static_cast<int>(numclust /= zoomNumber);
+    }
+  }
   delete[] oneLabel;
 }
 
 extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
-                               int *labels, int nStrings, int maxIterations,
+                               int *labels, int nStrings,
+                               int zoomMode, int zoomNumber,
+                               int maxIterations,
                                int zoomLevels, int calcDistMethod,
                                int calcScalingMethod, int bool_bit,
                                double *resultPoints, int type,
@@ -183,10 +205,28 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
 
   // For each zoomlevel calculate a labels assignment
   int *oneLabel = new int[nStrings];
-  for (int i = 0; i < zoomLevels; i++) {
-    cutree_cdist(nStrings, merge, height, (i + 1) * maxHeight / zoomLevels,
-                 oneLabel);
-    std::memcpy(labels + i * nStrings, oneLabel, nStrings * sizeof(int));
+  if (zoomMode == 0) {
+    for (int i = 0; i < zoomLevels; i++) {
+      cutree_cdist(nStrings, merge, height, (i + 1) * maxHeight / zoomLevels,
+                   oneLabel);
+      std::memcpy(labels + i * nStrings, oneLabel, nStrings * sizeof(int));
+    }
+  }
+  if (zoomMode == 1) {
+    for (int i = 0; i < zoomLevels; i++) {
+      cutree_k(nStrings, merge, nStrings-(i*zoomNumber),
+               oneLabel);
+      std::memcpy(labels + i * nStrings, oneLabel, nStrings * sizeof(int));
+    }
+  }
+  if (zoomMode == 2) {
+    int numclust = nStrings;
+    for (int i = 0; i < zoomLevels; i++) {
+      cutree_k(nStrings, merge, numclust,
+               oneLabel);
+      std::memcpy(labels + i * nStrings, oneLabel, nStrings * sizeof(int));
+      numclust = static_cast<int>(numclust /= zoomNumber);
+    }
   }
   std::cout << "cutree finished" << std::endl;
   delete[] oneLabel;
@@ -201,7 +241,9 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
 
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
-                              int nPoints, int maxIterations, int zoomLevels,
+                              int nPoints,
+                              int zoomMode, int zoomNumber,
+                              int maxIterations, int zoomLevels,
                               int calcDistMethod, int calcScalingMethod,
                               bool isSpherical, float *totalprogress,
                               float *partialprogress) {
@@ -286,10 +328,28 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
     std::cout << "maxheight calculated" << std::endl;
     // For each zoomlevel calculate a labels assignment
     int *oneLabel = new int[nPoints];
-    for (int i = 0; i < zoomLevels; i++) {
-      cutree_cdist(nPoints, merge, height, (i + 1) * maxHeight / zoomLevels,
-                   oneLabel);
-      std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
+    if (zoomMode == 0) {
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_cdist(nPoints, merge, height, (i + 1) * maxHeight / zoomLevels,
+                     oneLabel);
+        std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
+      }
+    }
+    if (zoomMode == 1) {
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_k(nPoints, merge, nPoints-(i*zoomNumber),
+                 oneLabel);
+        std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
+      }
+    }
+    if (zoomMode == 2) {
+      int numclust = nPoints;
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_k(nPoints, merge, numclust,
+                 oneLabel);
+        std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
+        numclust = static_cast<int>(numclust /= zoomNumber);
+      }
     }
     std::cout << "tree cut" << std::endl;
     clock_t start_time4 = clock();
