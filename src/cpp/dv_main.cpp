@@ -12,20 +12,26 @@ using Eigen::MatrixXd;
 extern "C" void clusterCustom(double *distMat, double *height, int *merge,
                               int *labels, int n, int maxIterations,
                               int zoomLevels, int calcDistMethod,
-                              double *resultPoints, int calcScalingMethod) {
+                              double *resultPoints, int calcScalingMethod,
+                              float *totalprogress, float *partialprogress) {
   // Convert input distMat to Eigen matrix
-  MatrixXd distMatMDS = distanceMatrix(distMat, n);
+  MatrixXd distMatMDS = distanceMatrix(distMat, n,
+                                       totalprogress, partialprogress);
   MatrixXd resultMDS;
 
   switch (calcScalingMethod) {
     case 1:
-      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+      resultMDS = calculateMDSsmacof(distMatMDS,
+                                     totalprogress, partialprogress,
+                                     maxIterations);
       break;
     case 2:
-      resultMDS = calculateMDSscikit(n, distMatMDS);
+      resultMDS = calculateMDSscikit(n, distMatMDS,
+                                     totalprogress, partialprogress);
       break;
     case 3:
-      resultMDS = calculateMDSglimmer(n, distMatMDS);
+      resultMDS = calculateMDSglimmer(n, distMatMDS,
+                                      totalprogress, partialprogress);
       break;
     default:
       printf("no valid scaling algorithm was chosen");
@@ -49,7 +55,8 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
   }
 
   // Do the clustering
-  hclust_fast(n, distMatMDS, calcDistMethod, merge, height);
+  hclust_fast(n, distMatMDS, calcDistMethod, merge, height,
+              totalprogress, partialprogress);
 
   // Find maximum distance in order to create good cuts of dendrogram
   // TODO(Jonas): Check if its always last element
@@ -75,7 +82,9 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
                                int calcScalingMethod, int bool_bit,
-                               double *resultPoints, int type) {
+                               double *resultPoints, int type,
+                               float *totalprogress,
+                               float *partialprogress) {
   // Split the long string into smaller strings
   // and put them in a vector
   clock_t start_time1 = clock();
@@ -96,7 +105,8 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
       bitstringVector.push_back(currentbitset);
     }
     std::cout << "start distancematrix" << std::endl;
-    distMatMDS = distanceMatrix(bitstringVector, substringlength);
+    distMatMDS = distanceMatrix(bitstringVector, substringlength,
+                                totalprogress, partialprogress);
   } else {
     std::cout << "clusterStrings start" << std::endl;
     std::string inputString(inputStringChar);
@@ -115,20 +125,25 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
 
     // For now we assume the input are fingerprints, not SMILES
     std::cout << "start distanceMatrix" << std::endl;
-    distMatMDS = distanceMatrix(stringVector, type);
+    distMatMDS = distanceMatrix(stringVector, type,
+                                totalprogress, partialprogress);
   }
   std::cout << "distanceMatrix finished" << std::endl;
   MatrixXd resultMDS;
 
   switch (calcScalingMethod) {
     case 1:
-      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+      resultMDS = calculateMDSsmacof(distMatMDS,
+                                     totalprogress, partialprogress,
+                                     maxIterations);
       break;
     case 2:
-      resultMDS = calculateMDSscikit(nStrings, distMatMDS);
+      resultMDS = calculateMDSscikit(nStrings, distMatMDS,
+                                     totalprogress, partialprogress);
       break;
     case 3:
-      resultMDS = calculateMDSglimmer(nStrings, distMatMDS);
+      resultMDS = calculateMDSglimmer(nStrings, distMatMDS,
+                                      totalprogress, partialprogress);
       break;
     default:
       printf("no valid scaling algorithm was chosen");
@@ -153,7 +168,8 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
     }
   */
   // Do the clustering
-  hclust_fast(nStrings, distMatMDS, calcDistMethod, merge, height);
+  hclust_fast(nStrings, distMatMDS, calcDistMethod, merge, height,
+              totalprogress, partialprogress);
   std::cout << "clustering finished" << std::endl;
   clock_t start_time3 = clock();
   // Find maximum distance in order to create good cuts of dendrogram
@@ -187,7 +203,8 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
                               int calcDistMethod, int calcScalingMethod,
-                              bool isSpherical) {
+                              bool isSpherical, float *totalprogress,
+                              float *partialprogress) {
   /**
    * Two different types of distance matrices exist:
    * (1) reduced condensed distance matrix
@@ -197,7 +214,6 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
    */
 
   // Calculate full distance matrix
-  if (calcDistMethod == 1) {
     // Move points into matrix
     MatrixXd pointMatrix(nPoints, dimension);
     for (int i = 0; i < nPoints; i++) {
@@ -208,18 +224,23 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
 
     std::cout << "pointmatrix initialized" << std::endl;
     // Calculate distance matrix and apply SMACOF algorithm for MDS
-    MatrixXd distMatMDS = distanceMatrix(pointMatrix, isSpherical);
+    MatrixXd distMatMDS = distanceMatrix(pointMatrix, isSpherical,
+                                         totalprogress, partialprogress);
     std::cout << "distancematrix calculated" << std::endl;
     MatrixXd resultMDS;
     switch (calcScalingMethod) {
       case 1:
-        resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+        resultMDS = calculateMDSsmacof(distMatMDS,
+                                       totalprogress, partialprogress,
+                                       maxIterations);
         break;
       case 2:
-        resultMDS = calculateMDSscikit(nPoints, distMatMDS);
+        resultMDS = calculateMDSscikit(nPoints, distMatMDS,
+                                       totalprogress, partialprogress);
         break;
       case 3:
-        resultMDS = calculateMDSglimmer(nPoints, distMatMDS);
+        resultMDS = calculateMDSglimmer(nPoints, distMatMDS,
+                                        totalprogress, partialprogress);
         break;
       default:
         printf("no valid scaling algorithm was chosen");
@@ -250,7 +271,8 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
     */
     // Do the clustering
     std::cout << "start clustering" << std::endl;
-    hclust_fast(nPoints, distMatMDS, HCLUST_METHOD_COMPLETE, merge, height);
+    hclust_fast(nPoints, distMatMDS, calcDistMethod, merge, height,
+                totalprogress, partialprogress);
     std::cout << "clustering finished" << std::endl;
     clock_t start_time3 = clock();
     // Find maximum distance in order to create good cuts of dendrogram
@@ -276,5 +298,4 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                      (CLOCKS_PER_SEC)
               << "s for calculating clusterlabels\n";
     delete[] oneLabel;
-  }
 }

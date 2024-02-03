@@ -444,6 +444,7 @@ function dealwithrun() {
   let functionFlag = document.getElementById("D_function").value;
   let dataType = document.getElementById("DataType").value;
   let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
+  let distMethod = parseInt(document.getElementById("Distance_calcu").value);
   var lines = getinputdata().split(/\r?\n/);
   var devider = getCSVDevider();
   var selectedColumns = getSelectedColumns();
@@ -519,6 +520,7 @@ function dealwithrun() {
     nonnumflags_array,
     numflags_array,
     scalingMethod,
+    distMethod,
     flagColumnNames,
   );
 }

@@ -40,14 +40,16 @@ using Eigen::VectorXd;
 extern "C" void clusterCustom(double *distMat, double *height, int *merge,
                               int *labels, int n, int maxIterations,
                               int zoomLevels, int calcDistMethod,
-                              double *resultPoint, int calcScalingMethod);
+                              double *resultPoint, int calcScalingMethod,
+                              float *totalprogress, float *partialprogress);
 
 extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
                                int *labels, int nStrings, int maxIterations,
                                int zoomLevels, int calcDistMethod,
                                int calcScalingMethod, int bool_bit,
-                               double *resultPoints, int type);
+                               double *resultPoints, int type,
+                               float *totalprogress, float *partialprogress);
 
 /**
  * @brief Webassembly function, will apply multidimensional scaling and
@@ -71,6 +73,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
                               int nPoints, int maxIterations, int zoomLevels,
                               int calcDistMethod, int calcScalingMethod,
-                              bool isSpherical);
+                              bool isSpherical,
+                              float *totalprogress, float *partialprogress);
 
 #endif  // SRC_CPP_DV_MAIN_H_

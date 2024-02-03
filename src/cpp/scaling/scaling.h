@@ -91,7 +91,9 @@ MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights);
  * @param dim Dimensions to scale the data to
  * @return XUpdated Final configuration
  */
-MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt = 50,
+MatrixXd calculateMDSsmacof(MatrixXd distMat,
+                            float *totalprogress, float *partialprogress,
+                            int maxIt = 50,
                             double eps = 10e-6, int dim = 2);
 
 /**
@@ -120,18 +122,23 @@ MatrixXd createRandomPoints(int n, int m);
 
 // Scikit functions
 double scikit_mds_single(const MatrixXd &dissimilarities, const MatrixXd &x,
-                         const MatrixXd &x_inter, int n_samples, bool init,
-                         bool metric, int n_components, int max_iter,
-                         bool verbose, double eps, int random_state,
-                         bool normalized_stress);
+                         const MatrixXd &x_inter, int n_samples,
+                         int n_iterations,
+                         float *totalprogress, float *partialprogress,
+                         bool init, bool metric, int n_components,
+                         int max_iter, bool verbose, double eps,
+                         int random_state, bool normalized_stress);
 
 void scikit_mds_multi(const MatrixXd &dissimilarities, const MatrixXd &x,
-                      const MatrixXd &x_inter, int n_iterations, int n_samples,
+                      const MatrixXd &x_inter, int n_iterations,
+                      float *totalprogress, float *partialprogress,
+                      int n_samples,
                       bool init, bool metric, int n_components, int max_iter,
                       bool verbose, double eps, int random_state,
                       bool normalized_stress);
 
-MatrixXd calculateMDSscikit(int N, const MatrixXd &distanceMatrix);
+MatrixXd calculateMDSscikit(int N, const MatrixXd &distanceMatrix,
+                            float *totalprogress, float *partialprogress);
 
 // Glimmer functions
 
@@ -146,7 +153,8 @@ typedef struct _VECTYPE {
   float value;
 } VECTYPE;
 
-MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix);
+MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
+                             float *totalprogress, float *partialprogress);
 int myrand(void);
 int distcomp(const void *a, const void *b);
 int idxcomp(const void *a, const void *b);

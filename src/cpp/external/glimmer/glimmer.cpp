@@ -562,7 +562,8 @@ int fill_level_count(int input, int *h) {
 /*
         main function
 */
-MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix) {
+MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
+                             float *totalprogress, float *partialprogress) {
   // float* distmat = new float[line_num];           --> convert to MatrixXd
   // distmat
   // begin timing -------------------------------------BEGIN TIMING
@@ -572,6 +573,7 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix) {
   int skip = 0;
   int k = 0;
   double max_dist = 0;
+  *partialprogress = 0.0;
 
   for (int it_1 = 0; it_1 < N; it_1++) {
     for (int it_2 = it_1; it_2 < N; it_2++) {
@@ -589,6 +591,8 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix) {
   // allocate embedding and associated data structures
   g_levels = fill_level_count(N, g_heir);
   g_current_level = g_levels - 1;
+  float tStep = 1/g_current_level*0.4;
+  float pStep = 1/g_current_level;
 
   // float *embedding = NULL;
   // embedding = (float *)malloc(sizeof(float) * n_embedding_dims * N);
@@ -637,6 +641,8 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix) {
         } else {
           g_current_level--;  // move to the next level down
           g_interpolating = 1;
+          *totalprogress += tStep;
+          *partialprogress += pStep;
 
           // check if the algorithm is complete (no more levels)
           if (g_current_level < 0) {

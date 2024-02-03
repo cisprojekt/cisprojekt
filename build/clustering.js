@@ -477,7 +477,7 @@ function createWasm() {
     Module["asm"] = exports;
     wasmMemory = Module["asm"]["q"];
     updateGlobalBufferAndViews(wasmMemory.buffer);
-    wasmTable = Module["asm"]["w"];
+    wasmTable = Module["asm"]["x"];
     addOnInit(Module["asm"]["r"]);
     removeRunDependency("wasm-instantiate");
   }
@@ -3616,39 +3616,45 @@ var ___wasm_call_ctors = (Module["___wasm_call_ctors"] = function () {
   return (___wasm_call_ctors = Module["___wasm_call_ctors"] =
     Module["asm"]["r"]).apply(null, arguments);
 });
+var _clusterCustom = (Module["_clusterCustom"] = function () {
+  return (_clusterCustom = Module["_clusterCustom"] = Module["asm"]["s"]).apply(
+    null,
+    arguments,
+  );
+});
 var _malloc = (Module["_malloc"] = function () {
-  return (_malloc = Module["_malloc"] = Module["asm"]["s"]).apply(
+  return (_malloc = Module["_malloc"] = Module["asm"]["t"]).apply(
     null,
     arguments,
   );
 });
 var _free = (Module["_free"] = function () {
-  return (_free = Module["_free"] = Module["asm"]["t"]).apply(null, arguments);
+  return (_free = Module["_free"] = Module["asm"]["u"]).apply(null, arguments);
 });
 var _clusterStrings = (Module["_clusterStrings"] = function () {
   return (_clusterStrings = Module["_clusterStrings"] =
-    Module["asm"]["u"]).apply(null, arguments);
+    Module["asm"]["v"]).apply(null, arguments);
 });
 var _clusterPoints = (Module["_clusterPoints"] = function () {
-  return (_clusterPoints = Module["_clusterPoints"] = Module["asm"]["v"]).apply(
+  return (_clusterPoints = Module["_clusterPoints"] = Module["asm"]["w"]).apply(
     null,
     arguments,
   );
 });
 var stackSave = (Module["stackSave"] = function () {
-  return (stackSave = Module["stackSave"] = Module["asm"]["x"]).apply(
+  return (stackSave = Module["stackSave"] = Module["asm"]["y"]).apply(
     null,
     arguments,
   );
 });
 var stackRestore = (Module["stackRestore"] = function () {
-  return (stackRestore = Module["stackRestore"] = Module["asm"]["y"]).apply(
+  return (stackRestore = Module["stackRestore"] = Module["asm"]["z"]).apply(
     null,
     arguments,
   );
 });
 var stackAlloc = (Module["stackAlloc"] = function () {
-  return (stackAlloc = Module["stackAlloc"] = Module["asm"]["z"]).apply(
+  return (stackAlloc = Module["stackAlloc"] = Module["asm"]["A"]).apply(
     null,
     arguments,
   );

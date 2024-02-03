@@ -10,6 +10,8 @@
 
 int main() {
   // default values
+  float totalprogress = 0.0;
+  float partialprogress = 0.0;
   int maxIterations = 100;
   int zoomLevels = 20;
   int calcScalingMethod = 1;
@@ -136,7 +138,7 @@ int main() {
     // call clustering function
     clusterPoints(points, cols.size(), distMat, height, merge, labels, numLines,
                   maxIterations, zoomLevels, calcDistMethod, calcScalingMethod,
-                  dataStreampherical);
+                  dataStreampherical, &totalprogress, &partialprogress);
 
     // print the points
     for (int i = 0; i < numLines * cols.size(); i++) {
