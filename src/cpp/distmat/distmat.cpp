@@ -16,15 +16,15 @@
 
 using Eigen::MatrixXd;
 
-MatrixXd distanceMatrix(double *distMatFilled, int n,
-                        float *totalprogress, float *partialprogress) {
+MatrixXd distanceMatrix(double *distMatFilled, int n, float *totalprogress,
+                        float *partialprogress) {
   MatrixXd distMat(n, n);
   *partialprogress = 0.0;
-  float tStep = 1/n*0.35;
-  float pStep = 1/n;
+  float tStep = 1 / n * 0.35;
+  float pStep = 1 / n;
   for (int i = 0; i < n; i++) {
-  *totalprogress += tStep;
-  *partialprogress += pStep;
+    *totalprogress += tStep;
+    *partialprogress += pStep;
     for (int j = i + 1; j < n; j++) {
       int idx = i * (n - 1) + j - ((i + 1) * (i + 2)) / 2;
       distMat(i, j) = distMatFilled[idx];
@@ -53,16 +53,16 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
   return distMat;
 }
 
-MatrixXd distanceMatrix(MatrixXd points, bool isSperical,
-                        float *totalprogress, float *partialprogress) {
+MatrixXd distanceMatrix(MatrixXd points, bool isSperical, float *totalprogress,
+                        float *partialprogress) {
   int n = points.rows();
   MatrixXd distMat(n, n);
   *partialprogress = 0.0;
-  float tStep = 1/n*0.35;
-  float pStep = 1/n;
+  float tStep = 1 / n * 0.35;
+  float pStep = 1 / n;
   for (int i = 0; i < n; i++) {
-  *totalprogress += tStep;
-  *partialprogress += pStep;
+    *totalprogress += tStep;
+    *partialprogress += pStep;
     for (int j = 0; j < n; j++) {
       // TODO(Jonas): Implement other distance functions
       if (isSperical) {
@@ -82,8 +82,8 @@ MatrixXd distanceMatrix(std::vector<std::string> strings, int type,
   int n = strings.size();
   MatrixXd distMat(n, n);
   *partialprogress = 0.0;
-  float tStep = 1/n*0.35;
-  float pStep = 1/n;
+  float tStep = 1 / n * 0.35;
+  float pStep = 1 / n;
   for (int i = 0; i < n; i++) {
     *totalprogress += tStep;
     *partialprogress += pStep;
@@ -102,15 +102,15 @@ MatrixXd distanceMatrix(std::vector<std::string> strings, int type,
 }
 
 MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
-                        int bitset_size,
-                        float *totalprogress, float *partialprogress) {
+                        int bitset_size, float *totalprogress,
+                        float *partialprogress) {
   clock_t start_time1 = clock();
   int n = bitstrings.size();
   MatrixXd distMat(n, n);
   double *matrixpointer = distMat.data();
   *partialprogress = 0.0;
-  float tStep = 1/n*0.35;
-  float pStep = 1/n;
+  float tStep = 1 / n * 0.35;
+  float pStep = 1 / n;
   /*
   boost::dynamic_bitset<> comparestring
   for (int i = 0; i < n*n; i++) {
@@ -132,8 +132,8 @@ MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
     std::vector<boost::dynamic_bitset<>>::iterator bitstringptr;
     for (bitstringptr = bitstrings.begin(); bitstringptr < bitstrings.end();
          bitstringptr++) {
-      *matrixpointer = tanimotoDistanceBitwise(comparestring, *bitstringptr,
-                                               bitset_size);
+      *matrixpointer =
+          tanimotoDistanceBitwise(comparestring, *bitstringptr, bitset_size);
       matrixpointer++;
     }
   }
@@ -232,7 +232,6 @@ int hammingDistance(char *str1, char *str2, int string_length) {
 
   return distance;
 }
-
 
 double toRadians(double degree) { return degree * (M_PI / 180.0); }
 
