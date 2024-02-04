@@ -502,9 +502,7 @@ function dealwithrun() {
     selectedColumns[1],
   );
 
-  //DER SWITCH CASE KOMMT WEG SOBALD cluster.js REFACTORED IST
-  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  //this switch case is for renaming variables for convenience
   var type = "default";
   switch (functionFlag) {
     case "noChoice":
@@ -512,36 +510,27 @@ function dealwithrun() {
       break;
     case "Custom":
       type = "custom";
-      console.log("function is custom");
       break;
     case "earth-dist":
+      type = "earth-dist";
+      break;
     case "Euclidean":
       type = "euclidean";
-      if (functionFlag == "earth-dist") {
-        type = "earth-dist";
-      }
       break;
     case "Preclustered":
       type = "preclustered";
-      console.log("preclustered");
       break;
     case "edit-distance":
+      type = "edit-distance";
+      break;
     case "Tanimoto":
-      //TODO
-      //refactor this delete switch case
       type = "tanimotoFingerprints";
-      if (functionFlag == "edit-distance") {
-        type = "edit-distance";
-      }
-      console.log("function as Tani");
       break;
     case "Hamming":
       break;
     default:
       console.log("Input data doesn't match the distance function");
   }
-  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   // read the data from the text area and store it in the arrays
   let points_array = [];
@@ -554,7 +543,7 @@ function dealwithrun() {
     selectedColumns,
     dataType,
   );
-  //KANN DAS WEG?
+  //error handling for the last line
   if (points_array[points_array.length - 1] == undefined) {
     points_array.pop();
   }
