@@ -24,16 +24,16 @@ using Eigen::VectorXd;
 
 // clang-format on
 
-MatrixXd distanceMatrix(double *distMatFilled, int n,
-                        float *totalprogress, float *partialprogress);
+MatrixXd distanceMatrix(double *distMatFilled, int n, float *totalprogress,
+                        float *partialprogress);
 
 /**
  * @brief Calculate a square distance matrix for points
  * @param points Points in Euclidean space
  * @return distMat Distance Matrix
  */
-MatrixXd distanceMatrix(MatrixXd points, bool isSperical,
-                        float *totalprogress, float *partialprogress);
+MatrixXd distanceMatrix(MatrixXd points, bool isSperical, float *totalprogress,
+                        float *partialprogress);
 
 MatrixXd distanceMatrix(MatrixXd points, bool isSperical = 0);
 
@@ -53,8 +53,8 @@ MatrixXd distanceMatrix(std::vector<std::string> strings, int type,
  */
 
 MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
-                        int bitset_size,
-                        float *totalprogress, float *partialprogress);
+                        int bitset_size, float *totalprogress,
+                        float *partialprogress);
 
 double euclideanDistance(VectorXd pointA, VectorXd pointB);
 

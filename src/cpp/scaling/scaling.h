@@ -28,14 +28,14 @@ using Eigen::VectorXd;
  * @param distMat Distance matrix of original points
  * @return Weight matrix
  */
-MatrixXd calculateWeights(MatrixXd distMat);
+MatrixXd calculateWeights(const MatrixXd &distMat);
 
 /**
  * @brief Calculate the V matrix according to e.q. (8.18)
  * @param weights The weight matrix
  * @return Matrix V
  */
-MatrixXd calculateV(MatrixXd weights);
+MatrixXd calculateV(const MatrixXd &weights);
 
 /**
  * @brief Calculate a random configuration matrix with values between -1 and 1
@@ -51,7 +51,8 @@ MatrixXd calculateRandomZ(int n, int m);
  * @param weights The weight matrix
  * @return B The B matrix
  */
-MatrixXd calculateB(MatrixXd Z, MatrixXd weights, MatrixXd distMat);
+MatrixXd calculateB(const MatrixXd &Z, const MatrixXd &weights,
+                    const MatrixXd &distMat);
 
 /**
  * @brief Calculates the first constant term of stress according to e.q. (8.15)
@@ -59,7 +60,7 @@ MatrixXd calculateB(MatrixXd Z, MatrixXd weights, MatrixXd distMat);
  * @param distMat The distance matrix
  * @return term1 The first term of stress
  */
-double calculateConst(MatrixXd weights, MatrixXd distMat);
+double calculateConst(const MatrixXd &weights, const MatrixXd &distMat);
 
 /**
  * @brief Calculates the stress for a given configuration
@@ -70,8 +71,8 @@ double calculateConst(MatrixXd weights, MatrixXd distMat);
  * @param distMat The original distance matrix
  * @return stress Stress for given configuration
  */
-double stressFunction(MatrixXd X, MatrixXd Z, MatrixXd B, MatrixXd weights,
-                      MatrixXd distMat);
+double stressFunction(const MatrixXd &X, const MatrixXd &Z, const MatrixXd &B,
+                      const MatrixXd &weights, const MatrixXd *distMat);
 
 /**
  * @brief Apply Guttman transformation according to e.q. (8.28, 8.29)
@@ -81,7 +82,8 @@ double stressFunction(MatrixXd X, MatrixXd Z, MatrixXd B, MatrixXd weights,
  * @param weights The weights matrix
  * @return XUpdated Updated configuration after Guttman transformation
  */
-MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights);
+MatrixXd guttmanTransform(int n, const MatrixXd &B, const MatrixXd &Z,
+                          const MatrixXd &weights);
 
 /**
  * @brief Applies multidimensional scaling with SMACOF Algorithm
@@ -91,9 +93,8 @@ MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights);
  * @param dim Dimensions to scale the data to
  * @return XUpdated Final configuration
  */
-MatrixXd calculateMDSsmacof(MatrixXd distMat,
-                            float *totalprogress, float *partialprogress,
-                            int maxIt = 50,
+MatrixXd calculateMDSsmacof(MatrixXd &distMat, float *totalprogress,  // NOLINT
+                            float *partialprogress, int maxIt = 50,
                             double eps = 10e-6, int dim = 2);
 
 /**
@@ -123,18 +124,16 @@ MatrixXd createRandomPoints(int n, int m);
 // Scikit functions
 double scikit_mds_single(const MatrixXd &dissimilarities, const MatrixXd &x,
                          const MatrixXd &x_inter, int n_samples,
-                         int n_iterations,
-                         float *totalprogress, float *partialprogress,
-                         bool init, bool metric, int n_components,
-                         int max_iter, bool verbose, double eps,
-                         int random_state, bool normalized_stress);
+                         int n_iterations, float *totalprogress,
+                         float *partialprogress, bool init, bool metric,
+                         int n_components, int max_iter, bool verbose,
+                         double eps, int random_state, bool normalized_stress);
 
 void scikit_mds_multi(const MatrixXd &dissimilarities, const MatrixXd &x,
                       const MatrixXd &x_inter, int n_iterations,
                       float *totalprogress, float *partialprogress,
-                      int n_samples,
-                      bool init, bool metric, int n_components, int max_iter,
-                      bool verbose, double eps, int random_state,
+                      int n_samples, bool init, bool metric, int n_components,
+                      int max_iter, bool verbose, double eps, int random_state,
                       bool normalized_stress);
 
 MatrixXd calculateMDSscikit(int N, const MatrixXd &distanceMatrix,
