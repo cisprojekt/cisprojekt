@@ -177,6 +177,9 @@ function getZoomMode() {
   var zoomMode = 0;
   if (document.getElementById("CustomZoomPopUp").style.display == "block") {
 	  zoomMode = 1;
+	  if (document.getElementById("CustomZoomInput").value.includes("e")) {
+		  zoomMode = 2;
+	  }
   }
   return zoomMode;
 }
@@ -633,13 +636,14 @@ function dealwithrun() {
   let scalingMethod = parseInt(document.getElementById("Scaling_alg").value);
   let distMethod = parseInt(document.getElementById("Distance_calcu").value);
   let zoomMode = getZoomMode();
-  var zoomNumber = 20;
+  let zoomNumber = 1;
   if (zoomMode == 0) {
 	  zoomNumber = getAutoZoomlevel();
   }
-  if (zoomMode == 1) {
+  if (zoomMode == 1 || zoomMode == 2) {
 	  zoomNumber = getCustomZoomlevel();
   }
+  
   var lines = getinputdata().split(/\r?\n/);
   var devider = getCSVDevider();
   var selectedColumns = getSelectedColumns();
