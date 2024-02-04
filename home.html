@@ -14,8 +14,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="src/js/map_scala.js"></script>
 
-    <!--   Site-spesific Style   -->
+    <!--   Website-spesific Style   -->
     <style>
       header {
         display: flex;
@@ -40,12 +41,24 @@
       }
 
       select {
+        display: inline-block;
+        font-family: inherit;
+        text-align: center;
+        border: none;
+        outline: 1px dotted rgb(37, 37, 37);
+        outline-offset: -4px;
+        background: hsl(0deg 0% 75%);
         width: 150px;
-        background-color: #969fe2;
-        margin: 2px;
-        padding: 10px 15px;
-        border-radius: 5px;
-        border-color: transparent;
+        height: 40px;
+        box-shadow:
+          inset -1px -1px #292929,
+          inset 1px 1px #fff,
+          inset -2px -2px rgb(158, 158, 158),
+          inset 2px 2px #ffffff;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 5px 30px;
       }
 
       .dropdown-container {
@@ -78,6 +91,7 @@
 </html>
 
 <body>
+  <!--This is the mini navigation of the site-->
   <nav>
     <div class="logo">
       <span>SCOUT.</span>
@@ -93,12 +107,12 @@
       <div class="label">
         <p style="text-align: left">Upload your CSV file</p>
       </div>
-      <!-- Input Area for data and function -->
+
+      <!-- Input Area for data -->
       <textarea
         id="text_box"
         name="textinput"
         placeholder="Type here..."
-        oninput="showDropdowns()"
       ></textarea>
       <!-- Formal and real button for add data -->
       <div>
@@ -108,26 +122,28 @@
           style="width: 200px"
           onclick="showCSVDeviderPopUp()"
         >
-          Select CSV-Divider
-        </button>
-        <div id="CSVDeviderPopUp" style="display: none">
-          <input
-            type="text"
-            id="myCSVDeviderInput"
-            placeholder="default is commas"
-            class="divider"
-          />
-        </div>
-        <button
-          type="button"
-          id="directRun"
-          class="directRunBtn"
-          onclick="importFile();"
-        >
-          Run Directly
+          CSV-Divider
         </button>
       </div>
+      <div id="CSVDeviderPopUp" style="display: none">
+        <input
+          type="text"
+          id="myCSVDeviderInput"
+          placeholder="default is commas"
+          class="divider"
+        />
+      </div>
+      <!---was ist das?-->
+      <button
+        type="button"
+        id="directRun"
+        class="directRunBtn"
+        onclick="importFile();"
+      >
+        Run Directly
+      </button>
 
+      <!-- Only CSV and JSON data types are accepted -->
       <input
         type="file"
         id="dataFile"
@@ -135,19 +151,26 @@
         accept=".CSV,.JSON"
         style="display: none"
       />
-
+      <!--Table interpretation-->
       <div class="box" id="box-for-check-list">
         <div id="checkFlagArea" style="display: none">
           <div class="label">
             <p style="text-align: left">Flag match</p>
           </div>
-          <p id="flag_guide" style="text-align: left; margin: 10px"></p>
-          <table id="checkTable" style="border-collapse: collapse">
+          <p id="flag_guide" style="text-align: left; margin-left: 60px"></p>
+          <table
+            id="checkTable"
+            style="
+              border-collapse: collapse;
+              margin-left: 50px;
+              padding-left: 50px;
+            "
+          >
             <thead>
               <tr>
-                <th>Colum number</th>
+                <th>Column number</th>
                 <th>Column title</th>
-                <th>Daten flags</th>
+                <th>Data flags</th>
               </tr>
             </thead>
 
@@ -218,6 +241,7 @@
               <option value="2">SciKit-learn</option>
               <option value="3">Glimmer</option>
             </select>
+
             <select
               id="Distance_calcu"
               name="distance_calcu"
@@ -232,6 +256,7 @@
               <option value="5">Ward</option>
               <option value="6">Centroid</option>
             </select>
+
             <select id="zoom_mode" name="zoom_mode" style="width: 200px">
               <option value="noChoice">Zoom Mode</option>
               <option value="auto" onclick="showZoomAutoPopup()">
@@ -241,6 +266,7 @@
                 Custom
               </option>
             </select>
+
             <div id="AutoZoomPopUp" style="display: none; margin-left: 400px">
               <input
                 type="text"
@@ -302,20 +328,6 @@
 
     <!-- Here for result, will only be showed after click -->
     <div id="result" style="margin-left: 20px">
-      <!-- Information Box -->
-      <!-- <div id="InforArea" style="text-align: left; border: none; width: 30%">
-        <table id="InforList" style="padding: 5px; border: 1px solid">
-          <tr>
-            <td>Cluster Information</td>
-          </tr>
-          <tr>
-            <td>cluster 1</td>
-          </tr>
-          <tr>
-            <td>cluster 2</td>
-          </tr>
-        </table>
-      </div> -->
       <div
         id="clusterInfoBox"
         style="
@@ -326,17 +338,11 @@
         "
       ></div>
 
-      <!-- map Container with .js
-            <div id="chartContainer" style="width: 50%; height: 100%;">
-                <button type="button" style="float: right;">full screen</button>
-            </div>
-            -->
-
-      <!-- Fullscreen complited -->
       <div
         id="mapContainer"
         style="border: none; width: auto; overflow: hidden"
       >
+        <!--Buttons shown only on the map page-->
         <button
           id="switchbtn"
           type="button"
@@ -360,22 +366,16 @@
         >
           Export
         </button>
+
+        <!--The real map container-->
         <div
           id="chartContainer"
-          style="
-            border: red;
-            position: relative;
-            z-index: 4;
-            left: -260px;
-            top: -120px;
-            width: 1330px;
-            transform: scale(0.6);
-          "
+          style="border: red; position: relative; z-index: 4; width: 1330px"
         ></div>
       </div>
     </div>
   </main>
-
+  <!-- Error message, when js is disabled.-->
   <noscript>
     <div id="nojs">
       Error: JavaScript is not enabled in your browser. Please enable it for the
@@ -400,13 +400,14 @@
   document.addEventListener("DOMContentLoaded", function () {
     var statusElement = document.getElementById("js-status");
 
-    // Update the status element to indicate whether JavaScript is enabled
+    // Update the status element to indicate whether JavaScript is enabled.
     if (statusElement) {
       statusElement.innerHTML = "JavaScript is enabled!";
       statusElement.style.color = "green";
     }
   });
 
+  // To avoid repetitive function selectors.
   document.getElementById("DataType").addEventListener("change", function () {
     let distance_func_list = selectDataType();
     console.log(distance_func_list);

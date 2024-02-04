@@ -11,6 +11,7 @@ body {
   background-size: cover;
   min-height: 100vh;
   max-height: 100%;
+  background-color: #eaf3f5;
 }
 
 .header {
@@ -109,13 +110,22 @@ main {
 
 button {
   display: inline-block;
+  font-family: inherit;
+  border: none;
+  outline: 1px dotted rgb(37, 37, 37);
+  outline-offset: -4px;
+  background: hsl(0deg 0% 75%);
   width: 150px;
-  background-color: #969fe2;
-  margin: 2px;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  border-color: transparent;
+  height: 40px;
+  box-shadow:
+    inset -1px -1px #292929,
+    inset 1px 1px #fff,
+    inset -2px -2px rgb(158, 158, 158),
+    inset 2px 2px #ffffff;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 5px 30px;
 }
 
 .label {
@@ -129,24 +139,6 @@ button {
   padding-left: 5px;
   background-repeat: no-repeat;
   background-size: contain;
-}
-
-body.dark-mode {
-  background-color: black;
-  color: white;
-}
-
-header.dark-mode {
-  background-color: #634c6a;
-}
-
-main.dark-mode,
-footer.dark-mode {
-  background-color: #333;
-}
-
-button.dark-mode {
-  background-color: #6c6ea0;
 }
 
 .divider {
