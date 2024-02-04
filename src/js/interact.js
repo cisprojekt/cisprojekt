@@ -258,7 +258,7 @@ function isCoordindat(txt_inhalt, devider = devider) {
   return "";
 }
 
-//choos flags for each colum
+//choose flags for each column
 function flag_preset() {
   let preset_flag = document.createElement("select");
   let first_flag = document.createElement("option");
@@ -313,6 +313,130 @@ function ColFlagCheck() {
   checkContainer.appendChild(checklist);
 }
 
+function mapColouring() {	
+  document.getElementById("colouringArea").style.display = "";
+  let colourContainer = document.getElementById("colouringArea");
+  let colourlist = document.getElementById("colourTable");
+  let guide_info = document.getElementById("colour_guide");
+  guide_info.innerHTML =
+    "To add colours to your map for better visibility, </br> \
+    you can choose between two modi: </br> \
+    1 Track a specific data point through the different hierarchy levels </br> \
+    The chosen flag name must appear in a #name# column with exact wording </br> \
+    2 Colour the clusterpoints based on the most common occurrence of a property. </br> \
+    The chosen property flag must appear in a #non-numerical flag# column with exact wording";
+
+  for (let d = 1; d < 11; d++) {
+    let _colour_tr = colourlist.insertRow();
+    let cell_1 = _colour_tr.insertCell(0);
+    let cell_2 = _colour_tr.insertCell(1);
+    let colourFlagSelector = createColourFlagSelector(d - 1);
+    let colour_menu = colour_preset(d - 1);
+    cell_1.appendChild(colourFlagSelector);
+	cell_2.appendChild(colour_menu);
+  }
+  colourContainer.appendChild(colourlist);
+}
+
+function createColourFlagSelector(colnum) {
+	let colourFlag = document.createElement('input');
+	colourFlag.type = "text";
+	colourFlag.id = `cf${colnum}`;
+	colourFlag.style = "display: inline";
+	colourFlag.class = "divider";
+	colourFlag.placeholder = "flag from data";
+	return colourFlag;
+}
+
+function colour_preset(colnum) {	
+  let colorBox = document.createElement('select');
+  colorBox.id = `cb${colnum}`;
+  colorBox.class = "form-control";
+  colorBox.name = "color";
+  let coloroptions = document.createElement('option');
+  coloroptions.value = "";
+  coloroptions.innerHTML = "Choose Colour";
+  colorBox.appendChild(coloroptions);
+  let coloroptions1 = document.createElement('option');
+  coloroptions1.value = "#0000FF";
+  coloroptions1.style = "color:#0000FF;";
+  coloroptions1.innerHTML = "Neon blue";
+  colorBox.appendChild(coloroptions1);
+  let coloroptions2 = document.createElement('option');	
+  coloroptions2.value = "#005740";
+  coloroptions2.style = "color:#005740;";
+  coloroptions2.innerHTML = "Dark green";
+  colorBox.appendChild(coloroptions2);
+  let coloroptions3 = document.createElement('option');
+  coloroptions3.value = "#a271c5";
+  coloroptions3.style = "color:#a271c5;";
+  coloroptions3.innerHTML = "Purple";
+  colorBox.appendChild(coloroptions3);
+  let coloroptions4 = document.createElement('option');
+  coloroptions4.value = "#0071c5";
+  coloroptions4.style = "color:#0071c5;";
+  coloroptions4.innerHTML = "Dark blue";
+  colorBox.appendChild(coloroptions4);
+  let coloroptions5 = document.createElement('option');
+  coloroptions5.value = "#40e0d0";
+  coloroptions5.style = "color:#40e0d0;";
+  coloroptions5.innerHTML = "Turquoise";
+  colorBox.appendChild(coloroptions5);
+  let coloroptions6 = document.createElement('option');
+  coloroptions6.value = "#008000";
+  coloroptions6.style = "color:#008000;";
+  coloroptions6.innerHTML = "Green";
+  colorBox.appendChild(coloroptions6);
+  let coloroptions7 = document.createElement('option');
+  coloroptions7.value = "#ffd700";
+  coloroptions7.style = "color:#ffd700;";
+  coloroptions7.innerHTML = "Yellow";
+  colorBox.appendChild(coloroptions7);
+  let coloroptions8 = document.createElement('option');
+  coloroptions8.value = "#ff8c00";
+  coloroptions8.style = "color:#ff8c00;";
+  coloroptions8.innerHTML = "Orange";
+  colorBox.appendChild(coloroptions8);
+  let coloroptions9 = document.createElement('option');
+  coloroptions9.value = "#ff0000";
+  coloroptions9.style = "color:#ff0000;";
+  coloroptions9.innerHTML = "Red";
+  colorBox.appendChild(coloroptions9);
+  let coloroptions10 = document.createElement('option');
+  coloroptions10.value = "#a06033";
+  coloroptions10.style = "color:#a06033;";
+  coloroptions10.innerHTML = "Brown";
+  colorBox.appendChild(coloroptions10);
+	
+  colorBox.addEventListener('change', (event) => {
+    const color = event.target.value;
+    event.target.style.color = color;
+  }, false);
+	
+return colorBox;
+}
+
+function getColorLegend() {
+  let table = document.getElementById("colourTable");
+  let rows = table.getElementsByTagName("tr");
+  var flag = "";
+  var color = "";
+  let colorLegend = [];
+  for (let i = 0; i < rows.length-1; i++) {
+    let row = rows[i];
+	let pair = [,];
+	flag = document.getElementById(`cf${i}`).value;
+	color = document.getElementById(`cb${i}`).value;
+    if (flag != "") {
+      pair[0] = flag;
+	  pair[1] = color;	
+	  colorLegend.push(pair);
+	}
+    
+  }
+  console.log(colorLegend);
+  return colorLegend;
+}
 /* Fullscreen in-Place */
 
 function MapViewSwitcher() {
@@ -527,7 +651,8 @@ function dealwithrun() {
     selectedColumns[1],
 	selectedColumns[3],
   );
-
+	
+  var colorLegend = getColorLegend();
   //DER SWITCH CASE KOMMT WEG SOBALD cluster.js REFACTORED IST
   //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -599,6 +724,7 @@ function dealwithrun() {
     flagColumnNames,
 	zoomMode,
 	zoomNumber,
+	colorLegend,
   );
 }
 

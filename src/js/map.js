@@ -8,6 +8,8 @@ function mapFunctions(
   clusterInfos,
   flagColumnNames,
   numflags_array,
+  colourMode,
+  colorLegend,
 ) {
   // Export function parameters to a JSON file
   // will be saved as 'result.json'
@@ -87,12 +89,65 @@ function mapFunctions(
         y: sums[label].y / sums[label].count,
         r: Math.log2(sums[label].count + 1) / Math.log2(5),
         l: label,
+		c: "#0000ff",  
       });
     }
-
+	
+	if (colourMode.value == 1) {
+		updateColourMode1(clusterInfos, currentZoomLevel, n, averages, colorLegend)
+		
+	} else if (colourMode.value == 2) {
+		updateColourMode2(clusterInfos, currentZoomLevel, n, averages, colorLegend)
+	}
     console.log(averages);
     return averages;
   }
+  
+  function updateColourMode1(clusterInfos, zoomLevel, n, averages, colorLegend) {
+	  let cluster = clusterInfos[zoomLevel - 1];
+	  for (let cl = 0; cl < colorLegend.length; cl++) {
+	    for (let i = 0; i < cluster.length; i++) {
+		    cluster[i].nameCounters.forEach((flagname) => {
+				  if (flagname == (colorLegend[cl][0])) {
+				    for (let k = 0; k < averages.length; k++) {
+						if (averages[k].l == i) {
+						  averages[k].c = colorLegend[cl][1];
+						}
+				    }
+				  }
+			});
+	    }
+	  }
+  }
+	  
+  function updateColourMode2(clusterInfos, zoomLevel, n, averages, colorLegend) {
+	  let cluster = clusterInfos[zoomLevel - 1];
+	  for (let cl = 0; cl < colorLegend.length; cl++) {
+	    for (let i = 0; i < cluster.length; i++) {
+		    cluster[i].nonnumflagCounters.forEach((columnFlagMap, index) => {
+		      for (const key of columnFlagMap.keys()) {
+				  if (key.includes(colorLegend[cl][0])) {
+					  let max_occur = columnFlagMap.get(key);
+					  for (const key2 of columnFlagMap.keys()) {
+						  if (columnFlagMap.get(key2) > max_occur) {
+							  max_occur = columnFlagMap.get(key2);
+						  }
+					  }
+					  if (max_occur == columnFlagMap.get(key)) {
+					    for (let k = 0; k < averages.length; k++) {
+						  if (averages[k].l == i) {
+						    averages[k].c = colorLegend[cl][1];
+					    }
+					  }
+					  }
+				  }
+			  }
+			  });
+	    }
+	  }
+  }
+  
+
 
   // ##### scaling functions for axis ####
 
@@ -160,7 +215,10 @@ function mapFunctions(
 
   // Create a zoom behavior function
   var zoom = d3.zoom().scaleExtent([1, zoomLevels]).on("zoom", handleZoom);
-
+  
+  function adjustcolor(d) {
+	  return (d3.select(this).attr("co"));
+  }
   // Add (initial) circles to plot
   svg
     .selectAll("circle")
@@ -180,11 +238,14 @@ function mapFunctions(
     .attr("data-id", function (d) {
       return d.l;
     })
-    .style("fill", "#0000ff")
+	.attr("co", function (d) {
+	  return d.c;
+    })  
+    .style("fill", adjustcolor)
     .style("fill-opacity", 0.5)
     .on("click", function (event, d) {
-      svg.selectAll("circle").on("click", null);
-      d3.select(this).style("fill", "red");
+      d3.select(this).style("stroke", "black");
+      d3.select(this).style("stroke-width", '0.2');
     });
 
   // Define the event handler function for zoom
@@ -262,12 +323,16 @@ function mapFunctions(
         .attr("data-id", function (d) {
           return d.l;
         })
-        .style("fill", "#0000ff")
+		.attr("co", function (d) {
+          return d.c;
+        })
+        .style("fill", adjustcolor)
         .style("fill-opacity", 0.5)
         .attr("transform", event.transform)
         .on("click", function (event, d) {
           svg.selectAll("circle").on("click", null);
-          d3.select(this).style("fill", "red");
+          d3.select(this).style("stroke", "black");
+		  d3.select(this).style("stroke-width", '0.2');
         });
     } else {
       circles
@@ -283,7 +348,7 @@ function mapFunctions(
                 return d.l == selectedPoint;
               })
               .transition()
-              .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
+              .style("stroke", "none"); // Set the color of the previous point to blue
             d3.select(this).lower();
           }
           //if the same point is clicked again dont select it again
@@ -291,7 +356,8 @@ function mapFunctions(
           if (selectedPoint == d.l) {
             selectedPoint = null;
           } else {
-            d3.select(this).style("fill", "red");
+            d3.select(this).style("stroke", "black");
+			d3.select(this).style("stroke-width", '0.2');
             selectedPoint = d.l;
           }
           updateClusterInfoBox(
@@ -430,7 +496,6 @@ function mapFunctions(
   // Attach the zoom behavior to the SVG element and disable zoom on double click
   d3.select("svg").call(zoom).on("dblclick.zoom", null);
 }
-
 //function to display text in clusterInfoBox depending on selected point
 //TODO add nonnumflag and numflag selected column information
 function updateClusterInfoBox(

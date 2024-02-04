@@ -15,6 +15,7 @@ async function calculateClusters(
   flagColumnNames,
   zoomMode,
   zoomNumber,
+  colorLegend,
 ) {
   await wasmReady; // Make sure module is loaded
   console.log("Starting Clustering Program");
@@ -194,6 +195,8 @@ async function calculateClusters(
       clusterInfos,
       flagColumnNames,
       numflags_array,
+	  colour_mode,
+	  ColorLegend,
     );
     totalprogress = 0.99;
   } else if (type == "preclustered") {
@@ -222,6 +225,8 @@ async function calculateClusters(
       clusterInfos,
       flagColumnNames,
       numflags_array,
+	  colour_mode,
+	  ColorLegend,
     );
   }
 
@@ -377,6 +382,8 @@ async function calculateClusters(
       clusterInfos,
       flagColumnNames,
       numflags_array,
+	  colour_mode,
+	  colorLegend,
     );
     totalprogress = 0.99;
   } else if (type == "tanimotoFingerprints" || type == "edit-distance") {
@@ -557,6 +564,8 @@ async function calculateClusters(
       clusterInfos,
       flagColumnNames,
       numflags_array,
+	  colour_mode,
+	  colorLegend,
     );
     totalprogress = 0.99;
   }

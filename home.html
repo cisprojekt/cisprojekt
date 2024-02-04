@@ -7,8 +7,8 @@
     <title>SCOUT.</title>
     <link href="style/homestyle.css" rel="stylesheet" />
     <link href="style/actionstyle.css" rel="stylesheet" />
-    <script src="src/js/map.js"></script>
     <script src="build/clustering.js"></script>
+	<script src="src/js/map.js"></script>
     <script src="src/js/interact.js"></script>
     <script src="src/js/cluster.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -145,9 +145,9 @@
           <table id="checkTable" style="border-collapse: collapse">
             <thead>
               <tr>
-                <th>Colum number</th>
+                <th>Column number</th>
                 <th>Column title</th>
-                <th>Daten flags</th>
+                <th>Data flags</th>
               </tr>
             </thead>
 
@@ -156,6 +156,35 @@
         </div>
       </div>
 
+	  <div class="box" id="box-for-colouring">
+        <div id="colouringArea" style="display: none">
+          <div class="label">
+            <p style="text-align: left">Colour options</p>
+          </div>
+          <select
+              id="colour_mode"
+              name="colour_mode"
+              style="width: 200px"
+            >
+              <option value="noChoice">Colour Mode</option>
+              <!-- the following values are supposed to uniqueley indentify their scaling algorithm -->
+              <option value="1">Singleton Target</option>
+              <option value="2">Most Common Occurence</option>
+          </select>
+          <p id="colour_guide" style="text-align: left; margin: 10px"></p>
+          <table id="colourTable">
+            <thead>
+              <tr>
+                <th>Target Flag</th>
+                <th>Colour</th>
+              </tr>
+            </thead>
+
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+		
       <div class="box" id="box-for-button-group">
         <!-- Choose Function Button -->
         <div style="min-height: 80px">
@@ -277,6 +306,13 @@
           style="margin-top: 20px"
         >
           Flag Check
+        </button>
+		<button
+          id="colour_button"
+          onclick="mapColouring();"
+          style="margin-top: 20px"
+        >
+          Map Colours
         </button>
         <!-- Delete All Button -->
         <button id="deleAllButton" onclick="deletedatenandfunc()">
