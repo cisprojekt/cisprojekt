@@ -491,6 +491,7 @@ function updateClusterInfoBox(
           cluster.pointIndices,
           flagIndex,
           clusterInfoBox.clientWidth /*  / 2 */,
+		  flagColumnNames,
         ),
       );
       boxPlotDivs.push(boxPlotDiv);
@@ -559,12 +560,30 @@ function updateClusterInfoBox(
     if (itemCount !== 0) {
       clusterInfoBox.appendChild(document.createElement("br"));
     } */
+  	let nameShow = document.createElement("button");
+    nameShow.id = "nameShow";
+	nameShow.type = "button";  
+	nameShow.style = "position: relative; float: right; margin-left: 5px; z-index: 5; display: inline-block";
+    nameShow.addEventListener('click', function(){getClusterNames(cluster);});
+	nameShow.innerHTML = "Show Names in Cluster";
+	clusterInfoBox.insertBefore(nameShow, clusterInfoBox.firstChild);  
   } else {
     const clusterInfoBox = document.getElementById("clusterInfoBox");
     clusterInfoBox.textContent = "No point selected.";
   }
 }
 
+function getClusterNames(cluster) {
+  var namewin = window.open("","Selected names","height=400,width=650,scrollbars=yes,toolbar=no,menubar=no,status=no,titlebar=no,resizable=yes,left=100,top=100")
+  var doc = namewin.document;
+  namestring = ""
+  cluster.nameCounters.forEach((name_c) => {
+	 namestring += name_c + "\n" 
+  });
+  doc.open();
+  doc.write("<pre>"+namestring+"</pre>");
+  doc.close();
+}
 function createPieDiv(pie) {
   let pieDiv = document.createElement("div");
   pieDiv.id = "pieDiv" + pie.name;
@@ -624,6 +643,7 @@ function createViolinPlotDiv(
   clusterPoints,
   flagIndex,
   plotWidthPixels,
+  flagColumnNames,
 ) {
   // Create a container div for the violin plot
   let violinDiv = document.createElement("div");
@@ -652,13 +672,13 @@ function createViolinPlotDiv(
       meanline: {
         visible: true,
       },
-      x0: `Flag ${flagIndex}`,
+      x0: `Flag ${flagColumnNames[1][flagIndex]}`,
     },
   ];
 
   // Layout configuration
   const layout = {
-    title: `Violin Plot for Flag ${flagIndex}`,
+    title: `Violin Plot for Flag ${flagColumnNames[1][flagIndex]}`,
     yaxis: {
       zeroline: false,
     },

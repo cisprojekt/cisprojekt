@@ -146,13 +146,13 @@ function clean_fun_slector() {
 }
 function showZoomAutoPopup() {
   if (document.getElementById("CustomZoomPopUp").style.display == "block") {
-    document.getElementById("CustomZoomPopUp").style.display = "none";
+	  document.getElementById("CustomZoomPopUp").style.display = "none";
   }
   document.getElementById("AutoZoomPopUp").style.display = "block";
 }
 function showZoomCustomPopup() {
   if (document.getElementById("AutoZoomPopUp").style.display == "block") {
-    document.getElementById("AutoZoomPopUp").style.display = "none";
+	  document.getElementById("AutoZoomPopUp").style.display = "none";
   }
   document.getElementById("CustomZoomPopUp").style.display = "block";
 }
@@ -176,7 +176,7 @@ function getCustomZoomlevel() {
 function getZoomMode() {
   var zoomMode = 0;
   if (document.getElementById("CustomZoomPopUp").style.display == "block") {
-    zoomMode = 1;
+	  zoomMode = 1;
   }
   return zoomMode;
 }
@@ -240,13 +240,13 @@ function CreateColFlagSelector(idx = 0, titleline) {
 }
 
 /** This will check the first line and delete the axises */
-function isCoordindat(txt_inhalt, devider = ",") {
+function isCoordindat(txt_inhalt, devider = devider) {
   let coorindat = [];
   if (txt_inhalt != "") {
     let lines = txt_inhalt.split("\n");
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
-      line = line.split(",");
+      line = line.split(devider);
       if (line.length == 2 && parseFloat(line[0]) && parseFloat(line[1])) {
         coorindat.push(line.toString());
       }
@@ -361,6 +361,8 @@ function getSelectedColumns() {
   let selectedDataColumns = [];
   let selectedNumFlagColumns = [];
   let selectedNonNumFlagColumns = [];
+  let selectedNameColumn = [];
+  let unique_name = true;
   for (let i = 1; i < rows.length; i++) {
     let row = rows[i];
     if (
@@ -380,12 +382,26 @@ function getSelectedColumns() {
     ) {
       select = row.cells[1].querySelector("select");
       selectedNonNumFlagColumns.push(select.selectedIndex);
-    }
+    } else if (
+      row.cells[2].getElementsByTagName("select")[0].value == "name"
+    ) {
+	    if (unique_name) {
+          select = row.cells[1].querySelector("select");
+          selectedNameColumn.push(select.selectedIndex);
+		  unique_name = false;
+	    } else {
+          alert(
+            `There is only one 'name' column allowed. The chosen
+             column ${i} is a duplicate.`,
+          );
+        }
+	  }
   }
   return [
     selectedDataColumns,
     selectedNumFlagColumns,
     selectedNonNumFlagColumns,
+	selectedNameColumn,
   ];
 }
 
@@ -396,8 +412,8 @@ function getSelectedColumns() {
  * @param {Array} numIndices - The indices of the numerical flag columns.
  * @returns {Array} - An array containing the names of the flag columns. The first element is the names of the non-numerical flag columns and the second element is the names of the numerical flag columns.
  */
-function getFlagColumnNames(header, nonnumIndices, numIndices) {
-  header = header.split(",");
+function getFlagColumnNames(header, devider, nonnumIndices, numIndices, nameidx) {
+  header = header.split(devider);
   let flagColumnNames = [];
   let tmp = [];
   nonnumIndices.forEach((index) => {
@@ -408,7 +424,12 @@ function getFlagColumnNames(header, nonnumIndices, numIndices) {
   numIndices.forEach((index) => {
     tmp2.push(header[index]);
   });
-  flagColumnNames.push(tmp2);
+  flagColumnNames.push(tmp2);	
+  let tmp3 = [];
+  nameidx.forEach((index) => {
+    tmp3.push(header[index]);
+  });
+  flagColumnNames.push(tmp3);
 
   return flagColumnNames;
 }
@@ -425,6 +446,7 @@ function readDataFromLines(lines, devider, selectedColumns, dataType) {
   let points_array = [];
   let numflags_array = [];
   let nonnumflags_array = [];
+  let names_array = [];
   let line = "";
   let foundValues = [];
   //decide if pointsarray has to store the data as arrays or not
@@ -469,9 +491,15 @@ function readDataFromLines(lines, devider, selectedColumns, dataType) {
       foundValues.push(line[flagIdxName]);
     });
     nonnumflags_array.push(foundValues);
+	foundValues = [];
+	
+	selectedColumns[3].forEach((flagIdxName) => {
+      foundValues.push(line[flagIdxName]);
+    });
+    names_array.push(foundValues);
   }
 
-  return [points_array, numflags_array, nonnumflags_array];
+  return [points_array, numflags_array, nonnumflags_array, names_array];
 }
 
 function dealwithrun() {
@@ -483,23 +511,21 @@ function dealwithrun() {
   let zoomMode = getZoomMode();
   var zoomNumber = 20;
   if (zoomMode == 0) {
-    zoomNumber = getAutoZoomlevel();
+	  zoomNumber = getAutoZoomlevel();
   }
   if (zoomMode == 1) {
-    zoomNumber = getCustomZoomlevel();
-    if (document.getElementById("CustomZoomInput").value.includes("e")) {
-      zoomMode = 2;
-    }
+	  zoomNumber = getCustomZoomlevel();
   }
-
   var lines = getinputdata().split(/\r?\n/);
   var devider = getCSVDevider();
   var selectedColumns = getSelectedColumns();
   //get names of the header columns for the flag columns
   var flagColumnNames = getFlagColumnNames(
     lines[0],
+	devider,
     selectedColumns[2],
     selectedColumns[1],
+	selectedColumns[3],
   );
 
   //DER SWITCH CASE KOMMT WEG SOBALD cluster.js REFACTORED IST
@@ -547,8 +573,9 @@ function dealwithrun() {
   let points_array = [];
   let numflags_array = [];
   let nonnumflags_array = [];
+  let names_array = [];
 
-  [points_array, numflags_array, nonnumflags_array] = readDataFromLines(
+  [points_array, numflags_array, nonnumflags_array, names_array] = readDataFromLines(
     lines,
     devider,
     selectedColumns,
@@ -566,11 +593,12 @@ function dealwithrun() {
     type,
     nonnumflags_array,
     numflags_array,
+	names_array,
     scalingMethod,
     distMethod,
     flagColumnNames,
-    zoomMode,
-    zoomNumber,
+	zoomMode,
+	zoomNumber,
   );
 }
 

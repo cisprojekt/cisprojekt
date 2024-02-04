@@ -9,6 +9,7 @@ async function calculateClusters(
   type,
   nonnumflags_array,
   numflags_array,
+  names_array,
   scalingMethod,
   distMethod,
   flagColumnNames,
@@ -24,21 +25,20 @@ async function calculateClusters(
   var pProgressStep = 0.0;
   var tProgressStep = 0.0;
   //open progress_bar
-
+	  
   let n = inputPoints.length;
   var zoomLevels = 1;
   if (zoomMode == 0) {
-    zoomLevels = zoomNumber;
+	  zoomLevels = zoomNumber;
   }
   if (zoomMode == 1) {
-    zoomLevels = Math.ceil(n / zoomNumber);
-  }
-  if (zoomMode == 2) {
-    zoomLevels = Math.ceil(Math.log(n / 2) / Math.log(zoomNumber));
+	  zoomLevels = Math.ceil(n/zoomNumber);
   }
   // For custom inputs
   if (type == "custom") {
     console.log(inputPoints);
+
+    
 
     // Custom distance function
     let customFunction;
@@ -112,8 +112,8 @@ async function calculateClusters(
         "number",
         "number",
         "number",
-        "number",
-        "number",
+		"number",
+		"number",
         "number",
         "number",
         "number",
@@ -127,8 +127,8 @@ async function calculateClusters(
         mergeBuf,
         labelsBuf,
         n,
-        zoomMode,
-        zoomNumber,
+		zoomMode,
+		zoomNumber,
         maxIterations,
         zoomLevels,
         distMethod,
@@ -178,6 +178,7 @@ async function calculateClusters(
       n,
       numflags_array, // Holds an array for each point, holding the numflag values for that point
       nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+	  names_array,
     );
     // -----------------------------------------------------------------
     // -----------------------------------------------------------------
@@ -201,6 +202,7 @@ async function calculateClusters(
     totalprogress = 0.99;
 
     let n = dataJson[1].length;
+    let zoomLevels = 20;
 
     var clusterInfos = getClusterInfo(
       zoomLevels,
@@ -208,6 +210,7 @@ async function calculateClusters(
       n,
       numflags_array, // Holds an array for each point, holding the numflag values for that point
       nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+	  names_array,
     );
 
     // Call the function of map to plot
@@ -238,6 +241,7 @@ async function calculateClusters(
     let flatInputPoints = inputPoints.flat();
 
     // For now hardcoded
+    var zoomLevels = 20;
     maxIterations = 5;
 
     // Stores the input points
@@ -286,8 +290,8 @@ async function calculateClusters(
         "number",
         "number",
         "number",
-        "number",
-        "number",
+		"number",
+		"number",
         "number",
         "number",
         "number",
@@ -304,8 +308,8 @@ async function calculateClusters(
         mergeBuf,
         labelsBuf,
         n,
-        zoomMode,
-        zoomNumber,
+		zoomMode,
+		zoomNumber,
         maxIterations,
         zoomLevels,
         distMethod,
@@ -357,6 +361,7 @@ async function calculateClusters(
       n,
       numflags_array, // Holds an array for each point, holding the numflag values for that point
       nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+	  names_array,
     );
     // -----------------------------------------------------------------
     // -----------------------------------------------------------------
@@ -402,6 +407,7 @@ async function calculateClusters(
     console.log("lengthBytes " + lengthBytes);
     console.log("Number points " + n);
     // For now hardcoded
+    let zoomLevels = 20;
     let pointsToPlot = [];
     let maxIterations = 5;
 
@@ -465,8 +471,8 @@ async function calculateClusters(
         "number",
         "number",
         "number",
-        "number",
-        "number",
+		"number",
+		"number",
         "number",
         "number",
         "number",
@@ -483,8 +489,8 @@ async function calculateClusters(
         mergeBuf,
         labelsBuf,
         n,
-        zoomMode,
-        zoomNumber,
+		zoomMode,
+		zoomNumber,
         maxIterations,
         zoomLevels,
         distMethod,
@@ -538,6 +544,7 @@ async function calculateClusters(
       n,
       numflags_array,
       nonnumflags_array,
+	  names_array,
     );
     // -----------------------------------------------------------------
 
@@ -567,6 +574,7 @@ class Cluster {
   constructor(
     label,
     numPoints = 0,
+	nameCounters = [],
     nonnumflagCounters = [],
     numflagSums = [],
     numflagAverages = [],
@@ -580,6 +588,8 @@ class Cluster {
     this.label = label;
     // numPoints is the number of points in the cluster
     this.numPoints = numPoints;
+	// nameCounters is an array which consists of the names of singleton data points within this cluster.
+	this.nameCounters = nameCounters;
     // nonnumflagCounters is an array of dictionaries which count the occurences of each existent nonnumflag-value of one nonnumflag
     // the first array element corresponds to the first selected nonnumflag, the second to the second nonnumflag, ...
     this.nonnumflagCounters = nonnumflagCounters;
@@ -734,6 +744,7 @@ function getClusterInfo(
   n,
   numflags_array, // Holds an array for each point, holding the numflag values for that point
   nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
+  names_array,
 ) {
   // Create an array for each Zoomlevel which contais the info of the clusters
   var clusterInfos = new Array(zoom);
@@ -762,12 +773,18 @@ function getClusterInfo(
     } else {
       var numNonNumColumns = nonnumflags_array[0].length;
     }
+	if (names_array.length == 0) {
+      var numNameColumns = 0;
+    } else {
+      var numNameColumns = 1;
+    }
     // Create an array of Cluster objects
     let clusters = new Array(largestLabel + 1).fill().map(
       (_, idx) =>
         new Cluster(
           idx,
           0,
+		  [],
           new Array(numNonNumColumns).fill(null).map(() => new Map()),
           new Array(numNumColumns).fill(0),
           new Array(numNumColumns).fill(0),
@@ -836,7 +853,14 @@ function getClusterInfo(
         }
       });
     });
-
+	let singleton = 0;
+	for (let cluster_idx = 0; cluster_idx < largestLabel + 1; cluster_idx++) {
+        clusters[cluster_idx].pointIndices.forEach((singleton) => {
+          clusters[cluster_idx].nameCounters.push(names_array[singleton][0])
+		});
+		console.log(clusters[cluster_idx].nameCounters)
+	}
+	
     // calculating average of numflags
     for (let cluster_idx = 0; cluster_idx < largestLabel + 1; cluster_idx++) {
       for (let flag_idx = 0; flag_idx < numNumColumns; flag_idx++) {
