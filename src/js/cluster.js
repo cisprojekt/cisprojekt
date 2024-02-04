@@ -3,62 +3,118 @@ let wasmReady = new Promise((resolve) => {
   Module.onRuntimeInitialized = resolve;
 });
 
-// inputPointsis NOT flattened!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-async function initializeMap(
+/**
+ * This is the main clustering function, it parses the input data to
+ * a suitable format and calls the scaling and clustering function
+ * of the webassembly module.
+ *
+ * @param {array} inputPoints - The data of "distance information" columns.
+ * @param {string} type - Type of data, e.g. euclidean, custom
+ * @param {array} nonnumflags_array - The data of "not numerical flags" columns.
+ * @param {array} numflags_array - The data of "numerical flags" columns.
+ * @param {int} scalingMethod - Method of scaling: 1 (smacof), 2 (scikit), 3 (glimmer).
+ * @param {int} distMethod - Method of clustering, e.g. complete, average.
+ * @param {array} flagColumnNames -
+ * @param {int} zoomMode -
+ * @param {int} zoomNumber -
+ */
+async function calculateClusters(
   inputPoints,
   type,
   nonnumflags_array,
   numflags_array,
   scalingMethod,
+  distMethod,
   flagColumnNames,
+  zoomMode,
+  zoomNumber,
 ) {
+  // For now hardcoded
+  maxIterations = 100;
+
   await wasmReady; // Make sure module is loaded
   console.log("Starting Clustering Program");
-  console.log(type);
 
-  // For custom inputs
+  var totalprogress = 0.0;
+  var partialprogress = 0.0;
+  var pProgressStep = 0.0;
+  var tProgressStep = 0.0;
+  //open progress_bar
+
+  let n = inputPoints.length;
+  var zoomLevels = 1;
+  if (zoomMode == 0) {
+    zoomLevels = zoomNumber;
+  }
+  if (zoomMode == 1) {
+    zoomLevels = Math.ceil(n / zoomNumber);
+  }
+  if (zoomMode == 2) {
+    zoomLevels = Math.ceil(Math.log(n / 2) / Math.log(zoomNumber));
+  }
+
+  /*
+   * ##################
+   * ## CUSTOM INPUT ##
+   * ##################
+   */
   if (type == "custom") {
     console.log(inputPoints);
 
-    let n = inputPoints.length;
-
     // Custom distance function
+    // Will be read from textbox
     let customFunction;
 
-    // Read functon from textarea and eval
+    // Read functon from textarea and evaluate
     customFunction = eval(document.getElementById("distFunction").value);
 
-    console.log(n);
-    let zoomLevels = 20;
+    // Resulting points after scaling will be
+    // saved in special array
     let pointsToPlot = [];
-    let maxIterations = 5;
 
+    // Memory allocation for wasm
     let resultPoints = new Float64Array(n * 2);
-
     let resultPointsBuf = Module._malloc(
       n * 2 * Float64Array.BYTES_PER_ELEMENT,
     );
 
-    // Fill distance matrix
+    // Fill distance matrix using custom distance function
     let distMat = new Float64Array((n * (n - 1)) / 2);
     let idx = 0;
+    partialprogress = 0.0;
+    pProgressStep = 1 / n;
+    tProgressStep = pProgressStep * 0.4;
     for (let i = 0; i < n; i++) {
+      partialprogress += pProgressStep;
+      globalprogress += tProgressStep;
       for (let j = i + 1; j < n; j++) {
         distMat[idx++] = customFunction(inputPoints[i], inputPoints[j]);
       }
     }
 
-    console.log(distMat);
-
+    // These buffers are necessary for clustering
+    // and part of hclust
     let distMatBuf = Module._malloc(
       ((n * (n - 1)) / 2) * Float64Array.BYTES_PER_ELEMENT,
     );
     Module.HEAPF64.set(distMat, distMatBuf / distMat.BYTES_PER_ELEMENT);
-
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
     let labelsBuf = Module._malloc(
       n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
+    );
+
+    let totalprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+    let partialprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+
+    Module.HEAPF32.set(
+      totalprogress,
+      totalprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
+
+    Module.HEAPF32.set(
+      partialprogress,
+      partialprogressBuf / totalprogress.BYTES_PER_ELEMENT,
     );
 
     Module.HEAPF64.set(
@@ -71,16 +127,20 @@ async function initializeMap(
       "clusterCustom",
       null,
       [
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
+        "number", // distMatBuf
+        "number", // heightBuf
+        "number", // mergeBuf
+        "number", // labelsBuf
+        "number", // n
+        "number", // zoomMode
+        "number", // zoomNumber
+        "number", // maxIterations
+        "number", // zoomLevels
+        "number", // distMethod
+        "number", // resultPointsBuf
+        "number", // scalingMethod
+        "number", // totalprogressBuf
+        "number", // partialprogressBuf
       ],
       [
         distMatBuf,
@@ -88,14 +148,21 @@ async function initializeMap(
         mergeBuf,
         labelsBuf,
         n,
+        zoomMode,
+        zoomNumber,
         maxIterations,
         zoomLevels,
-        1,
+        distMethod,
         resultPointsBuf,
         scalingMethod,
+        totalprogressBuf,
+        partialprogressBuf,
       ],
     );
 
+    totalprogress = 0.98;
+
+    // Copy results from wasm to local array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
         labelsBuf / Int32Array.BYTES_PER_ELEMENT,
@@ -109,6 +176,8 @@ async function initializeMap(
       ),
     );
 
+    // Save the points in a special format
+    // to be used with D3
     for (var i = 0; i < n * 2; i += 2) {
       pointsToPlot.push({
         x: pointsResult[i],
@@ -116,15 +185,16 @@ async function initializeMap(
       });
     }
 
-    console.log(labelsResult);
-
     // Free memory
     Module._free(resultPointsBuf);
     Module._free(distMatBuf);
     Module._free(heightBuf);
     Module._free(mergeBuf);
     Module._free(resultPointsBuf);
+    Module._free(totalprogressBuf);
+    Module._free(partialprogressBuf);
 
+    // Get cluster info for overview of the data
     var clusterInfos = getClusterInfo(
       zoomLevels,
       labelsResult,
@@ -132,10 +202,6 @@ async function initializeMap(
       numflags_array, // Holds an array for each point, holding the numflag values for that point
       nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
     );
-    // -----------------------------------------------------------------
-    // -----------------------------------------------------------------
-    // -----------------------------------------------------------------
-    // -----------------------------------------------------------------
 
     // Call the function of map to plot
     mapFunctions(
@@ -147,12 +213,24 @@ async function initializeMap(
       flagColumnNames,
       numflags_array,
     );
+    totalprogress = 0.99;
+
+    /*
+     * ########################
+     * ## PRECLUSTERED INPUT ##
+     * ########################
+     */
   } else if (type == "preclustered") {
+    // Read the JSON from a textarea
     var dataJson = JSON.parse(document.getElementById("distFunction").value);
 
-    let n = dataJson[1].length;
-    let zoomLevels = 20;
+    totalprogress = 0.99;
 
+    // The second JSON entry contains to points
+    // so to get n we look at its length
+    let n = dataJson[1].length;
+
+    // Get cluster info for overview of the data
     var clusterInfos = getClusterInfo(
       zoomLevels,
       Object.values(dataJson[0]),
@@ -163,44 +241,48 @@ async function initializeMap(
 
     // Call the function of map to plot
     mapFunctions(
-      dataJson[0],
-      dataJson[1],
+      dataJson[0], // These are the labels (first entry in JSON file)
+      dataJson[1], // These are points with x- and y-coordinates (second entry)
       n,
       zoomLevels,
       clusterInfos,
       flagColumnNames,
       numflags_array,
     );
-  }
-
-  // For euclidean inputs
-  else if (type == "euclidean" || type == "earth-dist") {
+  } else if (type == "euclidean" || type == "earth-dist") {
+    /*
+     * #####################
+     * ## EUCLIDEAN INPUT ##
+     * #####################
+     */
+    // isSpherical is to be used for earth distance
     let isSperical = false;
     if (type == "earth-dist") {
       isSperical = true;
     }
+
+    // Resulting points after scaling will be
+    // saved in special array
     let pointsToPlot = [];
-    n = inputPoints.length;
-    if (inputPoints.length == 0) {
+
+    if (n == 0) {
       var dim = 1;
     } else {
       var dim = inputPoints[0].length;
     }
     let flatInputPoints = inputPoints.flat();
 
-    // For now hardcoded
-    var zoomLevels = 20;
-    maxIterations = 5;
-
-    // Stores the input points
+    // Stores the input points in a flattened array
     let points = new Float64Array(n * dim);
-
     for (let i = 0; i < n * dim; i++) {
       points[i] = parseFloat(flatInputPoints[i]);
     }
 
-    // Heaps which wasm uses
+    // Allocate memory for storing the points in a flat array
     let pointsBuf = Module._malloc(n * dim * Float64Array.BYTES_PER_ELEMENT);
+
+    // These buffers are necessary for clustering
+    // and part of hclust
     let distMatBuf = Module._malloc(n * n * Float64Array.BYTES_PER_ELEMENT);
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
@@ -208,26 +290,45 @@ async function initializeMap(
       n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
 
+    totalprogress = 0.05;
+    let totalprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+    let partialprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+
+    Module.HEAPF32.set(
+      totalprogress,
+      totalprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
+
+    Module.HEAPF32.set(
+      partialprogress,
+      partialprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
+
     // Move input points into heap
     Module.HEAPF64.set(points, pointsBuf / points.BYTES_PER_ELEMENT);
     console.log("Calculations started");
+
     // Actual function call to cluster
     Module.ccall(
       "clusterPoints",
       null,
       [
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
+        "number", // pointsBuf
+        "number", // dim
+        "number", // distMatBuf
+        "number", // heightBuf
+        "number", // mergeBuf
+        "number", // labelsBuf
+        "number", // n
+        "number", // zoomMode
+        "number", // zoomNumber
+        "number", // maxIterations
+        "number", // zoomLevels
+        "number", // distMethod
+        "number", // scalingMethod
+        "number", // isSperical
+        "number", // totalprogressBuf
+        "number", // partialprogressBuf
       ],
       [
         pointsBuf,
@@ -237,15 +338,20 @@ async function initializeMap(
         mergeBuf,
         labelsBuf,
         n,
+        zoomMode,
+        zoomNumber,
         maxIterations,
         zoomLevels,
-        1,
+        distMethod,
         scalingMethod,
         isSperical,
+        totalprogressBuf,
+        partialprogressBuf,
       ],
     );
-    console.log("Calculations finished");
-    // Copy results into js array
+    totalprogress = 0.98;
+
+    // Copy results from wasm to local array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
         labelsBuf / Int32Array.BYTES_PER_ELEMENT,
@@ -259,26 +365,24 @@ async function initializeMap(
       ),
     );
 
-    // Move points into array for map
+    // Save the points in a special format
+    // to be used with D3
     for (var i = 0; i < n * 2; i += 2) {
-      pointsToPlot.push({ x: pointsResult[i], y: pointsResult[i + 1] });
+      pointsToPlot.push({
+        x: pointsResult[i],
+        y: pointsResult[i + 1],
+      });
     }
-    console.log("points to plot " + pointsToPlot);
     // Free memory
     Module._free(pointsBuf);
     Module._free(distMatBuf);
     Module._free(heightBuf);
     Module._free(mergeBuf);
     Module._free(labelsBuf);
+    Module._free(totalprogressBuf);
+    Module._free(partialprogressBuf);
 
-    // Create list of Cluster objects
-
-    // -----------------------------------------------------------------
-    // -----------------------------------------------------------------
-    // -----------------------------------------------------------------
-    // -----------------------------------------------------------------
-
-    console.log("moooooooooooooooooin");
+    // Get cluster info for overview of the data
     var clusterInfos = getClusterInfo(
       zoomLevels,
       labelsResult,
@@ -286,10 +390,6 @@ async function initializeMap(
       numflags_array, // Holds an array for each point, holding the numflag values for that point
       nonnumflags_array, // Holds an array for each point, holding the nonnumflag values for that point
     );
-    // -----------------------------------------------------------------
-    // -----------------------------------------------------------------
-    // -----------------------------------------------------------------
-    // -----------------------------------------------------------------
 
     // Call the function of map to plot
     mapFunctions(
@@ -301,8 +401,14 @@ async function initializeMap(
       flagColumnNames,
       numflags_array,
     );
+    totalprogress = 0.99;
+    /*
+     * ###################
+     * ## STRING INPUT  ##
+     * ###################
+     */
   } else if (type == "tanimotoFingerprints" || type == "edit-distance") {
-    // convert type information to int
+    // Conver type information to integer
     if (type == "tanimotoFingerprints") {
       type = 0;
       bit_bool = 1;
@@ -311,7 +417,8 @@ async function initializeMap(
       bit_bool = 0;
     }
 
-    // Create one large string and create array of length of each string
+    // Create one large string and an array where i-th entry
+    // is the length of string number i
     let n = inputPoints.length;
     let lengthOfString = new Uint32Array(n);
     let inputString = "";
@@ -319,30 +426,27 @@ async function initializeMap(
       inputString += inputPoints[i];
       lengthOfString[i] = inputPoints[i].length;
     }
-    console.log("Number points " + n);
 
     // Allocate memory for inputString
     let lengthBytes = lengthBytesUTF8(inputString) + 1;
     let stringOnHeap = _malloc(lengthBytes);
     stringToUTF8(inputString, stringOnHeap, lengthBytes);
 
-    console.log("lengthBytes " + lengthBytes);
-    console.log("Number points " + n);
-    // For now hardcoded
-    let zoomLevels = 20;
+    // Resulting points after scaling will be
+    // saved in special array
     let pointsToPlot = [];
-    let maxIterations = 5;
 
-    // Stores the new configuration of points
+    // Memory allocation for wasm
     let resultPoints = new Float64Array(n * 2);
-
-    // Heaps which wasm uses
     let resultPointsBuf = Module._malloc(
       n * 2 * Float64Array.BYTES_PER_ELEMENT,
     );
     let lengthOfStringBuf = Module._malloc(
       lengthOfString.length * lengthOfString.BYTES_PER_ELEMENT,
     );
+
+    // These buffers are necessary for clustering
+    // and part of hclust
     let distMatBuf = Module._malloc(n * n * Float64Array.BYTES_PER_ELEMENT);
     let heightBuf = Module._malloc((n - 1) * Float64Array.BYTES_PER_ELEMENT);
     let mergeBuf = Module._malloc(2 * (n - 1) * Int32Array.BYTES_PER_ELEMENT);
@@ -350,40 +454,52 @@ async function initializeMap(
       n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
 
-    // Dont know what this does
+    totalprogress = 0.05;
+
+    let totalprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+    let partialprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
+
+    Module.HEAPF32.set(
+      totalprogress,
+      totalprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
+    Module.HEAPF32.set(
+      partialprogress,
+      partialprogressBuf / totalprogress.BYTES_PER_ELEMENT,
+    );
+
     Module.HEAPF64.set(
       resultPoints,
       resultPointsBuf / resultPoints.BYTES_PER_ELEMENT,
     );
-
-    // Move length of string into heap
     Module.HEAPU32.set(
       lengthOfString,
       lengthOfStringBuf / lengthOfString.BYTES_PER_ELEMENT,
     );
 
-    console.log("lengthOfStringBuf length " + lengthOfString[0]);
-    console.log("input lengths " + lengthOfString);
-    console.log("Calculations start");
     // Actual function call to cluster
     Module.ccall(
       "clusterStrings",
       null,
       [
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
-        "number",
+        "number", // stringOnHeap
+        "number", // lengthOfStringBuf
+        "number", // distMatBuf
+        "number", // heightBuf
+        "number", // mergeBuf
+        "number", // labelsBuf
+        "number", // n
+        "number", // zoomMode
+        "number", // zoomNumber
+        "number", // maxIterations
+        "number", // zoomLevels
+        "number", // distMethod
+        "number", // scalingMethod
+        "number", // bit_bool
+        "number", // resultPointsBuf
+        "number", // type
+        "number", // totalprogressBuf
+        "number", // partialprogressBuf
       ],
       [
         stringOnHeap,
@@ -393,17 +509,22 @@ async function initializeMap(
         mergeBuf,
         labelsBuf,
         n,
+        zoomMode,
+        zoomNumber,
         maxIterations,
         zoomLevels,
-        1,
+        distMethod,
         scalingMethod,
         bit_bool,
         resultPointsBuf,
         type,
+        totalprogressBuf,
+        partialprogressBuf,
       ],
     );
-    console.log("Calculations finished");
-    // Copy results into js array
+    totalprogress = 0.98;
+
+    // Copy results from wasm to local array
     let labelsResult = new Int32Array(
       Module.HEAP32.subarray(
         labelsBuf / Int32Array.BYTES_PER_ELEMENT,
@@ -417,7 +538,8 @@ async function initializeMap(
       ),
     );
 
-    // Create array for map
+    // Save the points in a special format
+    // to be used with D3
     for (var i = 0; i < n * 2; i += 2) {
       pointsToPlot.push({
         x: pointsResult[i],
@@ -431,11 +553,11 @@ async function initializeMap(
     Module._free(heightBuf);
     Module._free(mergeBuf);
     Module._free(lengthOfStringBuf);
+    Module._free(totalprogressBuf);
+    Module._free(partialprogressBuf);
     _free(stringOnHeap);
 
-    // -----------------------------------------------------------------
-
-    console.log("moooooooooooooooooin");
+    // Get cluster info for overview of the data
     var clusterInfos = getClusterInfo(
       zoomLevels,
       labelsResult,
@@ -443,7 +565,6 @@ async function initializeMap(
       numflags_array,
       nonnumflags_array,
     );
-    // -----------------------------------------------------------------
 
     // Call the function of map to plot
     mapFunctions(
@@ -455,7 +576,9 @@ async function initializeMap(
       flagColumnNames,
       numflags_array,
     );
+    totalprogress = 0.99;
   }
+  //close progress bar
 }
 
 class Slice {
@@ -533,7 +656,6 @@ class Cluster {
     var totalPercent = 0;
     var totalValue = 0;
     // If the pie of this nonnumflag has not yet been calculated before, or there are not enough slices in it
-    // console.log(`Deciding ${nonnumflagCounterIndex}`)
     if (
       this._pies[nonnumflagCounterIndex] == null ||
       (this._pies[nonnumflagCounterIndex].length - 1 < maxSlices && // more slices allowed
@@ -589,15 +711,11 @@ class Cluster {
         new Slice("other", this.numPoints - totalValue, 100 - totalPercent),
       );
       this._pies[nonnumflagCounterIndex] = pieSlicesArray;
-      // console.log(pieSlicesArray);
 
       return pieSlicesArray;
     }
     // If the pie of this nonnumflag has been calculated before, but the number of Slices is too great
     else if (this._pies[nonnumflagCounterIndex].length - 1 > maxSlices) {
-      console.log(
-        "DOING THE THIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIING",
-      );
       var removeNumber =
         maxSlices - this._pies[nonnumflagCounterIndex].length + 1;
 
@@ -752,9 +870,6 @@ function getClusterInfo(
           clusters[cluster_idx].numPoints;
       }
     }
-    console.log(
-      "-----------------------------------------------------------------",
-    );
     //console.log(clusters);
     clusterInfos[i] = clusters;
 

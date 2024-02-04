@@ -374,7 +374,8 @@ class fenv_error {};
 #endif
 
 static void MST_linkage_core(const t_index N, Eigen::MatrixXd &D,
-                             cluster_result &Z2) {
+                             cluster_result &Z2,
+                             float *totalprogress, float *partialprogress) {
   /*
       N: integer, number of data points
       D: condensed distance matrix N*(N-1)/2
@@ -395,6 +396,9 @@ static void MST_linkage_core(const t_index N, Eigen::MatrixXd &D,
 
   // first iteration
   idx2 = 1;
+  float tStep = 1/N*0.18;
+  float pStep = 1/N;
+  *partialprogress = 0.0;
   min = std::numeric_limits<t_float>::infinity();
   for (i = 1; i < N; ++i) {
     d[i] = D(0,i - 1);
@@ -414,6 +418,8 @@ static void MST_linkage_core(const t_index N, Eigen::MatrixXd &D,
   Z2.append(0, idx2, min);
 
   for (t_index j = 1; j < N - 1; ++j) {
+    *totalprogress += tStep;
+    *partialprogress += pStep;
     prev_node = idx2;
     active_nodes.remove(prev_node);
 
@@ -554,7 +560,8 @@ inline static void f_median(Eigen::MatrixXd &D, const t_float a, int i, int j,
 
 template <method_codes method, typename t_members>
 static void NN_chain_core(const t_index N, Eigen::MatrixXd &D,
-                          t_members *const members, cluster_result &Z2) {
+                          t_members *const members, cluster_result &Z2,
+                          float *totalprogress, float *partialprogress) {
   /*
       N: integer
       D: condensed distance matrix N*(N-1)/2
@@ -577,6 +584,9 @@ static void NN_chain_core(const t_index N, Eigen::MatrixXd &D,
   doubly_linked_list active_nodes(N);
 
   t_float min;
+  float tStep = 1/N*0.18;
+  float pStep = 1/N;
+  *partialprogress = 0.0;
   std::cout << "Fehlercheck" << std::endl;
   double *matrixpointer = D.data();
   for (int it_1 = 0, size = D.size(); i < size; i++) {
@@ -599,6 +609,8 @@ static void NN_chain_core(const t_index N, Eigen::MatrixXd &D,
 #endif
   std::cout << "Fehlercheck beendet" << std::endl;
   for (t_index j = 0; j < N - 1; ++j) {
+    *partialprogress += pStep;
+    *totalprogress += tStep;
     if (NN_chain_tip <= 3) {
       NN_chain[0] = idx1 = active_nodes.start;
       NN_chain_tip = 1;
@@ -922,7 +934,8 @@ private:
 
 template <method_codes method, typename t_members>
 static void generic_linkage(const t_index N, Eigen::MatrixXd &D,
-                            t_members *const members, cluster_result &Z2) {
+                            t_members *const members, cluster_result &Z2,
+                            float *totalprogress, float *partialprogress) {
   /*
     N: integer, number of data points
     D: condensed distance matrix N*(N-1)/2
@@ -946,6 +959,10 @@ static void generic_linkage(const t_index N, Eigen::MatrixXd &D,
 
   t_float min;  // minimum and row index for nearest-neighbor search
   t_index idx;
+  
+  float tStep = 1/N*0.18;
+  float pStep = 1/N;
+  *partialprogress = 0.0;
 
   for (i = 0; i < N; ++i)
     // Build a list of row ↔ node label assignments.
@@ -1019,6 +1036,8 @@ static void generic_linkage(const t_index N, Eigen::MatrixXd &D,
       algorithm cubic in N. We avoid this whenever possible, and in most cases
       the runtime appears to be quadratic.
     */
+    *partialprogress += pStep;
+    *totalprogress += tStep;
     idx1 = nn_distances.argmin();
     if (method != METHOD_METR_SINGLE) {
       while (mindist[idx1] < D(idx1, n_nghbr[idx1])) {

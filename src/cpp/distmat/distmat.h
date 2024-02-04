@@ -24,21 +24,26 @@ using Eigen::VectorXd;
 
 // clang-format on
 
-MatrixXd distanceMatrix(double *distMatFilled, int n);
+MatrixXd distanceMatrix(double *distMatFilled, int n, float *totalprogress,
+                        float *partialprogress);
 
 /**
  * @brief Calculate a square distance matrix for points
  * @param points Points in Euclidean space
  * @return distMat Distance Matrix
  */
-MatrixXd distanceMatrix(MatrixXd points, bool isSperical = false);
+MatrixXd distanceMatrix(MatrixXd points, bool isSperical, float *totalprogress,
+                        float *partialprogress);
+
+MatrixXd distanceMatrix(MatrixXd points, bool isSperical = 0);
 
 /**
  * @brief Calculate a square distance matrix for strings
  * @param strings Molecule fingerprints
  * @return distMat Distance Matrix
  */
-MatrixXd distanceMatrix(std::vector<std::string> strings, int type);
+MatrixXd distanceMatrix(std::vector<std::string> strings, int type,
+                        float *totalprogress, float *partialprogress);
 
 /**
  * @brief Calculate Euclidean distance between two points
@@ -48,7 +53,8 @@ MatrixXd distanceMatrix(std::vector<std::string> strings, int type);
  */
 
 MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
-                        int bitset_size);
+                        int bitset_size, float *totalprogress,
+                        float *partialprogress);
 
 double euclideanDistance(VectorXd pointA, VectorXd pointB);
 
@@ -63,19 +69,6 @@ double tanimotoDistance(std::string fingerprintA, std::string fingerprintB);
 double tanimotoDistanceBitwise(boost::dynamic_bitset<> fingerprintA,
                                boost::dynamic_bitset<> fingerprintB,
                                int bitset_size);
-
-extern "C" {
-double calculateEuclideanDistance(double *vector1, double *vector2,
-                                  int string_length);
-
-double *calculateEuclideanDistanceMatrix(double *array, int num_points,
-                                         int dimension);
-
-int calculateHammingDistance(char *str1, char *str2, int string_length);
-
-int *calculateHammingDistanceMatrix(char **array, int num_strings,
-                                    int string_length);
-}
 
 double toRadians(double degree);
 /**

@@ -61,7 +61,7 @@ void cutree_cdist(int n, const int* merge, double* height, double cdist, int* la
 //   0 = ok
 //   1 = invalid method
 //
-int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double* height);
+int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double* height, float* totalprogress, float* partialprogress);
 enum hclust_fast_methods {
   // single link with the minimum spanning tree algorithm (Rohlf, 1973)
   HCLUST_METHOD_SINGLE = 0,
@@ -71,7 +71,10 @@ enum hclust_fast_methods {
   HCLUST_METHOD_AVERAGE = 2,
   // median link with the generic algorithm (Müllner, 2011)
   // requires euclidean distances as distance data
-  HCLUST_METHOD_MEDIAN = 3
+  HCLUST_METHOD_MEDIAN = 3,
+  HCLUST_METHOD_WEIGHTED = 4,
+  HCLUST_METHOD_WARD = 5,
+  HCLUST_METHOD_CENTROID = 6
 };
   
 

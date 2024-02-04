@@ -4,31 +4,40 @@
 #include <time.h>
 
 #include <boost/dynamic_bitset.hpp>
+#include <iostream>
 #include <string>
 #include <vector>
 
 using Eigen::MatrixXd;
 
 extern "C" void clusterCustom(double *distMat, double *height, int *merge,
-                              int *labels, int n, int maxIterations,
-                              int zoomLevels, int calcDistMethod,
-                              double *resultPoints, int calcScalingMethod) {
-  // Convert input distMat to Eigen matrix
-  MatrixXd distMatMDS = distanceMatrix(distMat, n);
-  MatrixXd resultMDS;
+                              int *labels, int n, int zoomMode, int zoomNumber,
+                              int maxIterations, int zoomLevels,
+                              int calcDistMethod, double *resultPoints,
+                              int calcScalingMethod, float *totalprogress,
+                              float *partialprogress) {
+  // Calculate distance matrix
+  MatrixXd distMatMDS =
+      distanceMatrix(distMat, n, totalprogress, partialprogress);
 
+  MatrixXd resultMDS;  // Will save resulting configuration
+
+  // Choose scaling method based on user input
   switch (calcScalingMethod) {
     case 1:
-      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+      resultMDS = calculateMDSsmacof(distMatMDS, totalprogress, partialprogress,
+                                     maxIterations);
       break;
     case 2:
-      resultMDS = calculateMDSscikit(n, distMatMDS);
+      resultMDS =
+          calculateMDSscikit(n, distMatMDS, totalprogress, partialprogress);
       break;
     case 3:
-      resultMDS = calculateMDSglimmer(n, distMatMDS);
+      resultMDS =
+          calculateMDSglimmer(n, distMatMDS, totalprogress, partialprogress);
       break;
     default:
-      printf("no valid scaling algorithm was chosen");
+      std::cout << "no valid scaling algorithm was chosen" << std::endl;
       break;
   }
 
@@ -39,47 +48,66 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
     }
   }
 
-  // Create condensed distance matrix to work with hclust-cpp
-  int k = 0;
-  for (int i = 0; i < n; i++) {
-    for (int j = i + 1; j < n; j++) {
-      distMat[k] = euclideanDistance(resultMDS.row(i), resultMDS.row(j));
-      k++;
-    }
-  }
-
   // Do the clustering
-  hclust_fast(n, distMatMDS, calcDistMethod, merge, height);
-
-  // Find maximum distance in order to create good cuts of dendrogram
-  // TODO(Jonas): Check if its always last element
-  double maxHeight = 0;
-  for (int i = 0; i < n - 1; i++) {
-    if (height[i] > maxHeight) {
-      maxHeight = height[i];
-    }
-  }
+  hclust_fast(n, distMatMDS, calcDistMethod, merge, height, totalprogress,
+              partialprogress);
 
   // For each zoomlevel calculate a labels assignment
-  int *oneLabel = new int[n];
-  for (int i = 0; i < zoomLevels; i++) {
-    cutree_cdist(n, merge, height, (i + 1) * maxHeight / zoomLevels, oneLabel);
-    std::memcpy(labels + i * n, oneLabel, n * sizeof(int));
-  }
+  int *oneLabel = new int[n];  // One label array for each zoomLevel
+  switch (zoomMode) {
+    case 0: {
+      // Find maximum height
+      double maxHeight = 0;
 
+      for (int i = 0; i < n - 1; i++) {
+        if (height[i] > maxHeight) {
+          maxHeight = height[i];
+        }
+      }
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_cdist(n, merge, height, (i + 1) * maxHeight / zoomLevels,
+                     oneLabel);
+        std::memcpy(labels + i * n, oneLabel, n * sizeof(int));
+      }
+      break;
+    }
+
+    case 1: {
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_k(n, merge, n - (i * zoomNumber), oneLabel);
+        std::memcpy(labels + i * n, oneLabel, n * sizeof(int));
+      }
+      break;
+    }
+
+    case 2: {
+      int numclust = n;
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_k(n, merge, numclust, oneLabel);
+        std::memcpy(labels + i * n, oneLabel, n * sizeof(int));
+        numclust = static_cast<int>(numclust /= zoomNumber);
+      }
+      break;
+    }
+  }
   delete[] oneLabel;
 }
 
 extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
-                               int *labels, int nStrings, int maxIterations,
+                               int *labels, int nStrings, int zoomMode,
+                               int zoomNumber, int maxIterations,
                                int zoomLevels, int calcDistMethod,
                                int calcScalingMethod, int bool_bit,
-                               double *resultPoints, int type) {
+                               double *resultPoints, int type,
+                               float *totalprogress, float *partialprogress) {
   // Split the long string into smaller strings
   // and put them in a vector
   clock_t start_time1 = clock();
   MatrixXd distMatMDS(nStrings, nStrings);
+
+  // String is converted to bitstring instead of std::string
+  // if boolBit is true
   if (bool_bit == 1) {
     int substringlength = lengthOfString[0];
     std::cout << "clusterStrings start" << std::endl;
@@ -96,7 +124,10 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
       bitstringVector.push_back(currentbitset);
     }
     std::cout << "start distancematrix" << std::endl;
-    distMatMDS = distanceMatrix(bitstringVector, substringlength);
+
+    // Calculate distance matrix
+    distMatMDS = distanceMatrix(bitstringVector, substringlength, totalprogress,
+                                partialprogress);
   } else {
     std::cout << "clusterStrings start" << std::endl;
     std::string inputString(inputStringChar);
@@ -115,62 +146,84 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
 
     // For now we assume the input are fingerprints, not SMILES
     std::cout << "start distanceMatrix" << std::endl;
-    distMatMDS = distanceMatrix(stringVector, type);
-  }
-  std::cout << "distanceMatrix finished" << std::endl;
-  MatrixXd resultMDS;
 
+    // Calculate distance matrix
+    distMatMDS =
+        distanceMatrix(stringVector, type, totalprogress, partialprogress);
+  }
+
+  MatrixXd resultMDS;  // Will save resulting configuration
+
+  // Choose scaling method based on user input
   switch (calcScalingMethod) {
     case 1:
-      resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
+      resultMDS = calculateMDSsmacof(distMatMDS, totalprogress, partialprogress,
+                                     maxIterations);
       break;
     case 2:
-      resultMDS = calculateMDSscikit(nStrings, distMatMDS);
+      resultMDS = calculateMDSscikit(nStrings, distMatMDS, totalprogress,
+                                     partialprogress);
       break;
     case 3:
-      resultMDS = calculateMDSglimmer(nStrings, distMatMDS);
+      resultMDS = calculateMDSglimmer(nStrings, distMatMDS, totalprogress,
+                                      partialprogress);
       break;
     default:
       printf("no valid scaling algorithm was chosen");
       break;
   }
   std::cout << "Scaling finished" << std::endl;
-  // std::cout << resultMDS << std::endl;
+
   // Overwrite points with the new configuration
   for (int i = 0; i < nStrings; i++) {
     for (int j = 0; j < 2; j++) {
       resultPoints[i * 2 + j] = resultMDS(i, j);
     }
   }
-  /*
-    // Create condensed distance matrix to work with hclust-cpp
-    int k = 0;
-    for (int i = 0; i < nStrings; i++) {
-      for (int j = i + 1; j < nStrings; j++) {
-        distMat[k] = euclideanDistance(resultMDS.row(i), resultMDS.row(j));
-        k++;
-      }
-    }
-  */
+
   // Do the clustering
-  hclust_fast(nStrings, distMatMDS, calcDistMethod, merge, height);
+  hclust_fast(nStrings, distMatMDS, calcDistMethod, merge, height,
+              totalprogress, partialprogress);
   std::cout << "clustering finished" << std::endl;
   clock_t start_time3 = clock();
-  // Find maximum distance in order to create good cuts of dendrogram
-  // TODO(Jonas): Check if its always last element
-  double maxHeight = 0;
-  for (int i = 0; i < nStrings - 1; i++) {
-    if (height[i] > maxHeight) {
-      maxHeight = height[i];
-    }
-  }
 
   // For each zoomlevel calculate a labels assignment
   int *oneLabel = new int[nStrings];
-  for (int i = 0; i < zoomLevels; i++) {
-    cutree_cdist(nStrings, merge, height, (i + 1) * maxHeight / zoomLevels,
-                 oneLabel);
-    std::memcpy(labels + i * nStrings, oneLabel, nStrings * sizeof(int));
+  switch (zoomMode) {
+    case 0: {
+      // Find maximum height
+      double maxHeight = 0;
+
+      for (int i = 0; i < nStrings - 1; i++) {
+        if (height[i] > maxHeight) {
+          maxHeight = height[i];
+        }
+      }
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_cdist(nStrings, merge, height, (i + 1) * maxHeight / zoomLevels,
+                     oneLabel);
+        std::memcpy(labels + i * nStrings, oneLabel, nStrings * sizeof(int));
+      }
+      break;
+    }
+
+    case 1: {
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_k(nStrings, merge, nStrings - (i * zoomNumber), oneLabel);
+        std::memcpy(labels + i * nStrings, oneLabel, nStrings * sizeof(int));
+      }
+      break;
+    }
+
+    case 2: {
+      int numclust = nStrings;
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_k(nStrings, merge, numclust, oneLabel);
+        std::memcpy(labels + i * nStrings, oneLabel, nStrings * sizeof(int));
+        numclust = static_cast<int>(numclust /= zoomNumber);
+      }
+      break;
+    }
   }
   std::cout << "cutree finished" << std::endl;
   delete[] oneLabel;
@@ -185,96 +238,105 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
 
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
-                              int nPoints, int maxIterations, int zoomLevels,
+                              int nPoints, int zoomMode, int zoomNumber,
+                              int maxIterations, int zoomLevels,
                               int calcDistMethod, int calcScalingMethod,
-                              bool isSpherical) {
-  /**
-   * Two different types of distance matrices exist:
-   * (1) reduced condensed distance matrix
-   * (2) full distance matrix
-   * Depending on which MDS algorithm is to be used
-   * the appropriate type is choosen
-   */
-
+                              bool isSpherical, float *totalprogress,
+                              float *partialprogress) {
   // Calculate full distance matrix
-  if (calcDistMethod == 1) {
-    // Move points into matrix
-    MatrixXd pointMatrix(nPoints, dimension);
-    for (int i = 0; i < nPoints; i++) {
-      for (int j = 0; j < dimension; j++) {
-        pointMatrix(i, j) = points[i * dimension + j];
-      }
+  // Move points into matrix
+  MatrixXd pointMatrix(nPoints, dimension);
+  for (int i = 0; i < nPoints; i++) {
+    for (int j = 0; j < dimension; j++) {
+      pointMatrix(i, j) = points[i * dimension + j];
     }
-
-    std::cout << "pointmatrix initialized" << std::endl;
-    // Calculate distance matrix and apply SMACOF algorithm for MDS
-    MatrixXd distMatMDS = distanceMatrix(pointMatrix, isSpherical);
-    std::cout << "distancematrix calculated" << std::endl;
-    MatrixXd resultMDS;
-    switch (calcScalingMethod) {
-      case 1:
-        resultMDS = calculateMDSsmacof(distMatMDS, maxIterations);
-        break;
-      case 2:
-        resultMDS = calculateMDSscikit(nPoints, distMatMDS);
-        break;
-      case 3:
-        resultMDS = calculateMDSglimmer(nPoints, distMatMDS);
-        break;
-      default:
-        printf("no valid scaling algorithm was chosen");
-        break;
-    }
-    std::cout << "scaling finished" << std::endl;
-    // Overwrite points with the new configuration
-    for (int i = 0; i < nPoints; i++) {
-      for (int j = 0; j < dimension; j++) {
-        points[i * dimension + j] = resultMDS(i, j);
-      }
-    }
-    /*
-        // Create condensed distance matrix to work with hclust-cpp
-        int k = 0;
-        for (int i = 0; i < nPoints; i++) {
-          for (int j = i + 1; j < nPoints; j++) {
-            distMat[k] = euclideanDistance(resultMDS.row(i), resultMDS.row(j));
-            k++;
-          }
-        }
-
-        // Calculate condensed distance matrix
-      } else {
-        double *distMatMDS =
-            calculateEuclideanDistanceMatrix(points, nPoints, dimension);
-      }
-    */
-    // Do the clustering
-    std::cout << "start clustering" << std::endl;
-    hclust_fast(nPoints, distMatMDS, HCLUST_METHOD_COMPLETE, merge, height);
-    std::cout << "clustering finished" << std::endl;
-    clock_t start_time3 = clock();
-    // Find maximum distance in order to create good cuts of dendrogram
-    // TODO(Jonas): Check if its always last element
-    double maxHeight = 0;
-    for (int i = 0; i < nPoints - 1; i++) {
-      if (height[i] > maxHeight) {
-        maxHeight = height[i];
-      }
-    }
-    std::cout << "maxheight calculated" << std::endl;
-    // For each zoomlevel calculate a labels assignment
-    int *oneLabel = new int[nPoints];
-    for (int i = 0; i < zoomLevels; i++) {
-      cutree_cdist(nPoints, merge, height, (i + 1) * maxHeight / zoomLevels,
-                   oneLabel);
-      std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
-    }
-    std::cout << "tree cut" << std::endl;
-    clock_t start_time4 = clock();
-    std::cout << "cutree needed "
-              << static_cast<float>(start_time4 - start_time3) /
-                     (CLOCKS_PER_SEC)
-              << "s for calculating clusterlabels\n";
-    delete[] oneLabel;
   }
+
+  std::cout << "pointmatrix initialized" << std::endl;
+  // Calculate distance matrix
+  MatrixXd distMatMDS =
+      distanceMatrix(pointMatrix, isSpherical, totalprogress, partialprogress);
+  std::cout << "distancematrix calculated" << std::endl;
+
+  MatrixXd resultMDS;  // Will save resulting configuration
+
+  // Choose scaling method based on user input
+  switch (calcScalingMethod) {
+    case 1:
+      resultMDS = calculateMDSsmacof(distMatMDS, totalprogress, partialprogress,
+                                     maxIterations);
+      break;
+    case 2:
+      resultMDS = calculateMDSscikit(nPoints, distMatMDS, totalprogress,
+                                     partialprogress);
+      break;
+    case 3:
+      resultMDS = calculateMDSglimmer(nPoints, distMatMDS, totalprogress,
+                                      partialprogress);
+      break;
+    default:
+      printf("no valid scaling algorithm was chosen");
+      break;
+  }
+
+  std::cout << "scaling finished" << std::endl;
+
+  // Overwrite points with the new configuration
+  for (int i = 0; i < nPoints; i++) {
+    for (int j = 0; j < 2; j++) {
+      points[i * 2 + j] = resultMDS(i, j);
+    }
+  }
+
+  // Do the clustering
+  std::cout << "start clustering" << std::endl;
+  hclust_fast(nPoints, distMatMDS, calcDistMethod, merge, height, totalprogress,
+              partialprogress);
+  std::cout << "clustering finished" << std::endl;
+  clock_t start_time3 = clock();
+
+  // For each zoomlevel calculate a labels assignment
+  int *oneLabel = new int[nPoints];
+  switch (zoomMode) {
+    case 0: {
+      double maxHeight = 0;
+
+      // Find the maximum height
+      for (int i = 0; i < nPoints - 1; i++) {
+        if (height[i] > maxHeight) {
+          maxHeight = height[i];
+        }
+      }
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_cdist(nPoints, merge, height, (i + 1) * maxHeight / zoomLevels,
+                     oneLabel);
+        std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
+      }
+      break;
+    }
+
+    case 1: {
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_k(nPoints, merge, nPoints - (i * zoomNumber), oneLabel);
+        std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
+      }
+      break;
+    }
+
+    case 2: {
+      int numclust = nPoints;
+      for (int i = 0; i < zoomLevels; i++) {
+        cutree_k(nPoints, merge, numclust, oneLabel);
+        std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
+        numclust = static_cast<int>(numclust /= zoomNumber);
+      }
+      break;
+    }
+  }
+  std::cout << "tree cut" << std::endl;
+  clock_t start_time4 = clock();
+  std::cout << "cutree needed "
+            << static_cast<float>(start_time4 - start_time3) / (CLOCKS_PER_SEC)
+            << "s for calculating clusterlabels\n";
+  delete[] oneLabel;
 }
