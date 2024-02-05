@@ -8,6 +8,24 @@
     <link href="style/actionstyle.css" rel="stylesheet" />
     <script src="script/mainscript.js" defer></script>
     <script src="script/interact.js" defer></script>
+
+    <style>
+      #manual_text {
+        padding-left: 10px;
+        padding-right: 10px;
+        line-height: 1.3;
+      }
+
+      .btn-notion {
+        font-weight: 300;
+        background-color: hsl(0deg 0% 75%);
+      }
+
+      .lab-notion {
+        font-weight: 450;
+        color: #41438e;
+      }
+    </style>
   </head>
 
   <body>
@@ -26,13 +44,23 @@
 
         <h2>Getting Started</h2>
 
-        <h3>Step 1: Uploading Your CSV File</h3>
+        <h3>Step 1: Data Submiting:</h3>
+        <p>
+          Scout offers data analysis and visualization for .json files. You can
+          input data directly into a text box or upload files via a button.
+          Scout supports CSV files or manually entered data in CSV format. For
+          JSON files, it will automatically generate cluster diagrams.
+        </p>
         <ol>
           <li>
-            Locate the section titled "Upload your CSV file" at the top left of
-            the SCOUT interface.
+            Locate the section titled
+            <span class="lab-notion"> Upload your CSV file </span> at the top
+            left of the SCOUT interface.
           </li>
-          <li>Click on the input field and a dialog box will open.</li>
+          <li>
+            Click on the <span class="btn-notion"> ADD DATA </span> and a dialog
+            box will open.
+          </li>
           <li>Navigate to the location of your CSV file on your computer.</li>
           <li>
             Select the file and click `Open` to upload it into the SCOUT system.
@@ -41,30 +69,46 @@
 
         <h2>Clustering Data</h2>
 
-        <h3>Step 2: Choosing Clustering Options</h3>
+        <h3>Step 2: Data Preprocessing:</h3>
         <ol>
-          <li>Locate the middle section titled "Choose Clustering".</li>
-          <li>Click on the "Add Data" button to add data for clustering.</li>
           <li>
-            Use the "Select CSV-Divider" option to select specific dividers
-            within your CSV file.
+            Located the section titeled
+            <span class="lab-notion"> Choose clustering </span>, click on the
+            <span class="btn-notion"> CHOOSE YOUR DATA TYPE </span> for data
+            configuration.
           </li>
           <li>
-            Choose the appropriate "Data Type" and "Scaling Algorithm" for your
-            data from the dropdown menus.
+            Select the data type you're submitting and choose the corresponding
+            distance equation to better visualize data structures. Custom and
+            preclustered options are available for specific needs.
+          </li>
+          <li>
+            The <span class="btn-notion"> SCALING ALGORITHM </span> affects
+            cluster division preferences and methods, while
+            <span class="btn-notion"> DISTANCE CALCULATION </span> distance
+            calculation determines how distances are computed.
           </li>
         </ol>
 
-        <h2>Flag Matching</h2>
+        <h2>Table interpretation</h2>
 
-        <h3>Step 3: Running Flag Match</h3>
+        <h3>Step 3: Flag match</h3>
         <ol>
-          <li>Locate the bottom section titled "Flag Match".</li>
-          <li>Use the "Flag Check" button to check flags in your data.</li>
           <li>
-            If necessary, use the "Delete All" button to remove all entries.
+            Locate the bottom section titled
+            <span class="lab-notion"> Flag Match </span> .
           </li>
-          <li>Click on the "Run" button to start the flag match process.</li>
+          <li>
+            Use the <span class="btn-notion"> FLAG CHECK </span> to match flags
+            for each columns in your data.
+          </li>
+          <li>
+            Repeatedly clicking the
+            <span class="btn-notion"> FLAG CHECK </span> button will reset the
+            match list. While the
+            <span class="btn-notion"> DELETE ALL </span> button clears all
+            inputs and selections, including data and custom options.
+          </li>
           <li>
             Click
             <span
@@ -87,40 +131,66 @@
         >
           <ul style="list-style-type: circle">
             <li>
-              <span
-                style="font-style: italic; background-color: rgb(198, 244, 244)"
-                >name</span
-              >: Does not affect data analysis. Make it easier to identify each
-              entry in the cluster. Not required.
+              For multi-column vector data, marking all distance parameters with
+              the 'distance information' flag is crucial.
             </li>
             <li>
-              <span
-                style="font-style: italic; background-color: rgb(198, 244, 244)"
-                >distance information</span
-              >: Flags for eculidean distance. Please make sure that each
-              dimension in the coordinates is labeled as distance. Required
-              feilds.
+              Additional flags for detailed within-cluster distribution and
+              weight analysis are optional.
             </li>
             <li>
-              <span
-                style="font-style: italic; background-color: rgb(198, 244, 244)"
-                >numerical flags</span
-              >: Flags for quantity features, will involved in detailed
-              distribution analysis with clusters. Choose as needed.
-            </li>
-            <li>
-              <span
-                style="font-style: italic; background-color: rgb(198, 244, 244)"
-                >non-numerical flags</span
-              >: Flags for other features, will involved in detailed
-              distribution analysis with clusters. Choose as needed.
+              Column names are auto-detected from your data, but manual
+              selection is also possible. Ensure column names match tags
+              correctly; the order does not affect analysis outcomes.
             </li>
           </ul>
         </div>
 
+        <h2>The map</h2>
+        <ol>
+          <li>
+            Click <span class="btn-notion"> RUN </span> to obtain analysis
+            results. For large datasets, processing may take
+            <span style="color: #ea69f0">10-30 seconds</span> . Please do not
+            refresh the page during this time.
+          </li>
+          <li>
+            The initial map is usually positioned in the top left corner of the
+            display area with a large zoom level. You can drag the image by
+            holding the left mouse button and adjust the zoom with the scroll
+            wheel.
+          </li>
+          <li>
+            The <span class="btn-notion"> + </span> and
+            <span class="btn-notion"> - </span> bottons in the bottom right
+            corner of the display area represent the current cluster level
+            (1-20), with higher levels offering more detailed segmentation.
+          </li>
+          <li>
+            Clicking on a circle representing a cluster allows you to view
+            current cluster information on the left side of the page. Basic
+            information includes the level and number of members. If additional
+            information was selected in flag match, detailed analysis will be
+            presented.
+          </li>
+          <li>
+            Clicking <span class="btn-notion"> FULLSCREEN </span> enters
+            fullscreen mode, which can be exited with the ESC key.
+          </li>
+          <li>
+            <span class="btn-notion"> Export </span> will download a json file
+            containing the map structure and analysis information.
+          </li>
+          <li>
+            <span class="btn-notion"> Restart </span> resets all input
+            information, and you will <span style="color: #ea69f0">not</span> be
+            able to return to view previous results.
+          </li>
+        </ol>
+
         <p>
-          Remember, SCOUT is a powerful tool, but the quality of the results
-          depends heavily on the appropriateness of the distance measure and
+          SCOUT is a powerful tool, but the quality of the results depends
+          heavily on the appropriateness of the distance measure and
           visualization type for your specific dataset. Always ensure your
           choices align with your data and the insights you hope to gain.
         </p>
