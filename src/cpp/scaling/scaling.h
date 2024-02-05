@@ -124,15 +124,12 @@ MatrixXd createRandomPoints(int n, int m);
  * @param normalized_stress bool whether stress value is normalize to [0,1]            
  * @return stress
  */
- 
-
 double scikit_mds_single(const MatrixXd &dissimilarities, const MatrixXd &x,
                          const MatrixXd &x_inter, int n_samples,
                          int n_iterations, float *totalprogress,
                          float *partialprogress, bool init, bool metric,
                          int n_components, int max_iter, bool verbose,
                          double eps, int random_state, bool normalized_stress);
-
 /**
  * @brief calculate the mds, output two-dimensional point coordinates
  * @param dissimilarities Matrix which contains distance information
@@ -151,8 +148,7 @@ double scikit_mds_single(const MatrixXd &dissimilarities, const MatrixXd &x,
  * @param random_state which random start configuration is chosen
  * @param normalized_stress bool whether stress value is normalize to [0,1]            
  * @return changes the called by reference x-Matrix
- */ original dimensionality
-
+ */
 
 void scikit_mds_multi(const MatrixXd &dissimilarities, const MatrixXd &x,
                       const MatrixXd &x_inter, int n_iterations,
@@ -171,8 +167,7 @@ void scikit_mds_multi(const MatrixXd &dissimilarities, const MatrixXd &x,
 
 MatrixXd calculateMDSscikit(int N, const MatrixXd &distanceMatrix,
                             float *totalprogress, float *partialprogress);
-                            
- 
+
 // Glimmer functions
 
 typedef struct _INDEXTYPE {
@@ -193,7 +188,7 @@ typedef struct _VECTYPE {
  * @param partialprogress tracker how far the calculation over the recent task          
  * @return Eigen-Matrix with two-dimensional point coordinates
  */
- 
+
 MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
                              float *totalprogress, float *partialprogress);
 
@@ -208,7 +203,7 @@ int myrand(void);
  * @param b distance to be compared         
  * @return which distance is higher
  */
- 
+
 int distcomp(const void *a, const void *b);
 
 /**
@@ -217,7 +212,7 @@ int distcomp(const void *a, const void *b);
  * @param b indices to be compared         
  * @return which index is higher
  */
- 
+
 int idxcomp(const void *a, const void *b);
 /**
  * @brief comparison of two floats
@@ -250,7 +245,6 @@ void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix);
 /**
  * @brief random initialization of start configuration
  * @param embedding storage for points
-
  */
 void init_embedding(float *embedding);
 int fill_level_count(int input, int *h);

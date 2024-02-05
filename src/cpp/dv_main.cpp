@@ -328,8 +328,8 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
         cutree_k(nPoints, merge, numclust, oneLabel);
         std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
         numclust = static_cast<int>(numclust /= zoomNumber);
-        //exponential decrease of numclust, for quicker processing through
-        //hierarchy
+        // exponential decrease of numclust, for quicker processing through
+        // hierarchy
       }
       break;
     }
