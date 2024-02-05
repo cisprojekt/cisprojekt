@@ -9,8 +9,9 @@ function mapFunctions(
   flagColumnNames,
   numflags_array,
 ) {
-  // Export function parameters to a JSON file
-  // will be saved as 'result.json'
+  /**
+   * This function exports the function parameters to a JSON file, which will be saved as 'result.json'
+   **/
   exportFile = function () {
     var a = window.document.createElement("a");
     var jsonText = JSON.stringify([
@@ -119,15 +120,7 @@ function mapFunctions(
     .style("background-color", "white")
     .on("mousemove", function (event) {
       var mouseCoords = d3.pointer(event);
-      var invertedCoords = d3.zoomTransform(this).invert(mouseCoords); // calculating the true mouse coordinates accounting für zoom and drag on a svg
-      /* infoMouse
-        .select("text")
-        .text(
-          "Mouse coordinates: " +
-            x.invert(invertedCoords[0]).toFixed(3) +
-            ", " +
-            y.invert(invertedCoords[1]).toFixed(3),
-        ); // .invert() accounts for the changes in scaling on the axis */
+      var invertedCoords = d3.zoomTransform(this).invert(mouseCoords); // calculating the true mouse coordinates accounting for zoom and drag on a svg
     });
 
   // Add the x-axis.
@@ -135,28 +128,6 @@ function mapFunctions(
 
   // Add the y-axis.
   var yAxis = svg.append("g").call(d3.axisRight(y));
-
-  // Add a tooltip div. Here we define the general feature of the tooltip: stuff that do not depend on the data point.
-  // Its opacity is set to 0: we don't see it by default.
-  // taken from https://d3-graph-gallery.com/graph/scatter_tooltip.html and adapted to the current version of d3js
-  // supplemented with infos from https://chartio.com/resources/tutorials/how-to-show-data-on-mouseover-in-d3js/
-  var tooltip_svg = d3
-    .select("#my_dataviz")
-    .append("svg")
-    .attr("width", 50)
-    .attr("height", 50);
-
-  var tooltip = d3
-    .select("#chartContainer")
-    .append("div")
-    .style("opacity", 0)
-    .attr("class", "tooltip")
-    .style("background-color", "white")
-    .style("border", "solid")
-    .style("border-width", "1px")
-    .style("border-radius", "5px")
-    .style("padding", "0px")
-    .style("position", "absolute");
 
   // Create a zoom behavior function
   var zoom = d3.zoom().scaleExtent([1, zoomLevels]).on("zoom", handleZoom);
@@ -187,25 +158,16 @@ function mapFunctions(
       d3.select(this).style("fill", "red");
     });
 
-  // Define the event handler function for zoom
+  /* This function handles zoom in all its details.
+   *
+   * @param {Object} event - abstract object of the zoom method which saves and handles all interactions with svg regarding the zoom functionality
+   * @returns {Object} - implicit return of changed event due to interaction with user
+   */
   function handleZoom(event) {
-    //
-    //reset selected point
-
     //variable to store current zoom level
     currentZoomLevel = event.transform.k;
 
     transform = event.transform;
-
-    // Apply the transform to the desired element
-    //button_change_layer_in.attr("transform", event.transform);
-    //button_change_layer_out.attr("transform", event.transform);
-
-    /* if (help_var == 1) {
-      button_zoom_level_old = 0; //starting var button_zoom_level -1 so that the if case in Event handler is taken and thus the points get loaded
-      help_var += 1;
-    } */
-    //infoZoom.select("text").text("Zoom: " + currentZoomLevel.toFixed(5));
 
     //Enable the rescaling of the axes
     var newX = event.transform.rescaleX(x);
@@ -223,24 +185,14 @@ function mapFunctions(
       .select("text")
       .text("hierarchy level: " + button_zoom_level);
 
-    //button_zoom_level_old +=1;
-
-    //let averages = getAverages(button_zoom_level);
     var circles = svg.selectAll("circle");
 
     // if case for determining if new points need to be loaded
     if (button_zoom_level_old !== button_zoom_level) {
-      //let averages = getAverages(button_zoom_level);
       let averages = getAverages(button_zoom_level);
       var circles = svg.selectAll("circle").data(averages);
 
       button_zoom_level_old = button_zoom_level;
-      //button_zoom_level_old = 1 + button_zoom_level_old;
-
-      /* console.log(
-        "button_zoom_level_old in handleZoom " + button_zoom_level_old
-      );
-      console.log("button_zoom_level in handleZoom " + button_zoom_level); */
 
       circles.exit().remove();
 
@@ -262,8 +214,8 @@ function mapFunctions(
         .attr("data-id", function (d) {
           return d.l;
         })
-        .style("fill", "#0000ff")
-        .style("fill-opacity", 0.5)
+        .style("fill", "#0000ff") //blue
+        .style("fill-opacity", 0.5) //to visualize overlaps of clusters, since the colour will darken when it overlaps
         .attr("transform", event.transform)
         .on("click", function (event, d) {
           svg.selectAll("circle").on("click", null);
@@ -415,9 +367,6 @@ function mapFunctions(
   d3.select("svg")
     .call(zoom)
     .on("click.zoom", function (event) {
-      // Get the current transform
-      //transform = event.transform; // variable is already set in handleZoom and just creates errors here
-      // Define the scale factor for the minimal zoom
       var scaleFactor = 1;
       // Apply the minimal zoom by a specific value
       svg
@@ -490,7 +439,7 @@ function updateClusterInfoBox(
           numflags_array,
           cluster.pointIndices,
           flagIndex,
-          clusterInfoBox.clientWidth /*  / 2 */,
+          clusterInfoBox.clientWidth,
         ),
       );
       boxPlotDivs.push(boxPlotDiv);
@@ -541,14 +490,9 @@ function updateClusterInfoBox(
 function createPieDiv(pie) {
   let pieDiv = document.createElement("div");
   pieDiv.id = "pieDiv" + pie.name;
-  // pieDiv.style.display = "inline-block";
-  // pieDiv.style.width = "50%"; // Set the width of the div
-  // pieDiv.style.height = "150"; // Set the width of the div
 
   let canvas = document.createElement("canvas");
   canvas.id = "pieChart" + pie.name;
-  // canvas.width = 10; // Set the width of the canvas as needed
-  // canvas.height = 10; // Set the height of the canvas as needed
   pieDiv.appendChild(canvas);
 
   // Get the 2d context of the canvas
@@ -608,9 +552,7 @@ function createViolinPlotDiv(
   // Create a container div for the violin plot
   let violinDiv = document.createElement("div");
   violinDiv.id = `violinPlot_${flagIndex}`;
-  // violinDiv.style.display = "inline-block";
   violinDiv.style.width = plotWidthPixels.toString() + "px"; // Set the width of the div
-  // violinDiv.style.height = "150px"; // Set the height of the div
 
   // Prepare data for the violin plot
   const data = [
@@ -643,12 +585,9 @@ function createViolinPlotDiv(
       zeroline: false,
     },
     autosize: true,
-    // width: violinDiv.clientWidth.toString() + "px",
   };
 
   var config = { responsive: true };
-
-  console.log(Plotly);
 
   // Create the violin plot
   Plotly.newPlot(violinDiv, data, layout, config);
