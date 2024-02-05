@@ -206,10 +206,7 @@ function getZoomMode() {
   }
   return zoomMode;
 }
-
-/*
- * When the text area is not empty, this function will read the content and check if the first line is a title line.
- */
+/*When text-area not empty, will read the inhalt and check if the first line is the title line */
 function getTitleLine(InputFlag = "coord") {
   console.log("trying to get the title Title line from", InputFlag, "data");
   let inhalt = document.getElementById("text_box").value;
@@ -426,7 +423,6 @@ function getSelectedColumns() {
  * @param {Array} numIndices - The indices of the numerical flag columns.
  * @returns {Array} - An array containing the names of the flag columns. The first element is the names of the non-numerical flag columns and the second element is the names of the numerical flag columns.
  */
-
 function getFlagColumnNames(header, nonnumIndices, numIndices) {
   header = header.split(",");
   let flagColumnNames = [];
@@ -452,7 +448,6 @@ function getFlagColumnNames(header, nonnumIndices, numIndices) {
  * @param {Array} selectedColumns - The selected columns from the dropdown menus. selectedColumns[0] = data columns, selectedColumns[1] = numerical flags, selectedColumns[2] = non-numerical flags.
  * @returns {Array} - An array containing the data from the text box. The first element is the data columns, the second element is the numerical flags and the third element is the non-numerical flags.
  */
-
 function readDataFromLines(lines, devider, selectedColumns, dataType) {
   let points_array = [];
   let numflags_array = [];
@@ -537,9 +532,7 @@ function dealwithrun() {
     selectedColumns[1],
   );
 
-  //DER SWITCH CASE KOMMT WEG SOBALD cluster.js REFACTORED IST
-  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  //this switch case is for renaming variables for convenience
   var type = "default";
   switch (functionFlag) {
     case "noChoice":
@@ -547,28 +540,21 @@ function dealwithrun() {
       break;
     case "Custom":
       type = "custom";
-      console.log("function is custom");
       break;
     case "earth-dist":
+      type = "earth-dist";
+      break;
     case "Euclidean":
       type = "euclidean";
-      if (functionFlag == "earth-dist") {
-        type = "earth-dist";
-      }
       break;
     case "Preclustered":
       type = "preclustered";
-      console.log("preclustered");
       break;
     case "edit-distance":
+      type = "edit-distance";
+      break;
     case "Tanimoto":
-      //TODO
-      //refactor this delete switch case
       type = "tanimotoFingerprints";
-      if (functionFlag == "edit-distance") {
-        type = "edit-distance";
-      }
-      console.log("function as Tani");
       break;
     case "Hamming":
       break;
@@ -589,7 +575,7 @@ function dealwithrun() {
     selectedColumns,
     dataType,
   );
-  //KANN DAS WEG?
+  //error handling for the last line
   if (points_array[points_array.length - 1] == undefined) {
     points_array.pop();
   }
