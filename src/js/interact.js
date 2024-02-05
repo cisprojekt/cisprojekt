@@ -1,6 +1,6 @@
 /*+++++++++++++++++++Basic functions+++++++++++++++++++*/
 
-//button function for the csv devider pop up
+//button function for the csv divider pop up
 function showCSVDeviderPopUp() {
   document.getElementById("CSVDeviderPopUp").style.display = "block";
 }
@@ -17,29 +17,39 @@ function getCSVDevider() {
   }
   return devider;
 }
+
+/**
+ * This function will hide the input-area and the buttons
+ * leave the page for the result
+ */
 function hideprepera() {
   let prepareObj = document.getElementById("prepare");
   prepareObj.style.display = "none";
 }
 
-function showprepare() {
-  let prepareObj = document.getElementById("prepare");
-  prepareObj.style.display = "block";
-}
-
-function hideresult() {
-  let resultObj = document.getElementById("result");
-  let switchbutton = document.getElementById("switchbtn");
-  resultObj.style.display = "none";
-
-  return 0;
-}
-
+/**
+ * This function reads the real time window size and
+ * is responsible for the dynamic adjustment.
+ */
 function showresult() {
   let resultObj = document.getElementById("result");
+  let mapWindows = document.getElementById("chartContainer");
   resultObj.style.display = "flex";
+  console.log("call map-Preview");
+  let scaFactor = mapPreview();
+  mapWindows.style.transform = "scale(" + scaFactor + ")";
+  let leftbias = (1330 * (1 - scaFactor)) / 2 - 10;
+  let topbias = (760 * (1 - scaFactor)) / 2 - 10;
+  console.log("bias", leftbias);
+
+  mapWindows.style.left = "-" + leftbias + "px";
+  mapWindows.style.top = "-" + topbias + "px";
 }
 
+/**
+ * This function reads the content of the text box area and
+ * removes empty lines in the end.
+ */
 function getinputdata() {
   let textinput = document.getElementById("text_box").value;
 
@@ -60,7 +70,10 @@ function getinputdata() {
     return textinput;
   }
 }
-
+/**
+ * This function reads the content from an uploaded file and
+ * shows it in the text area.
+ */
 function readFileContents() {
   let fileInput = document.getElementById("dataFile");
   let file = fileInput.files[0];
@@ -85,6 +98,10 @@ function readFileContents() {
   }
 }
 
+/**
+ * This function selects data types and
+ * generates distance functions for each type.
+ */
 function selectDataType() {
   let data_type = document.getElementById("DataType").value;
   let fun_slector = document.getElementById("D_function");
@@ -115,6 +132,12 @@ function selectDataType() {
   return distance_func_list;
 }
 
+/**
+ *
+ * @param {*} distance_func_list :This function list was completed according to data types.
+ * It generates a speific function selector.
+ */
+
 function changedistancefunclist(distance_func_list) {
   let fun_slector = document.getElementById("D_function");
 
@@ -140,6 +163,9 @@ function changedistancefunclist(distance_func_list) {
   fun_slector.style.display = "";
 }
 
+/**
+ * This function makes sure, that there must be no repetitive selectors.
+ */
 function clean_fun_slector() {
   let fun_slector = document.getElementById("D_function");
   fun_slector.options.length = 1;
@@ -180,7 +206,10 @@ function getZoomMode() {
   }
   return zoomMode;
 }
-/*When text-area not empty, will read the inhalt and check if the first line is the title line */
+
+/*
+ * When the text area is not empty, this function will read the content and check if the first line is a title line.
+ */
 function getTitleLine(InputFlag = "coord") {
   console.log("trying to get the title Title line from", InputFlag, "data");
   let inhalt = document.getElementById("text_box").value;
@@ -191,7 +220,7 @@ function getTitleLine(InputFlag = "coord") {
   console.log("first line is:", firstline);
   let dimension = firstline.length;
   let havetitle = new Boolean(false);
-  //check if the first line is title line
+  //check if the first line is a title line
   switch (InputFlag) {
     case "coord":
       for (let m = 0; m < dimension; m++) {
@@ -222,13 +251,13 @@ function getTitleLine(InputFlag = "coord") {
   return titleline;
 }
 
-/*Creat the drop-down Menu accroding to the title line */
+/*This function creates the drop-down menu accroding to the title line */
 function CreateColFlagSelector(idx = 0, titleline) {
   let ColFlagMenu = document.createElement("select");
   let firstOption = document.createElement("option");
   let dimension = titleline.length;
   firstOption.value = "noColFlag";
-  firstOption.text = "select a colum flag";
+  firstOption.text = "select a column flag";
   for (let i = 0; i < dimension; i++) {
     let flagOption = document.createElement("option");
     flagOption.value = titleline[i];
@@ -239,7 +268,7 @@ function CreateColFlagSelector(idx = 0, titleline) {
   return ColFlagMenu;
 }
 
-/** This will check the first line and delete the axises */
+/** This function will check the first line and delete the axises 
 function isCoordindat(txt_inhalt, devider = ",") {
   let coorindat = [];
   if (txt_inhalt != "") {
@@ -257,8 +286,9 @@ function isCoordindat(txt_inhalt, devider = ",") {
   }
   return "";
 }
+*/
 
-//choos flags for each colum
+//choose flags for each column
 function flag_preset() {
   let preset_flag = document.createElement("select");
   let first_flag = document.createElement("option");
@@ -281,6 +311,10 @@ function flag_preset() {
   }
   return preset_flag;
 }
+
+/**
+ * This function shows the promoting message and matches the flags.
+ */
 function ColFlagCheck() {
   document.getElementById("checkFlagArea").style.display = "";
   let titleline = getTitleLine((InputFlag = "coord"));
@@ -306,7 +340,7 @@ function ColFlagCheck() {
     let cell_3 = _check_tr.insertCell(2);
     let ColFlagSelector = CreateColFlagSelector(d - 1, titleline);
     let flag_menu = flag_preset();
-    cell_1.textContent = "the " + d + " Colum is:";
+    cell_1.textContent = "the " + d + " Column is:";
     cell_2.appendChild(ColFlagSelector);
     cell_3.appendChild(flag_menu);
   }
@@ -314,12 +348,8 @@ function ColFlagCheck() {
 }
 
 /* Fullscreen in-Place */
-
 function MapViewSwitcher() {
-  let clusterBox = document.getElementById("InforArea");
   let mapWindows = document.getElementById("chartContainer");
-  let switchbutton = document.getElementById("switchbtn");
-  mapWindows.style.transform = "scale(1)";
   /* Enter full screen */
   if (mapWindows.requestFullscreen) {
     mapWindows.requestFullscreen();
@@ -396,6 +426,7 @@ function getSelectedColumns() {
  * @param {Array} numIndices - The indices of the numerical flag columns.
  * @returns {Array} - An array containing the names of the flag columns. The first element is the names of the non-numerical flag columns and the second element is the names of the numerical flag columns.
  */
+
 function getFlagColumnNames(header, nonnumIndices, numIndices) {
   header = header.split(",");
   let flagColumnNames = [];
@@ -421,6 +452,7 @@ function getFlagColumnNames(header, nonnumIndices, numIndices) {
  * @param {Array} selectedColumns - The selected columns from the dropdown menus. selectedColumns[0] = data columns, selectedColumns[1] = numerical flags, selectedColumns[2] = non-numerical flags.
  * @returns {Array} - An array containing the data from the text box. The first element is the data columns, the second element is the numerical flags and the third element is the non-numerical flags.
  */
+
 function readDataFromLines(lines, devider, selectedColumns, dataType) {
   let points_array = [];
   let numflags_array = [];
@@ -474,6 +506,9 @@ function readDataFromLines(lines, devider, selectedColumns, dataType) {
   return [points_array, numflags_array, nonnumflags_array];
 }
 
+/**
+ * This function calls up the result with the map.
+ */
 function dealwithrun() {
   //get all the user input from buttons and text-areas
   let functionFlag = document.getElementById("D_function").value;
@@ -502,7 +537,9 @@ function dealwithrun() {
     selectedColumns[1],
   );
 
-  //this switch case is for renaming variables for convenience
+  //DER SWITCH CASE KOMMT WEG SOBALD cluster.js REFACTORED IST
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   var type = "default";
   switch (functionFlag) {
     case "noChoice":
@@ -510,27 +547,36 @@ function dealwithrun() {
       break;
     case "Custom":
       type = "custom";
+      console.log("function is custom");
       break;
     case "earth-dist":
-      type = "earth-dist";
-      break;
     case "Euclidean":
       type = "euclidean";
+      if (functionFlag == "earth-dist") {
+        type = "earth-dist";
+      }
       break;
     case "Preclustered":
       type = "preclustered";
+      console.log("preclustered");
       break;
     case "edit-distance":
-      type = "edit-distance";
-      break;
     case "Tanimoto":
+      //TODO
+      //refactor this delete switch case
       type = "tanimotoFingerprints";
+      if (functionFlag == "edit-distance") {
+        type = "edit-distance";
+      }
+      console.log("function as Tani");
       break;
     case "Hamming":
       break;
     default:
       console.log("Input data doesn't match the distance function");
   }
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   // read the data from the text area and store it in the arrays
   let points_array = [];
@@ -543,7 +589,7 @@ function dealwithrun() {
     selectedColumns,
     dataType,
   );
-  //error handling for the last line
+  //KANN DAS WEG?
   if (points_array[points_array.length - 1] == undefined) {
     points_array.pop();
   }
@@ -563,6 +609,9 @@ function dealwithrun() {
   );
 }
 
+/**
+ * This function resets all the inputs and the settings.
+ */
 function deletedatenandfunc() {
   let weep = confirm("Delete all the data and the chosen function?");
   if (weep) {
@@ -574,11 +623,6 @@ function deletedatenandfunc() {
       .getElementById("D_function")
       .setAttribute("style", "display: none");
   }
-}
-
-function back2input() {
-  hideresult();
-  showprepare();
 }
 
 // Import JSON file and call mapFunctions
