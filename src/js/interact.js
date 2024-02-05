@@ -35,7 +35,7 @@ function showresult() {
   let resultObj = document.getElementById("result");
   let mapWindows = document.getElementById("chartContainer");
   resultObj.style.display = "flex";
-  console.log("call map-Preview");
+
   let scaFactor = mapPreview();
   mapWindows.style.transform = "scale(" + scaFactor + ")";
   let leftbias = (1330 * (1 - scaFactor)) / 2 - 10;
