@@ -41,7 +41,6 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
   MatrixXd distMat(n, n);
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      // TODO(Jonas): Implement other distance functions
       if (isSperical) {
         distMat(i, j) =
             haversine(points(i, 0), points(i, 1), points(j, 0), points(j, 1));
@@ -111,20 +110,7 @@ MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
   *partialprogress = 0.0;
   float tStep = 1 / n * 0.35;
   float pStep = 1 / n;
-  /*
-  boost::dynamic_bitset<> comparestring
-  for (int i = 0; i < n*n; i++) {
-  if (i % 1000000 == 0) {
-    std::cout << "DistMat did " << i/1000000 << "M elements from " << n*n <<
-  std::endl;
-  }
-  if (i % n == 0) {
-    comparestring = bitstrings[i/n];
-  }
-  *matrixpointer = tanimotoDistanceBitwise(comparestring, bitstrings[i%n],
-  bitset_size); matrixpointer++;
-  }
-  */
+
   for (int i = 0; i < n; i++) {
     *totalprogress += tStep;
     *partialprogress += pStep;
@@ -137,19 +123,7 @@ MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
       matrixpointer++;
     }
   }
-  /*
-  *matrixpointer = tanimotoDistanceBitwise(comparestring, bitstrings[i%n],
-  bitset_size); matrixpointer++;
-  }
-  */
-  /*
-    std::vector<boost::dynamic_bitset<>>::iterator bitstringptr;
-      for (bitstringptr = bitstrings.begin(); bitstringptr < bitstrings.end();
-    bitstringptr++) { *matrixpointer = tanimotoDistanceBitwise(comparestring,
-    *bitstringptr, bitset_size); matrixpointer++;
-      }
-    }
-  */
+
   clock_t start_time2 = clock();
   std::cout << "distanceMatrix_bitstring needed "
             << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC)

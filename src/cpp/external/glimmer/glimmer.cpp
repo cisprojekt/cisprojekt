@@ -165,71 +165,6 @@ void outputCSV(const char *filename, float *embedding) {
   fclose(fp);
 }
 
-/*
-        Load VECTYPE data from the .vec sparse matrix format
-*/
-
-/*
-        Load a CSV file to an array of floats
-*/
-
-/*
-float *loadCSV( const char *filename ) {
-
-        char line[65536];	// line of input buffer
-        char item[512];		// single number string
-        float *data = NULL;	// output data
-
-        // open the file
-        FILE *fp = fopen( filename, "r" );
-        if( fp == NULL ) {
-                printf( "ERROR cannot open %s\n", filename );
-                exit( 0 );
-        }
-
-        // get dataset statistics
-        N = 0;
-        n_original_dims = 0;
-        while( fgets( line, 65535, fp ) != NULL ) {
-
-                // count the number of points (for every line)
-                N++;
-
-                // count the number of dimensions (once)
-                if( n_original_dims == 0 && N > SKIP_LINES) {
-                        int i = 0;
-                        while( line[i] != '\0' ) {
-                                if( line[i] == ',' ) {
-                                        n_original_dims++;
-                                }
-                                i++;
-                        }
-                        n_original_dims++;
-                }
-        }
-        fclose( fp );
-        N -= SKIP_LINES;
-
-        // allocate our data buffer
-        data = (float*)malloc(sizeof(float)*N*n_original_dims);
-
-        // read the data into the buffer
-        fp = fopen(filename, "r");
-        int skip = 0;
-        int k = 0;
-        while( fgets( line, 65535, fp ) != NULL ) {
-
-                int done = 0;
-                int i = 0;
-                int j = 0;
-                while( !done ) {
-
-                        // skip the introductory lines
-                        if( skip++ < SKIP_LINES ) {
-
-                                done = 1;
-                        }
-                        else {
 
                                 // parse character data
                                 if( line[i] == ',' ) {
@@ -390,8 +325,7 @@ void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix) {
       }
     }
   }
-  // for (int a = 0; a < (V_SET_SIZE+S_SET_SIZE)*N; a++)
-  // {printf("%d\n",g_idx[a].index); }
+
 
   // perform the force simulation iteration
   float *dir_vec = reinterpret_cast<float *>(malloc(sizeof(float) *
@@ -426,26 +360,14 @@ void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix) {
 
       g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].highd =
           static_cast<float>(const_cast<MatrixXd&>(distanceMatrix)(i, idx));
-      // i*N-akk+idx
-      // printf("init embed\n");
-      // printf("%d\n",akk);
-      // printf("%d\n",i*N-akk+idx);
+
     }
 
     // sort index set by index
     qsort(&(g_idx[i * (V_SET_SIZE + S_SET_SIZE)]), (V_SET_SIZE + S_SET_SIZE),
           sizeof(INDEXTYPE), idxcomp);
 
-    // mark duplicates (with 1000)
-    /*
-    for( int j = 1; j < V_SET_SIZE+S_SET_SIZE; j++ ) {
 
-
-            if(
-    g_idx[i*(V_SET_SIZE+S_SET_SIZE)+j].index==g_idx[i*(V_SET_SIZE+S_SET_SIZE)+j-1].index
-    ) g_idx[i*(V_SET_SIZE+S_SET_SIZE)+j].highd=1000.f;
-    }
-    */
 
     // sort index set by distance
     qsort(&(g_idx[i * (V_SET_SIZE + S_SET_SIZE)]), (V_SET_SIZE + S_SET_SIZE),
@@ -664,14 +586,7 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
     if (g_embed[i] < min_value) { min_value = g_embed[i]; }
     if (g_embed[i] > max_value) { max_value = g_embed[i]; }
   }
-  /*
-  if (min_value < 0.0) {
-    for (int i = 0; i < N*n_embedding_dims; i++) {
-      g_embed[i] -= min_value; 
-    }
-    max_value -= min_value;
-  }
-  */
+
   if (max_value < -min_value) {factor = -min_value;
   } else { factor = max_value; }
 
@@ -680,37 +595,14 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
   }
   clock_t start_time5 = clock();
 
-  // printf("Anzahl Punkte: %d\nbenötigte Zeit %f\n", N,
-  // printf("stop_iteration %d\n", stop_iteration);
+
   for (int it_1 = 0; it_1 < N; it_1++) {
     XUpdated(it_1, 0) = static_cast<double>(g_embed[(it_1 * n_embedding_dims)]);
     XUpdated(it_1, 1) = static_cast<double>(g_embed[(it_1 *
                                                     n_embedding_dims + 1)]);
   }
   clock_t start_time6 = clock();
-  // const char *outputfile = "/home/timo/Documents/studium_cis/projekt/
-  //                           git/cisprojekt_curentIV/cisprojekt/
-  //                           src/cpp/timelog.txt";
-  // std::ofstream file(outputfile);
-  // auto *coutbuf = std::cout.rdbuf();
-  // std::cout.rdbuf(out.rdbuf());
-  /*
-  std::cout << "Glimmer needed " 
-  << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC) 
-  << "s to normalize the distance matrix\n";
-  std::cout << "Glimmer needed " 
-  << static_cast<float>(start_time3 - start_time2) / (CLOCKS_PER_SEC) 
-  << "s to initialize storage and variables\n";
-  std::cout << "Glimmer needed " 
-  << static_cast<float>(start_time4 - start_time3) / (CLOCKS_PER_SEC) 
-  << "s to calculate the force application\n";
-  std::cout << "Glimmer needed " 
-  << static_cast<float>(start_time5 - start_time4) / (CLOCKS_PER_SEC) 
-  << "s to normalize the coordinates\n";
-  std::cout << "Glimmer needed " 
-  << static_cast<float>(start_time6 - start_time6) / (CLOCKS_PER_SEC) 
-  << "s to convert coordinates into Eigen-Matrix\n";
-  */
+
   std::cout << "Glimmer needed "
   << static_cast<float>(start_time6 - start_time1) / (CLOCKS_PER_SEC)
   << "s for scaling\n";

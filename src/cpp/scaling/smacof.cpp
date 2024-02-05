@@ -12,7 +12,6 @@
 using Eigen::MatrixXd;
 
 MatrixXd calculateWeights(const MatrixXd &distMat) {
-  // TODO(Jonas): Set to zero if element does not exist in distMat
   MatrixXd weights(distMat.rows(), distMat.cols());
   for (int i = 0; i < weights.rows(); i++) {
     for (int j = 0; j < weights.cols(); j++) {
@@ -110,8 +109,6 @@ double stressFunction(const MatrixXd &X, const MatrixXd &V, const MatrixXd &Z,
 
 MatrixXd guttmanTransform(int n, const MatrixXd &B, const MatrixXd &Z,
                           const MatrixXd &weights) {
-  // TODO(Jonas): Implement Moore-Penrose inverse if there exists weight unequal
-  // to one
   bool weightsOne = true;
   for (int i = 0; i < weights.rows(); i++) {
     for (int j = 0; j < weights.cols(); j++) {
