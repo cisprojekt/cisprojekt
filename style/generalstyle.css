@@ -34,7 +34,6 @@ h1 {
   text-align: center;
 }
 
-/*
 button {
   display: inline-block;
   width: 150px;
@@ -45,7 +44,7 @@ button {
   cursor: pointer;
   border-color: transparent;
 }
-*/
+
 body.dark-mode {
   background-color: black;
   color: white;
