@@ -17,7 +17,7 @@ Kolkāta,Kolkata,22.5675,88.3700,India,IN,IND,West Bengal,admin,18502000,1356060
 Bangkok,Bangkok,13.7525,100.4942,Thailand,TH,THA,Krung Thep Maha Nakhon,primary,18007000,1764068610
 Shenzhen,Shenzhen,22.5350,114.0540,China,CN,CHN,Guangdong,minor,17619000,1156158707
 Moscow,Moscow,55.7558,37.6178,Russia,RU,RUS,Moskva,primary,17332000,1643318494
-Buenos Aires,Buenos Aires,-34.5997,-58.3819,Argentina,AR,ARG,Buenos Aires, Ciudad Autónoma de,primary,16710000,1032717330
+Buenos Aires,Buenos Aires,-34.5997,-58.3819,Argentina,AR,ARG,Buenos Aires,primary,16710000,1032717330
 Lagos,Lagos,6.4550,3.3841,Nigeria,NG,NGA,Lagos,minor,16637000,1566593751
 Istanbul,Istanbul,41.0136,28.9550,Turkey,TR,TUR,İstanbul,admin,16079000,1792756324
 Karachi,Karachi,24.8600,67.0100,Pakistan,PK,PAK,Sindh,admin,15738000,1586129469
@@ -34,7 +34,7 @@ Lahore,Lahore,31.5497,74.3436,Pakistan,PK,PAK,Punjab,admin,12306000,1586801463
 Chongqing,Chongqing,29.5500,106.5069,China,CN,CHN,Chongqing,admin,12135000,1156936556
 Los Angeles,Los Angeles,34.1141,-118.4068,United States,US,USA,California,,12121244,1840020491
 Baoding,Baoding,38.8671,115.4845,China,CN,CHN,Hebei,,11860000,1156256829
-London,London,51.5072,-0.1275,United Kingdom,GB,GBR,London, City of,primary,11262000,1826645935
+London,London,51.5072,-0.1275,United Kingdom,GB,GBR,London,primary,11262000,1826645935
 Paris,Paris,48.8567,2.3522,France,FR,FRA,Île-de-France,primary,11060000,1250015082
 Linyi,Linyi,35.1041,118.3502,China,CN,CHN,Shandong,,11018365,1156086320
 Dongguan,Dongguan,23.0475,113.7493,China,CN,CHN,Guangdong,minor,10646000,1156478242
@@ -268,7 +268,7 @@ Shaoguan,Shaoguan,24.8011,113.5927,China,CN,CHN,Guangdong,minor,2997600,11566170
 Shanwei,Shanwei,22.7664,115.3331,China,CN,CHN,Guangdong,minor,2993600,1156939010
 Quezon City,Quezon City,14.6300,121.0300,Philippines,PH,PHL,Quezon,admin,2960048,1608974097
 Rizhao,Rizhao,35.4164,119.4331,China,CN,CHN,Shandong,minor,2968365,1156032841
-Kyiv,Kyiv,50.4500,30.5233,Ukraine,UA,UKR,Kyiv, Misto,primary,2963199,1804382913
+Kyiv,Kyiv,50.4500,30.5233,Ukraine,UA,UKR,Kyiv,primary,2963199,1804382913
 Sanaa,Sanaa,15.3483,44.2064,Yemen,YE,YEM,Amānat al ‘Āşimah,primary,2957000,1887750814
 Meishan,Meishan,30.0575,103.8381,China,CN,CHN,Sichuan,,2950545,1156185501
 Incheon,Incheon,37.4833,126.6333,South Korea,KR,KOR,Incheon,admin,2936117,1410160313

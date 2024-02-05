@@ -2,8 +2,9 @@
 #ifndef SRC_CPP_SCALING_SCALING_H_
 #define SRC_CPP_SCALING_SCALING_H_
 
-//#include "../distmat/distmat.h"
+// #include "../distmat/distmat.h"
 #include <Eigen/Dense>
+#include <algorithm>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -27,14 +28,14 @@ using Eigen::VectorXd;
  * @param distMat Distance matrix of original points
  * @return Weight matrix
  */
-MatrixXd calculateWeights(MatrixXd distMat);
+MatrixXd calculateWeights(const MatrixXd &distMat);
 
 /**
  * @brief Calculate the V matrix according to e.q. (8.18)
  * @param weights The weight matrix
  * @return Matrix V
  */
-MatrixXd calculateV(MatrixXd weights);
+MatrixXd calculateV(const MatrixXd &weights);
 
 /**
  * @brief Calculate a random configuration matrix with values between -1 and 1
@@ -50,7 +51,8 @@ MatrixXd calculateRandomZ(int n, int m);
  * @param weights The weight matrix
  * @return B The B matrix
  */
-MatrixXd calculateB(MatrixXd Z, MatrixXd weights, MatrixXd distMat);
+MatrixXd calculateB(const MatrixXd &Z, const MatrixXd &weights,
+                    const MatrixXd &distMat);
 
 /**
  * @brief Calculates the first constant term of stress according to e.q. (8.15)
@@ -58,7 +60,7 @@ MatrixXd calculateB(MatrixXd Z, MatrixXd weights, MatrixXd distMat);
  * @param distMat The distance matrix
  * @return term1 The first term of stress
  */
-double calculateConst(MatrixXd weights, MatrixXd distMat);
+double calculateConst(const MatrixXd &weights, const MatrixXd &distMat);
 
 /**
  * @brief Calculates the stress for a given configuration
@@ -69,8 +71,8 @@ double calculateConst(MatrixXd weights, MatrixXd distMat);
  * @param distMat The original distance matrix
  * @return stress Stress for given configuration
  */
-double stressFunction(MatrixXd X, MatrixXd Z, MatrixXd B, MatrixXd weights,
-                      MatrixXd distMat);
+double stressFunction(const MatrixXd &X, const MatrixXd &Z, const MatrixXd &B,
+                      const MatrixXd &weights, const MatrixXd *distMat);
 
 /**
  * @brief Apply Guttman transformation according to e.q. (8.28, 8.29)
@@ -80,7 +82,8 @@ double stressFunction(MatrixXd X, MatrixXd Z, MatrixXd B, MatrixXd weights,
  * @param weights The weights matrix
  * @return XUpdated Updated configuration after Guttman transformation
  */
-MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights);
+MatrixXd guttmanTransform(int n, const MatrixXd &B, const MatrixXd &Z,
+                          const MatrixXd &weights);
 
 /**
  * @brief Applies multidimensional scaling with SMACOF Algorithm
@@ -90,7 +93,8 @@ MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights);
  * @param dim Dimensions to scale the data to
  * @return XUpdated Final configuration
  */
-MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt = 50,
+MatrixXd calculateMDSsmacof(MatrixXd &distMat, float *totalprogress,  // NOLINT
+                            float *partialprogress, int maxIt = 50,
                             double eps = 10e-6, int dim = 2);
 
 /**
@@ -102,33 +106,67 @@ MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt = 50,
 MatrixXd createRandomPoints(int n, int m);
 
 /**
- * @brief Webassembly function, will apply multidimensional scaling and
- * clustering for given points
- * @param points The points to cluster
- * @param dimension Dimension of the input points
- * @param distMat Distance matrix for the points
- * @param height Cluster distance for each step
- * @param merge Encoded dendrogram
- * @param labels Label assignment for clusters
- * @param nPoints Number of points
- * @param maxIterations Maximum number of iterations
- * @param zoomLevels Number of zoomlevels for the d3js plot
+ * @brief calculate a single iteration of the scikit mds
+ * @param dissimilarities Matrix which contains distance information
+ * @param x table with 2 columns contains the final coordinates of MDS
+ * @param x_inter table with 2 columns contains coordinates single MDSiteration
+ * @param n_samples number of points to be processed
+ * @param n_iterations number of iterations per reduction calculation
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task
+ * @param init boolean whether initialization is random or provided
+ * @param metric bool whether distance information is euclidic
+ * @param n_components original dimensionality
+ * @param max_iter number when algorithm breaks, no matter the stress
+ * @param verbose boolean to activate further runtime documentation
+ * @param eps threshold of stress which determines termination
+ * @param random_state which random start configuration is chosen
+ * @param normalized_stress bool whether stress value is normalize to [0,1]            
+ * @return stress
  */
-
-// full distance-matrix needed!
-
-// Scikit functions
-double scikit_mds_single(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
-                         int n_samples, bool init, bool metric,
+double scikit_mds_single(const MatrixXd &dissimilarities, const MatrixXd &x,
+                         const MatrixXd &x_inter, int n_samples,
+                         int n_iterations, float *totalprogress,
+                         float *partialprogress, bool init, bool metric,
                          int n_components, int max_iter, bool verbose,
                          double eps, int random_state, bool normalized_stress);
+/**
+ * @brief calculate the mds, output two-dimensional point coordinates
+ * @param dissimilarities Matrix which contains distance information
+ * @param x table with 2 columns contains the final coordinates of MDS
+ * @param x_inter table with 2 columns contains coordinates single MDSiteration
+ * @param n_samples number of points to be processed
+ * @param n_iterations number of iterations per reduction calculation
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task
+ * @param init boolean whether initialization is random or provided
+ * @param metric bool whether distance information is euclidic
+ * @param n_components original dimensionality
+ * @param max_iter number when algorithm breaks, no matter the stress
+ * @param verbose boolean to activate further runtime documentation
+ * @param eps threshold of stress which determines termination
+ * @param random_state which random start configuration is chosen
+ * @param normalized_stress bool whether stress value is normalize to [0,1]            
+ * @return changes the called by reference x-Matrix
+ */
 
-void scikit_mds_multi(Eigen::MatrixXd &dissimilarities, Eigen::MatrixXd &x, Eigen::MatrixXd &x_inter,
-                      int n_iterations, int n_samples, bool init, bool metric,
-                      int n_components, int max_iter, bool verbose, double eps,
-                      int random_state, bool normalized_stress);
+void scikit_mds_multi(const MatrixXd &dissimilarities, const MatrixXd &x,
+                      const MatrixXd &x_inter, int n_iterations,
+                      float *totalprogress, float *partialprogress,
+                      int n_samples, bool init, bool metric, int n_components,
+                      int max_iter, bool verbose, double eps, int random_state,
+                      bool normalized_stress);
 
-MatrixXd calculateMDSscikit(int N, MatrixXd &distanceMatrix);
+/**
+ * @brief calculate the mds, output two-dimensional point coordinates
+ * @param distanceMatrix Matrix which contains distance information
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task          
+ * @return Eigen-Matrix with two-dimensional point coordinates
+ */
+
+MatrixXd calculateMDSscikit(int N, const MatrixXd &distanceMatrix,
+                            float *totalprogress, float *partialprogress);
 
 // Glimmer functions
 
@@ -143,14 +181,71 @@ typedef struct _VECTYPE {
   float value;
 } VECTYPE;
 
-MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix);
+/**
+ * @brief num_p number of points to be processed
+ * @param distanceMatrix Matrix which contains distance information
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task          
+ * @return Eigen-Matrix with two-dimensional point coordinates
+ */
+
+MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
+                             float *totalprogress, float *partialprogress);
+
+/**
+ * @brief calculates 32-bit random integers
+ */
 int myrand(void);
+
+/**
+ * @brief comparison of two distances
+ * @param a distance to be compared
+ * @param b distance to be compared         
+ * @return which distance is higher
+ */
+
 int distcomp(const void *a, const void *b);
+
+/**
+ * @brief comparison of two indices
+ * @param a indices to be compared
+ * @param b indices to be compared         
+ * @return which index is higher
+ */
+
 int idxcomp(const void *a, const void *b);
+/**
+ * @brief comparison of two floats
+ * @param a float to be compared
+ * @param b float to be compared         
+ * @return which float has higher value
+ */
 float max(float a, float b);
+/**
+ * @brief comparison of two floats
+ * @param a float to be compared
+ * @param b float to be compared         
+ * @return which float has lower value
+ */
 float min(float a, float b);
+/**
+ * @brief checks when algorithm is terminated
+ * @param idx_set points to be calculated
+ * @param size number of points to be calculated        
+ * @return control value
+ */
 int terminate(INDEXTYPE *idx_set, int size);
-void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix);
+/**
+ * @brief applies force on points
+ * @param size number of points to be calculated 
+ * @param fixedsize number of points considered as neighbour
+ * @param distanceMatrix Matrix which contains distance information        
+ */
+void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix);
+/**
+ * @brief random initialization of start configuration
+ * @param embedding storage for points
+ */
 void init_embedding(float *embedding);
 int fill_level_count(int input, int *h);
 

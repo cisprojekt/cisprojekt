@@ -1,41 +1,46 @@
+// Copyright [year] <Copyright Owner>
 // glimmer.cpp : Console program to compute Glimmer CPU MDS on a set of input
 // coordinates
-//
-//				Stephen Ingram (sfingram@cs.ubc.ca) 02/08
-//
+
+// Stephen Ingram (sfingram@cs.ubc.ca) 02/08
+
 
 // structs are not defined in glimmer.cpp but in scaling.h
-#include "../../scaling/scaling.h"
 #include <Eigen/Dense>
 #include <float.h>
-#include <iostream>
+#include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+#include <iostream>
+#include <fstream>
+
+#include "../../scaling/scaling.h"
+
 /*
         CONSTANTS
 */
 #define MIN_NUM_ARGS 0  // minimum command line arguments
 #define SKIP_LINES 0    // number of lines to skip in the input CSV
-// #define V_SET_SIZE		4		// number of close neighbors
-// #define S_SET_SIZE		4		// number of randomly chosen
+// #define V_SET_SIZE   4               // number of close neighbors
+// #define S_SET_SIZE   4               // number of randomly chosen
 // neighbors
 #define V_SET_SIZE 8        // number of close neighbors
 #define S_SET_SIZE 12       // number of randomly chosen neighbors
 #define USE_GLUT 0          // comment this when timing tests are done
-#define MAX_ITERATION 5000  // maximum number of iterations
+#define MAX_ITERATION 1000  // maximum number of iterations
 #define COSCLEN 51          // length of cosc filter
-#define EPS 1.e-10f         // termination threshold
+#define EPS 1.e-12f         // termination threshold
 #define MIN_SET_SIZE 1000   // recursion termination condition
 #define DEC_FACTOR 8        // decimation factor
 
 /*
         FORCE CONSTANTS
 */
-#define SIZE_FACTOR (1.f / ((float)(V_SET_SIZE + S_SET_SIZE)))
+#define SIZE_FACTOR (1.f / (static_cast<float>(V_SET_SIZE + S_SET_SIZE)))
 #define DAMPING (0.3f)
 #define SPRINGFORCE (0.7f)
 #define FREENESS (0.85f)
@@ -129,7 +134,7 @@ int myrand() {
   unsigned int n = (unsigned int)rand();
   unsigned int m = (unsigned int)rand();
 
-  return ((int)((n << 16) + m));
+  return (static_cast<int>((n << 16) + m));
 }
 
 /*
@@ -160,71 +165,6 @@ void outputCSV(const char *filename, float *embedding) {
   fclose(fp);
 }
 
-/*
-        Load VECTYPE data from the .vec sparse matrix format
-*/
-
-/*
-        Load a CSV file to an array of floats
-*/
-
-/*
-float *loadCSV( const char *filename ) {
-
-        char line[65536];	// line of input buffer
-        char item[512];		// single number string
-        float *data = NULL;	// output data
-
-        // open the file
-        FILE *fp = fopen( filename, "r" );
-        if( fp == NULL ) {
-                printf( "ERROR cannot open %s\n", filename );
-                exit( 0 );
-        }
-
-        // get dataset statistics
-        N = 0;
-        n_original_dims = 0;
-        while( fgets( line, 65535, fp ) != NULL ) {
-
-                // count the number of points (for every line)
-                N++;
-
-                // count the number of dimensions (once)
-                if( n_original_dims == 0 && N > SKIP_LINES) {
-                        int i = 0;
-                        while( line[i] != '\0' ) {
-                                if( line[i] == ',' ) {
-                                        n_original_dims++;
-                                }
-                                i++;
-                        }
-                        n_original_dims++;
-                }
-        }
-        fclose( fp );
-        N -= SKIP_LINES;
-
-        // allocate our data buffer
-        data = (float*)malloc(sizeof(float)*N*n_original_dims);
-
-        // read the data into the buffer
-        fp = fopen(filename, "r");
-        int skip = 0;
-        int k = 0;
-        while( fgets( line, 65535, fp ) != NULL ) {
-
-                int done = 0;
-                int i = 0;
-                int j = 0;
-                while( !done ) {
-
-                        // skip the introductory lines
-                        if( skip++ < SKIP_LINES ) {
-
-                                done = 1;
-                        }
-                        else {
 
                                 // parse character data
                                 if( line[i] == ',' ) {
@@ -317,7 +257,7 @@ int distcomp(const void *a, const void *b) {
 int idxcomp(const void *a, const void *b) {
   const INDEXTYPE *da = (const INDEXTYPE *)a;
   const INDEXTYPE *db = (const INDEXTYPE *)b;
-  return (int)(da->index - db->index);
+  return static_cast<int>(da->index - db->index);
 }
 
 float max(float a, float b) { return (a < b) ? b : a; }
@@ -375,7 +315,7 @@ int terminate(INDEXTYPE *idx_set, int size) {
         Compute Chalmers' an iteration of force directed simulation on subset of
    size 'size' holding fixedsize fixed
 */
-void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix) {
+void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix) {
   // initialize index sets
   if (iteration == stop_iteration) {
     for (int i = 0; i < size; i++) {
@@ -385,12 +325,13 @@ void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix) {
       }
     }
   }
-  // for (int a = 0; a < (V_SET_SIZE+S_SET_SIZE)*N; a++)
-  // {printf("%d\n",g_idx[a].index); }
+
 
   // perform the force simulation iteration
-  float *dir_vec = (float *)malloc(sizeof(float) * n_embedding_dims);
-  float *relvel_vec = (float *)malloc(sizeof(float) * n_embedding_dims);
+  float *dir_vec = reinterpret_cast<float *>(malloc(sizeof(float) *
+                                                   n_embedding_dims));
+  float *relvel_vec = reinterpret_cast<float *>(malloc(sizeof(float) *
+                                                      n_embedding_dims));
   float diff = 0.f;
   float norm = 0.f;
   float lo = 0.f;
@@ -418,26 +359,15 @@ void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix) {
       int idx = g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].index;
 
       g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].highd =
-          (float)distanceMatrix(i, idx);  // i*N-akk+idx
-      // printf("init embed\n");
-      // printf("%d\n",akk);
-      // printf("%d\n",i*N-akk+idx);
+          static_cast<float>(const_cast<MatrixXd&>(distanceMatrix)(i, idx));
+
     }
 
     // sort index set by index
     qsort(&(g_idx[i * (V_SET_SIZE + S_SET_SIZE)]), (V_SET_SIZE + S_SET_SIZE),
           sizeof(INDEXTYPE), idxcomp);
 
-    // mark duplicates (with 1000)
-    /*
-    for( int j = 1; j < V_SET_SIZE+S_SET_SIZE; j++ ) {
 
-
-            if(
-    g_idx[i*(V_SET_SIZE+S_SET_SIZE)+j].index==g_idx[i*(V_SET_SIZE+S_SET_SIZE)+j-1].index
-    ) g_idx[i*(V_SET_SIZE+S_SET_SIZE)+j].highd=1000.f;
-    }
-    */
 
     // sort index set by distance
     qsort(&(g_idx[i * (V_SET_SIZE + S_SET_SIZE)]), (V_SET_SIZE + S_SET_SIZE),
@@ -469,7 +399,6 @@ void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix) {
       g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].lowd = norm;
       if (norm > 1.e-6 && g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].highd !=
                               1000.f) {  // check for zero norm or mark
-
         // normalize direction vector
         for (int k = 0; k < n_embedding_dims; k++) {
           dir_vec[k] /= norm;
@@ -530,10 +459,11 @@ void force_directed(int size, int fixedsize, MatrixXd &distanceMatrix) {
 }
 
 void init_embedding(float *embedding) {
+  unsigned int seed = time(NULL);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < n_embedding_dims; j++) {
       embedding[i * (n_embedding_dims) + j] =
-          ((float)(rand() % 10000) / 10000.f) - 0.5f;
+      static_cast<float>(rand_r(&seed) % 10000) / 10000.f - 0.5f;
     }
   }
 }
@@ -554,15 +484,18 @@ int fill_level_count(int input, int *h) {
 /*
         main function
 */
-MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix) {
-
+MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
+                             float *totalprogress, float *partialprogress) {
   // float* distmat = new float[line_num];           --> convert to MatrixXd
   // distmat
+  // begin timing -------------------------------------BEGIN TIMING
+  clock_t start_time1 = clock();
   N = num_p;
   MatrixXd XUpdated(N, 2);
   int skip = 0;
   int k = 0;
   double max_dist = 0;
+  *partialprogress = 0.0;
 
   for (int it_1 = 0; it_1 < N; it_1++) {
     for (int it_2 = it_1; it_2 < N; it_2++) {
@@ -573,42 +506,47 @@ MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix) {
   }
   // max_dist = biggest distance in distancematrix
 
-  distanceMatrix.array() /= max_dist;
+  const_cast<MatrixXd&>(distanceMatrix).array() /= max_dist;
 
-  // begin timing -------------------------------------BEGIN TIMING
-  clock_t start_time1 = clock();
+  clock_t start_time2 = clock();
 
   // allocate embedding and associated data structures
   g_levels = fill_level_count(N, g_heir);
   g_current_level = g_levels - 1;
+  float tStep = 1/g_current_level*0.4;
+  float pStep = 1/g_current_level;
 
   // float *embedding = NULL;
   // embedding = (float *)malloc(sizeof(float) * n_embedding_dims * N);
-  g_embed = (float *)malloc(sizeof(float) * n_embedding_dims * N);
-  g_vel = (float *)calloc(n_embedding_dims * N, sizeof(float));
-  g_force = (float *)calloc(n_embedding_dims * N, sizeof(float));
+  g_embed = reinterpret_cast<float *>(malloc(sizeof(float) *
+                                            n_embedding_dims * N));
+  g_vel = reinterpret_cast<float *>(calloc(n_embedding_dims * N,
+                                          sizeof(float)));
+  g_force = reinterpret_cast<float *>(calloc(n_embedding_dims * N,
+                                            sizeof(float)));
   g_idx =
-      (INDEXTYPE *)malloc(sizeof(INDEXTYPE) * N * (V_SET_SIZE + S_SET_SIZE));
+      reinterpret_cast<INDEXTYPE *>(malloc(sizeof(INDEXTYPE) *
+                                          N * (V_SET_SIZE + S_SET_SIZE)));
 
   time_t t;
   srand((unsigned)(time(&t)));
   // initialize embedding
   init_embedding(g_embed);
-  //std::cout << "init_embedding" << std::endl;
-  //for (int i = 0; i < 2 * N; i++) {
-  //  std::cout << g_embed[i] << std::endl;
+  // std::cout << "init_embedding" << std::endl;
+  // for (int i = 0; i < 2 * N; i++) {
+  //   std::cout << g_embed[i] << std::endl;
   //}
+  clock_t start_time3 = clock();
+
   int chalm = 0;
   if (chalm == 1) {
-    //	if( !strcmp( argv[4], "chalm" ) ) {
+    //   if( !strcmp( argv[4], "chalm" ) ) {
     g_chalmers = 1;
     for (int i = 0; i < N; i++) {
       force_directed(N, 0, distanceMatrix);
-      //		}
+      // }
     }
-  }
-
-  else {
+  } else {
     while (!g_done) {
       // move the points
       if (g_interpolating)
@@ -625,6 +563,8 @@ MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix) {
         } else {
           g_current_level--;  // move to the next level down
           g_interpolating = 1;
+          *totalprogress += tStep;
+          *partialprogress += pStep;
 
           // check if the algorithm is complete (no more levels)
           if (g_current_level < 0) {
@@ -637,14 +577,34 @@ MatrixXd calculateMDSglimmer(int num_p, MatrixXd &distanceMatrix) {
     }
   }
 
-  clock_t start_time2 = clock();
+  clock_t start_time4 = clock();
 
-  // printf("Anzahl Punkte: %d\nbenötigte Zeit %f\n", N,
-  static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC);
-  // printf("stop_iteration %d\n", stop_iteration);
-  for (int it_1 = 0; it_1 < N; it_1++) {
-    XUpdated(it_1, 0) = g_embed[(it_1 * n_embedding_dims)] * 100;
-    XUpdated(it_1, 1) = g_embed[(it_1 * n_embedding_dims + 1)] * 100;
+  float max_value = -1.e37f;
+  float min_value = 1.e37f;
+  float factor = 0.0;
+  for (int i = 0; i < N*n_embedding_dims; i++) {
+    if (g_embed[i] < min_value) { min_value = g_embed[i]; }
+    if (g_embed[i] > max_value) { max_value = g_embed[i]; }
   }
+
+  if (max_value < -min_value) {factor = -min_value;
+  } else { factor = max_value; }
+
+  for (int i = 0; i < N*n_embedding_dims; i++) {
+    g_embed[i] /= factor;
+  }
+  clock_t start_time5 = clock();
+
+
+  for (int it_1 = 0; it_1 < N; it_1++) {
+    XUpdated(it_1, 0) = static_cast<double>(g_embed[(it_1 * n_embedding_dims)]);
+    XUpdated(it_1, 1) = static_cast<double>(g_embed[(it_1 *
+                                                    n_embedding_dims + 1)]);
+  }
+  clock_t start_time6 = clock();
+
+  std::cout << "Glimmer needed "
+  << static_cast<float>(start_time6 - start_time1) / (CLOCKS_PER_SEC)
+  << "s for scaling\n";
   return XUpdated;
 }

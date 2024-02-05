@@ -1,5 +1,4 @@
 // Copyright [year] <Copyright Owner>
-#include <emscripten.h>
 
 #include <Eigen/Dense>
 #include <cmath>
@@ -12,8 +11,7 @@
 
 using Eigen::MatrixXd;
 
-MatrixXd calculateWeights(MatrixXd distMat) {
-  // TODO(Jonas): Set to zero if element does not exist in distMat
+MatrixXd calculateWeights(const MatrixXd &distMat) {
   MatrixXd weights(distMat.rows(), distMat.cols());
   for (int i = 0; i < weights.rows(); i++) {
     for (int j = 0; j < weights.cols(); j++) {
@@ -24,7 +22,7 @@ MatrixXd calculateWeights(MatrixXd distMat) {
   return weights;
 }
 
-MatrixXd calculateV(MatrixXd weights) {
+MatrixXd calculateV(const MatrixXd &weights) {
   MatrixXd V(weights.rows(), weights.cols());
   for (int i = 0; i < V.rows(); i++) {
     for (int j = 0; j < V.cols(); j++) {
@@ -56,7 +54,8 @@ MatrixXd calculateRandomZ(int n, int m) {
   return Z;
 }
 
-MatrixXd calculateB(MatrixXd Z, MatrixXd weights, MatrixXd distMat) {
+MatrixXd calculateB(const MatrixXd &Z, const MatrixXd &weights,
+                    const MatrixXd &distMat) {
   MatrixXd D = distanceMatrix(Z);
   MatrixXd B = D;
 
@@ -85,7 +84,7 @@ MatrixXd calculateB(MatrixXd Z, MatrixXd weights, MatrixXd distMat) {
   return B;
 }
 
-double calculateConst(MatrixXd weights, MatrixXd distMat) {
+double calculateConst(const MatrixXd &weights, const MatrixXd &distMat) {
   double term1 = 0;
   for (int i = 0; i < weights.rows(); i++) {
     for (int j = i + 1; j < weights.cols(); j++) {
@@ -96,8 +95,9 @@ double calculateConst(MatrixXd weights, MatrixXd distMat) {
   return term1;
 }
 
-double stressFunction(MatrixXd X, MatrixXd V, MatrixXd Z, MatrixXd B,
-                      MatrixXd weights, MatrixXd distMat) {
+double stressFunction(const MatrixXd &X, const MatrixXd &V, const MatrixXd &Z,
+                      const MatrixXd &B, const MatrixXd &weights,
+                      const MatrixXd &distMat) {
   double term1 = calculateConst(weights, distMat);
   double term2 = (X.transpose() * V * X).trace();
   double term3 = -2 * (X.transpose() * B * X).trace();
@@ -107,9 +107,8 @@ double stressFunction(MatrixXd X, MatrixXd V, MatrixXd Z, MatrixXd B,
   return stress;
 }
 
-MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights) {
-  // TODO(Jonas): Implement Moore-Penrose inverse if there exists weight unequal
-  // to one
+MatrixXd guttmanTransform(int n, const MatrixXd &B, const MatrixXd &Z,
+                          const MatrixXd &weights) {
   bool weightsOne = true;
   for (int i = 0; i < weights.rows(); i++) {
     for (int j = 0; j < weights.cols(); j++) {
@@ -124,10 +123,12 @@ MatrixXd guttmanTransform(int n, MatrixXd B, MatrixXd Z, MatrixXd weights) {
   return XUpdated;
 }
 
-MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt, double eps, int dim) {
+MatrixXd calculateMDSsmacof(MatrixXd &distMat, float *totalprogress,  // NOLINT
+                            float *partialprogress, int maxIt, double eps,
+                            int dim) {
   // Counter for iterations
   int k = 0;
-
+  *partialprogress = 0.0;
   // Create weight matrix
   MatrixXd weights = calculateWeights(distMat);
 
@@ -145,7 +146,8 @@ MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt, double eps, int dim) {
   while (k < maxIt) {
     // Step 4: Increase iteration counter
     k++;
-
+    *partialprogress += 1 / maxIt;
+    *totalprogress += 1 / maxIt * 0.4;
     // Step 5: Compute Guttman transformation
     B = calculateB(Z, weights, distMat);
     XUpdated = guttmanTransform(B.rows(), B, Z, weights);
@@ -156,10 +158,21 @@ MatrixXd calculateMDSsmacof(MatrixXd distMat, int maxIt, double eps, int dim) {
     // Step 7: Update Z
     Z = XUpdated;
 
-    // TODO(Jonas): Step 8: End while-loop if eps small enough
+    // Step 8: End while-loop if eps small enough
+    if (abs(newStress - stress) < eps) {
+      break;
+    }
+
+    stress = newStress;
   }
 
-  return XUpdated;
+  // Normalize to [-1, 1]
+  MatrixXd normalizedMat = XUpdated;
+  double minVal = XUpdated.minCoeff();
+  double maxVal = XUpdated.maxCoeff();
+  normalizedMat = 2.0 * (XUpdated.array() - minVal) / (maxVal - minVal) - 1.0;
+  distMat = distanceMatrix(normalizedMat);
+  return normalizedMat;
 }
 
 MatrixXd createRandomPoints(int n, int m) {

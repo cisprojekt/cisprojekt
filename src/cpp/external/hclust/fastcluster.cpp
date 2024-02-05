@@ -131,44 +131,60 @@ void cutree_cdist(int n, const int* merge, double* height, double cdist, int* la
 //   0 = ok
 //   1 = invalid method
 //
-int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double* height) {
+int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double* height,
+                float* totalprogress, float* partialprogress) {
   
   // call appropriate culstering function
+  clock_t start_time1 = clock();
   std::cout << "initialize hclust_fast" << std::endl;
   cluster_result Z2(n-1);
   std::cout << "initialize cluster_result" << std::endl;
-  if (method == HCLUST_METHOD_SINGLE) {
+  if (method == 0) {
     // single link
-    MST_linkage_core(n, distmat, Z2);
+    MST_linkage_core(n, distmat, Z2, totalprogress, partialprogress);
   }
-  else if (method == HCLUST_METHOD_COMPLETE) {
+  else if (method == 1) {
     // complete link
     std::cout << "initialize complete_link" << std::endl;
-    NN_chain_core<METHOD_METR_COMPLETE, t_float>(n, distmat, NULL, Z2);
+    NN_chain_core<METHOD_METR_COMPLETE, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
     std::cout << "finish complete_link" << std::endl;
   }
-  else if (method == HCLUST_METHOD_AVERAGE) {
+  else if (method == 2) {
     // best average distance
+    std::cout << "initialize average_link" << std::endl;
     double* members = new double[n];
     for (int i=0; i<n; i++) members[i] = 1;
-    NN_chain_core<METHOD_METR_AVERAGE, t_float>(n, distmat, members, Z2);
+    NN_chain_core<METHOD_METR_AVERAGE, t_float>(n, distmat, members, Z2, totalprogress, partialprogress);
     delete[] members;
   }
-  else if (method == HCLUST_METHOD_MEDIAN) {
+  else if (method == 3) {
     // best median distance (beware: O(n^3))
-    generic_linkage<METHOD_METR_MEDIAN, t_float>(n, distmat, NULL, Z2);
+    generic_linkage<METHOD_METR_MEDIAN, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
+  }
+  else if (method == 4) {
+    // best median distance (beware: O(n^3))
+    generic_linkage<METHOD_METR_WEIGHTED, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
+  }
+  else if (method == 5) {
+    // best median distance (beware: O(n^3))
+    generic_linkage<METHOD_METR_WARD, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
+  }
+  else if (method == 6) {
+    // best median distance (beware: O(n^3))
+    generic_linkage<METHOD_METR_CENTROID, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
   }
   else {
     return 1;
   }
   
   int* order = new int[n];
-  if (method == HCLUST_METHOD_MEDIAN) {
+  if (method == 3) {
     generate_R_dendrogram<true>(merge, height, order, Z2, n);
   } else {
     generate_R_dendrogram<false>(merge, height, order, Z2, n);
   }
-
+  clock_t start_time2 = clock();
+  std::cout << "hclust needed " << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC) << "s for clustering\n";
   delete[] order; // only needed for visualization
   
   return 0;

@@ -1,0 +1,137 @@
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
+  background-image: url(folder/back.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  min-height: 100vh;
+  max-height: 100%;
+}
+
+.header {
+  width: 97%;
+  height: 100vh;
+  max-height: 100%;
+}
+
+nav {
+  max-width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 8%;
+  transition: background 1s;
+}
+
+nav .logo {
+  display: flex;
+  align-items: center;
+  font-size: 30px;
+  font-weight: 600;
+  color: black;
+  text-shadow: 1px 1px 20px rgba(255, 255, 255, 1);
+}
+
+nav ul li {
+  display: inline-block;
+  list-style: none;
+  margin: 10px 20px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: black;
+  font-weight: 500;
+}
+
+nav:hover .logo {
+  color: #969fe2;
+}
+
+nav:hover ul li a {
+  color: #969fe2;
+}
+
+.content {
+  margin-top: 9%;
+  margin-left: 9%;
+  color: #333;
+}
+
+.content h1 {
+  font-size: 60px;
+  line-height: 100px;
+  font-weight: 600;
+}
+
+.content h1 p {
+  max-width: 500px;
+  line-height: 40px;
+}
+
+.content p {
+  color: black;
+  font-size: 20px;
+}
+
+.usecase {
+  font-size: 20px;
+}
+
+.links {
+  margin-top: 30px;
+}
+
+.links a {
+  color: #333;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn {
+  border: 2px solid #333;
+  background-color: #969fe2a7;
+  padding: 10px 35px;
+  border-radius: 30px;
+  margin-right: 15px;
+}
+
+main {
+  width: 100%;
+  max-height: 100%;
+  padding: 15px;
+}
+
+button {
+  display: inline-block;
+  width: 150px;
+  background-color: #969fe2;
+  margin: 2px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  border-color: transparent;
+}
+
+body.dark-mode {
+  background-color: black;
+  color: white;
+}
+
+header.dark-mode {
+  background-color: #634c6a;
+}
+
+main.dark-mode,
+footer.dark-mode {
+  background-color: #333;
+}
+
+button.dark-mode {
+  background-color: #6c6ea0;
+}

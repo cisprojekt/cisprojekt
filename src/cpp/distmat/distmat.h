@@ -1,6 +1,12 @@
 // Copyright [year] <Copyright Owner>
+
 #ifndef SRC_CPP_DISTMAT_DISTMAT_H_
 #define SRC_CPP_DISTMAT_DISTMAT_H_
+
+#include <string>
+#include <vector>
+
+#include "../dv_main.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -18,19 +24,26 @@ using Eigen::VectorXd;
 
 // clang-format on
 
+MatrixXd distanceMatrix(double *distMatFilled, int n, float *totalprogress,
+                        float *partialprogress);
+
 /**
  * @brief Calculate a square distance matrix for points
  * @param points Points in Euclidean space
  * @return distMat Distance Matrix
  */
-MatrixXd distanceMatrix(MatrixXd points, bool isSperical = false);
+MatrixXd distanceMatrix(MatrixXd points, bool isSperical, float *totalprogress,
+                        float *partialprogress);
+
+MatrixXd distanceMatrix(MatrixXd points, bool isSperical = 0);
 
 /**
  * @brief Calculate a square distance matrix for strings
  * @param strings Molecule fingerprints
  * @return distMat Distance Matrix
  */
-MatrixXd distanceMatrix(std::vector<std::string> strings);
+MatrixXd distanceMatrix(std::vector<std::string> strings, int type,
+                        float *totalprogress, float *partialprogress);
 
 /**
  * @brief Calculate Euclidean distance between two points
@@ -38,6 +51,11 @@ MatrixXd distanceMatrix(std::vector<std::string> strings);
  * @param pointB Second point
  * @return dist Euclidean distance between two points
  */
+
+MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
+                        int bitset_size, float *totalprogress,
+                        float *partialprogress);
+
 double euclideanDistance(VectorXd pointA, VectorXd pointB);
 
 /**
@@ -48,18 +66,17 @@ double euclideanDistance(VectorXd pointA, VectorXd pointB);
  */
 double tanimotoDistance(std::string fingerprintA, std::string fingerprintB);
 
-extern "C" {
-double calculateEuclideanDistance(double *vector1, double *vector2,
-                                  int string_length);
+/**
+ * @brief Calculate Anti-Tanimoto distance between two bitfingerprints
+ * @param fingerprintA Fingerprint of first molecule
+ * @param fingerprintB Fingerprint of second molecule
+  *@param bitset_size number of bits/length of one string
+ * @return dist Euclidean distance between two points
+ */
 
-double *calculateEuclideanDistanceMatrix(double *array, int num_points,
-                                         int dimension);
-
-int calculateHammingDistance(char *str1, char *str2, int string_length);
-
-int *calculateHammingDistanceMatrix(char **array, int num_strings,
-                                    int string_length);
-}
+double tanimotoDistanceBitwise(boost::dynamic_bitset<> fingerprintA,
+                               boost::dynamic_bitset<> fingerprintB,
+                               int bitset_size);
 
 double toRadians(double degree);
 /**
@@ -71,5 +88,12 @@ double toRadians(double degree);
  * @return distance using the haversine formula
  */
 double haversine(double lat1, double lon1, double lat2, double lon2);
+
+/**
+ * @brief Calculate edit distance between two strings using the unit cost
+ * @param str1 First sequence
+ * @param str2 Second sequence
+ */
+int editdistance(std::string seq1, std::string seq2);
 
 #endif  // SRC_CPP_DISTMAT_DISTMAT_H_

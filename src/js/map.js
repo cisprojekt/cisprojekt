@@ -1,4 +1,34 @@
-function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
+var exportFile;
+
+function mapFunctions(
+  labelsResult,
+  pointsToPlot,
+  n,
+  zoomLevels,
+  clusterInfos,
+  flagColumnNames,
+  numflags_array,
+) {
+  /**
+   * This function exports the function parameters to a JSON file, which will be saved as 'result.json'
+   **/
+  exportFile = function () {
+    var a = window.document.createElement("a");
+    var jsonText = JSON.stringify([
+      labelsResult,
+      pointsToPlot,
+      n,
+      zoomLevels,
+      clusterInfos,
+    ]);
+    a.href = window.URL.createObjectURL(
+      new Blob([jsonText], { type: "application/json" }),
+    );
+    a.download = "result.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
   //initialize
   var data = [];
   var y_coord = 0;
@@ -15,16 +45,20 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   var currentZoomLevel = 1.0;
   var button_zoom_level = 1.0; // starting layer of points which are generated
   var x_axis_width = width; // length of x-axis in pixels
-  var x_max = 15; //initial domain shown on x axis starting with 0
+  var x_max = 2; //initial domain shown on x axis starting with 0
 
   var y_axis_width = height; // length of y-axis in pixels
-  var y_max = 15; //initial domain shown on y axis starting with 0
+  var y_max = 2; //initial domain shown on y axis starting with 0
 
   var info_height = 30; // gives fixed size to all info svgs
   var info_width = 150; // gives fixed size to all info svgs
 
   var newDomainX = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
   var newDomainY = [0, 0]; // array should not be empty, otherwise it breaks the interactivity before interacting with zoom functionality
+
+  // we create a variable to store the label of the previous selected point
+  // for some reason this has to be a global variable, otherwise it does not work
+  var selectedPoint = null;
 
   //transformation function from pixel to coordinates
   function coordFromPixels(x_coord, y_coord) {
@@ -52,7 +86,7 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       averages.push({
         x: sums[label].x / sums[label].count,
         y: sums[label].y / sums[label].count,
-        r: sums[label].count,
+        r: Math.log2(sums[label].count + 1) / Math.log2(5),
         l: label,
       });
     }
@@ -83,17 +117,10 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .append("svg")
     .attr("width", width)
     .attr("height", height)
+    .style("background-color", "white")
     .on("mousemove", function (event) {
       var mouseCoords = d3.pointer(event);
-      var invertedCoords = d3.zoomTransform(this).invert(mouseCoords); // calculating the true mouse coordinates accounting für zoom and drag on a svg
-      /* infoMouse
-        .select("text")
-        .text(
-          "Mouse coordinates: " +
-            x.invert(invertedCoords[0]).toFixed(3) +
-            ", " +
-            y.invert(invertedCoords[1]).toFixed(3),
-        ); // .invert() accounts for the changes in scaling on the axis */
+      var invertedCoords = d3.zoomTransform(this).invert(mouseCoords); // calculating the true mouse coordinates accounting for zoom and drag on a svg
     });
 
   // Add the x-axis.
@@ -101,28 +128,6 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
 
   // Add the y-axis.
   var yAxis = svg.append("g").call(d3.axisRight(y));
-
-  // Add a tooltip div. Here we define the general feature of the tooltip: stuff that do not depend on the data point.
-  // Its opacity is set to 0: we don't see it by default.
-  // taken from https://d3-graph-gallery.com/graph/scatter_tooltip.html and adapted to the current version of d3js
-  // supplemented with infos from https://chartio.com/resources/tutorials/how-to-show-data-on-mouseover-in-d3js/
-  var tooltip_svg = d3
-    .select("#my_dataviz")
-    .append("svg")
-    .attr("width", 50)
-    .attr("height", 50);
-
-  var tooltip = d3
-    .select("#chartContainer")
-    .append("div")
-    .style("opacity", 0)
-    .attr("class", "tooltip")
-    .style("background-color", "white")
-    .style("border", "solid")
-    .style("border-width", "1px")
-    .style("border-radius", "5px")
-    .style("padding", "0px")
-    .style("position", "absolute");
 
   // Create a zoom behavior function
   var zoom = d3.zoom().scaleExtent([1, zoomLevels]).on("zoom", handleZoom);
@@ -149,33 +154,20 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
     .style("fill", "#0000ff")
     .style("fill-opacity", 0.5)
     .on("click", function (event, d) {
-      console.log(event);
       svg.selectAll("circle").on("click", null);
       d3.select(this).style("fill", "red");
     });
 
-  // we create a variable to store the label of the previous selected point
-  // for some reason this has to be a global variable, otherwise it does not work
-  var selectedPoint;
-
-  // Define the event handler function for zoom
+  /* This function handles zoom in all its details.
+   *
+   * @param {Object} event - abstract object of the zoom method which saves and handles all interactions with svg regarding the zoom functionality
+   * @returns {Object} - implicit return of changed event due to interaction with user
+   */
   function handleZoom(event) {
-    //
-
     //variable to store current zoom level
     currentZoomLevel = event.transform.k;
 
     transform = event.transform;
-
-    // Apply the transform to the desired element
-    //button_change_layer_in.attr("transform", event.transform);
-    //button_change_layer_out.attr("transform", event.transform);
-
-    /* if (help_var == 1) {
-      button_zoom_level_old = 0; //starting var button_zoom_level -1 so that the if case in Event handler is taken and thus the points get loaded
-      help_var += 1;
-    } */
-    //infoZoom.select("text").text("Zoom: " + currentZoomLevel.toFixed(5));
 
     //Enable the rescaling of the axes
     var newX = event.transform.rescaleX(x);
@@ -193,24 +185,14 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
       .select("text")
       .text("hierarchy level: " + button_zoom_level);
 
-    //button_zoom_level_old +=1;
-
-    //let averages = getAverages(button_zoom_level);
     var circles = svg.selectAll("circle");
 
     // if case for determining if new points need to be loaded
     if (button_zoom_level_old !== button_zoom_level) {
-      //let averages = getAverages(button_zoom_level);
       let averages = getAverages(button_zoom_level);
       var circles = svg.selectAll("circle").data(averages);
 
       button_zoom_level_old = button_zoom_level;
-      //button_zoom_level_old = 1 + button_zoom_level_old;
-
-      console.log(
-        "button_zoom_level_old in handleZoom " + button_zoom_level_old,
-      );
-      console.log("button_zoom_level in handleZoom " + button_zoom_level);
 
       circles.exit().remove();
 
@@ -223,57 +205,54 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
         })
 
         .attr("cx", function (d) {
-          return d.x;
+          return x(d.x);
         })
         .attr("cy", function (d) {
-          return d.y;
+          return y(d.y);
         })
         //save the label of the point
         .attr("data-id", function (d) {
           return d.l;
         })
-        .style("fill", "#0000ff")
-        .style("fill-opacity", 0.5)
+        .style("fill", "#0000ff") //blue
+        .style("fill-opacity", 0.5) //to visualize overlaps of clusters, since the colour will darken when it overlaps
         .attr("transform", event.transform)
         .on("click", function (event, d) {
-          console.log(event);
           svg.selectAll("circle").on("click", null);
           d3.select(this).style("fill", "red");
         });
     } else {
       circles
         .attr("transform", event.transform)
-        /*.on("click", function (event, d) {
-          console.log(event);
-          svg.selectAll("circle").on("click", null);
-          d3.select(this).style("fill", "red");
-        });*/
         .on("click", function (event, d) {
-          var nextColor = d3.select(this).style("fill"); //gets color of selected Circle
-
-          //unselect previous point
+          //unselect previous clicked point if there is one
           if (selectedPoint != null) {
             svg
               .selectAll("circle")
               .filter(function (d) {
-                return d.l === selectedPoint;
+                return d.l == selectedPoint;
               })
               .transition()
               .style("fill", "rgb(0, 0, 255)"); // Set the color of the previous point to blue
+            d3.select(this).lower();
           }
-
-          if (nextColor == "rgb(0, 0, 255)") {
+          //if the same point is clicked again dont select it again
+          //else select the point
+          if (selectedPoint == d.l) {
+            selectedPoint = null;
+          } else {
             d3.select(this).style("fill", "red");
             selectedPoint = d.l;
-          } else {
-            d3.select(this).style("fill", "rgb(0, 0, 255)");
-            selectedPoint = null;
           }
-          displayTextInClusterInfoBox(
+          //update the cluster info box with the information of the selected point
+          updateClusterInfoBox(
             selectedPoint,
             clusterInfos,
             button_zoom_level,
+            flagColumnNames,
+            numflags_array,
           );
+          // Now you can get any attribute of the clicked circle
         });
     }
   }
@@ -388,9 +367,6 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   d3.select("svg")
     .call(zoom)
     .on("click.zoom", function (event) {
-      // Get the current transform
-      //transform = event.transform; // variable is already set in handleZoom and just creates errors here
-      // Define the scale factor for the minimal zoom
       var scaleFactor = 1;
       // Apply the minimal zoom by a specific value
       svg
@@ -403,38 +379,218 @@ function mapFunctions(labelsResult, pointsToPlot, n, zoomLevels, clusterInfos) {
   d3.select("svg").call(zoom).on("dblclick.zoom", null);
 }
 
-//function to display text in clusterInfoBox depending on selected point
-//TODO add nonnumflag and numflag selected column information
-function displayTextInClusterInfoBox(
+/**
+ * This function updates the cluster information box with the information of the selected cluster.
+ *
+ * @param {number} selectedPoint - The label of the selected cluster
+ * @param {Array<Array<Cluster>>} clusterInfos - The cluster information for each zoom level
+ * @param {number} zoomLevel - The current zoom level
+ * @param {Array<Array<string>>} flagColumnNames - The names of the flag columns first element is array for nonnumflags, second element is array for numflags
+ * @param {Array<Array<number>>} numflags_array - The array of numflag values for each point
+ *
+ */
+function updateClusterInfoBox(
   selectedPoint,
-  falschrumclusterInfos,
+  clusterInfos,
   zoomLevel,
+  flagColumnNames,
+  numflags_array,
 ) {
   if (selectedPoint != null) {
-    clusterInfos = falschrumclusterInfos.reverse();
-
     const clusterInfoBox = document.getElementById("clusterInfoBox");
-
+    //diplay cluster label and number of points as text
     let displayText =
       "ClusterLabel: " +
-      clusterInfos[zoomLevel][selectedPoint].label +
-      "\n" +
+      clusterInfos[zoomLevel - 1][selectedPoint].label +
+      "<br>" +
       "Number of points: " +
-      clusterInfos[zoomLevel][selectedPoint].numPoints +
-      "\n";
+      clusterInfos[zoomLevel - 1][selectedPoint].numPoints +
+      "<br>";
 
     //display nonnumflag information
-    //DOESNT WORK YET!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    clusterInfos[zoomLevel][selectedPoint].nonnumflagCounters.forEach(
-      (flag) => {
-        Object.keys(flag).forEach((key) => {
-          displayText += key + ": " + flag[key].toString() + "\n";
-        });
-      },
-    );
-    clusterInfoBox.textContent = displayText;
+    cluster = clusterInfos[zoomLevel - 1][selectedPoint];
+    let pieDivs = [];
+    // Create pieDivs (WITH titles) for the nonnumflags
+    cluster.nonnumflagCounters.forEach((columnFlagMap, index) => {
+      let pieDiv = document.createElement("div");
+      let pieTitleDiv = document.createElement("div");
+      pieTitleDiv.innerHTML = "<br>" + flagColumnNames[0][index] + ":" + "<br>";
+      pieDiv.style.display = "inline-block";
+      pieDiv.style.width = "50%";
+      pieDiv.appendChild(pieTitleDiv);
+      pieDiv.appendChild(createPieDiv(cluster.getPie(index)));
+      pieDivs.push(pieDiv);
+    });
+
+    let boxPlotDivs = [];
+    // Create violinPlotDivs (WITH titles) for the numflags
+    for (
+      let flagIndex = 0;
+      flagIndex < flagColumnNames[1].length;
+      flagIndex++
+    ) {
+      let boxPlotDiv = document.createElement("div");
+      let boxPlotTitleDiv = document.createElement("div");
+      boxPlotTitleDiv.innerHTML =
+        "<br>" + flagColumnNames[1][flagIndex] + ":" + "<br>";
+      boxPlotDiv.appendChild(boxPlotTitleDiv);
+      boxPlotDiv.appendChild(
+        createViolinPlotDiv(
+          numflags_array,
+          cluster.pointIndices,
+          flagIndex,
+          clusterInfoBox.clientWidth,
+        ),
+      );
+      boxPlotDivs.push(boxPlotDiv);
+    }
+    clusterInfoBox.innerHTML = displayText;
+    const chartsPerRow = 2;
+
+    // Counter to keep track of the items added
+    let itemCount = 0;
+
+    // Iterate through pieDivs
+    pieDivs.forEach((pieDiv) => {
+      // Append the pieDiv to the clusterInfoBox
+      clusterInfoBox.appendChild(pieDiv);
+
+      // Increment the item count
+      itemCount++;
+
+      // Check if it's time to start a new row
+      if (itemCount === chartsPerRow) {
+        // Add a line break to start a new row
+        clusterInfoBox.appendChild(document.createElement("br"));
+
+        // Reset the item count for the new row
+        itemCount = 0;
+      }
+    });
+
+    if (itemCount != 0) {
+      // Add a line break to start a new row after pies
+      // if last row had < chartsPerRow charts
+      clusterInfoBox.appendChild(document.createElement("br"));
+    }
+
+    boxPlotDivs.forEach((boxPlotDiv) => {
+      clusterInfoBox.appendChild(boxPlotDiv);
+    });
   } else {
     const clusterInfoBox = document.getElementById("clusterInfoBox");
     clusterInfoBox.textContent = "No point selected.";
   }
+}
+/**
+ * This function creates a div containing a pie chart for the given pie.
+ * @param {Pie} pie - The pie chart to display
+ * @returns {HTMLDivElement} The div containing the pie chart
+ */
+function createPieDiv(pie) {
+  let pieDiv = document.createElement("div");
+  pieDiv.id = "pieDiv" + pie.name;
+
+  let canvas = document.createElement("canvas");
+  canvas.id = "pieChart" + pie.name;
+  pieDiv.appendChild(canvas);
+
+  // Get the 2d context of the canvas
+  let ctx = canvas.getContext("2d");
+
+  // Prepare data for the Chart.js pie chart
+  let defaultBackgroundColors = [
+    "red",
+    "blue",
+    "green",
+    "yellow",
+    "purple",
+    "orange",
+    "pink",
+    "brown",
+    "gray",
+  ];
+  let backgroundColor = defaultBackgroundColors.slice(0, pie.length - 1);
+  backgroundColor.push("gray");
+  for (let i = backgroundColor.length; i < pie.length; i++) {
+    backgroundColor.push("gray");
+  }
+
+  let chartData = {
+    labels: pie.map((slice) => slice.name),
+    datasets: [
+      {
+        data: pie.map((slice) => slice.value),
+        backgroundColor: backgroundColor,
+      },
+    ],
+  };
+
+  // Initialize the pie chart
+  let pieChart = new Chart(ctx, {
+    type: "pie",
+    data: chartData,
+  });
+
+  return pieDiv;
+}
+
+/**
+ * This function creates a div containing a violin plot for the given flag.
+ * @param {Array<Array<number>>} numflagsArray - The array of numflag values for each point
+ * @param {Array<number>} clusterPoints - The indices of the points in the cluster
+ * @param {number} flagIndex - The index of the flag to display
+ * @param {number} plotWidthPixels - The width of the plot in pixels
+ * @returns {HTMLDivElement} The div containing the violin plot
+ */
+function createViolinPlotDiv(
+  numflagsArray,
+  clusterPoints,
+  flagIndex,
+  plotWidthPixels,
+) {
+  // Create a container div for the violin plot
+  let violinDiv = document.createElement("div");
+  violinDiv.id = `violinPlot_${flagIndex}`;
+  violinDiv.style.width = plotWidthPixels.toString() + "px"; // Set the width of the div
+
+  // Prepare data for the violin plot
+  const data = [
+    {
+      type: "violin",
+      y: clusterPoints.map(
+        (pointIndex) => numflagsArray[pointIndex][flagIndex],
+      ),
+      // points: "none",
+      box: {
+        visible: true,
+      },
+      boxpoints: false,
+      line: {
+        color: "black",
+      },
+      fillcolor: "#8dd3c7",
+      opacity: 0.6,
+      meanline: {
+        visible: true,
+      },
+      x0: `Flag ${flagIndex}`,
+    },
+  ];
+
+  // Layout configuration
+  const layout = {
+    title: `Violin Plot for Flag ${flagIndex}`,
+    yaxis: {
+      zeroline: false,
+    },
+    autosize: true,
+  };
+
+  var config = { responsive: true };
+
+  // Create the violin plot
+  Plotly.newPlot(violinDiv, data, layout, config);
+
+  return violinDiv;
 }

@@ -4,13 +4,14 @@ body {
   box-sizing: border-box;
   font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
     "Helvetica Neue", sans-serif;
-  background-image: url("../style/folder/back.png");
+  /*background-image: url("../style/folder/back.png");*/
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
   min-height: 100vh;
   max-height: 100%;
+  background-color: #eaf3f5;
 }
 
 .header {
@@ -24,14 +25,14 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 8%;
+  padding: 18px;
   transition: background 1s;
 }
 
 nav .logo {
   display: flex;
   align-items: center;
-  font-size: 30px;
+  font-size: 40px;
   font-weight: 600;
   color: black;
   text-shadow: 1px 1px 20px rgba(255, 255, 255, 1);
@@ -50,11 +51,11 @@ nav ul li a {
 }
 
 nav:hover .logo {
-  color: #969fe2;
+  color: #41438e;
 }
 
 nav:hover ul li a {
-  color: #969fe2;
+  color: #41438e;
 }
 
 .content {
@@ -109,29 +110,49 @@ main {
 
 button {
   display: inline-block;
+  font-family: inherit;
+  border: none;
+  outline: 1px dotted rgb(37, 37, 37);
+  outline-offset: -4px;
+  background: hsl(0deg 0% 75%);
   width: 150px;
-  background-color: #969fe2;
-  margin: 2px;
-  padding: 10px 15px;
+  height: 40px;
+  box-shadow:
+    inset -1px -1px #292929,
+    inset 1px 1px #fff,
+    inset -2px -2px rgb(158, 158, 158),
+    inset 2px 2px #ffffff;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 5px 30px;
+}
+
+.label {
+  width: 300px;
+  height: 30px;
+  /*background-image: url("../style/folder/label.png");*/
+  font-size: 20px;
+  font-weight: bold;
+  color: #41438e;
+  line-height: 30px;
+  padding-left: 5px;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.divider {
+  width: 10%;
+  font-size: larger;
+  font-family: sans-serif;
+  background-color: #d8d8d8;
   border-radius: 5px;
-  cursor: pointer;
-  border-color: transparent;
 }
 
-body.dark-mode {
-  background-color: black;
-  color: white;
-}
-
-header.dark-mode {
-  background-color: #634c6a;
-}
-
-main.dark-mode,
-footer.dark-mode {
-  background-color: #333;
-}
-
-button.dark-mode {
-  background-color: #6c6ea0;
+.zoomlevel {
+  width: 10%;
+  font-size: normal;
+  font-family: sans-serif;
+  background-color: #d8d8d8;
+  border-radius: 5px;
 }

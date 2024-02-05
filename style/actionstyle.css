@@ -10,7 +10,11 @@ button:hover {
   box-shadow: 0 4px 4px 4px rgba(0, 0, 0, 0.1);
 }
 button:active {
-  transform: translateY(3px);
+  box-shadow:
+    inset -1px -1px #fff,
+    inset 1px 1px #292929,
+    inset -2px -2px #ffffff,
+    inset 2px 2px rgb(158, 158, 158);
 }
 
 button#deleAllButton {

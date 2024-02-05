@@ -16,7 +16,6 @@
 
 // clang-format on
 
-#include <emscripten.h>
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -25,6 +24,7 @@
 #include <time.h>
 
 #include <Eigen/Dense>
+#include <boost/dynamic_bitset.hpp>
 #include <cmath>
 #include <iostream>
 #include <map>
@@ -37,15 +37,64 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
+/**
+ * @brief Function for clustering using custom distance function (distmat
+ * already filled)
+ * @param distMat Pre-filled distance matrix
+ * @param height Cluster distance for each step
+ * @param merge Encoded dendrogram
+ * @param labels Label assignment for clusters
+ * @param n Number of entries
+ * @param zoomMode Way of cutting the dendrogram 0 = equidistant, 1 = relative
+ * number, 2 = fixed number
+ * @param zoomNumber
+ * @param maxIterations Maximum number of iterations
+ * @param zoomLevels Number of zoomlevels for the d3js plot
+ * @param calcDistMethod Distance calculation method
+ * @param calcScalingMethod Scaling method
+ * @param resultPoints Resulting points after MDS
+ */
+extern "C" void clusterCustom(double *distMat, double *height, int *merge,
+                              int *labels, int n, int zoomMode, int zoomNumber,
+                              int maxIterations, int zoomLevels,
+                              int calcDistMethod, double *resultPoint,
+                              int calcScalingMethod, float *totalprogress,
+                              float *partialprogress);
+/**
+ * @brief Function for clustering strings, takes one large string as parameter
+ * and splits it into smaller parts
+ * @param inputStringChar One long concatenated string
+ * @param lengthOfString Array where the i-th entry is the length of the i-th
+ * string
+ * @param distMat Distance matrix for the points
+ * @param height Cluster distance for each step
+ * @param merge Encoded dendrogram
+ * @param labels Label assignment for clusters
+ * @param nStrings Number of strings
+ * @param zoomMode Way of cutting the dendrogram 0 = equidistant, 1 = relative
+ * number, 2 = fixed number
+ * @param zoomNumber
+ * @param maxIterations Maximum number of iterations
+ * @param zoomLevels Number of zoomlevels for the d3js plot
+ * @param calcDistMethod Distance calculation method
+ * @param calcScalingMethod Scaling method
+ * @param bool_bit 1 = string is bitstring, 0 = normal string
+ * @param resultPoints Resulting points after MDS
+ * @param type 0 = tanimoto, 1 = edit-distance
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task
+ */
+extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
-                               int *labels, int nStrings, int maxIterations,
+                               int *labels, int nStrings, int zoomMode,
+                               int zoomNumber, int maxIterations,
                                int zoomLevels, int calcDistMethod,
-                               int calcScalingMethod, double *resultPoints, int calcClusterMethod = 1);
+                               int calcScalingMethod, int bool_bit,
+                               double *resultPoints, int type,
+                               float *totalprogress, float *partialprogress);
 
 /**
- * @brief Webassembly function, will apply multidimensional scaling and
- * clustering for given points
+ * @brief Function for clustering points, either euclidean or earth
  * @param points The points to cluster
  * @param dimension Dimension of the input points
  * @param distMat Distance matrix for the points
@@ -53,13 +102,23 @@ extern "C" void clusterStrings(char *inputStringChar, double *lengthOfString,
  * @param merge Encoded dendrogram
  * @param labels Label assignment for clusters
  * @param nPoints Number of points
+ * @param zoomMode Way of cutting the dendrogram 0 = equidistant, 1 = relative
+ * number, 2 = fixed number
+ * @param zoomNumber
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
+ * @param calcDistMethod Distance calculation method
+ * @param calcScalingMethod Scaling method
+ * @param isSpherical 0 = euclidean, 1 = earth-distance
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task
  */
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,
-                              int nPoints, int maxIterations, int zoomLevels,
-                              int calcDistMethod, int calcScalingMethod, 
-                              bool isSpherical, int calcClusterMethod = 1);
+                              int nPoints, int zoomMode, int zoomNumber,
+                              int maxIterations, int zoomLevels,
+                              int calcDistMethod, int calcScalingMethod,
+                              bool isSpherical, float *totalprogress,
+                              float *partialprogress);
 
 #endif  // SRC_CPP_DV_MAIN_H_
