@@ -81,6 +81,8 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
  * @param bool_bit 1 = string is bitstring, 0 = normal string
  * @param resultPoints Resulting points after MDS
  * @param type 0 = tanimoto, 1 = edit-distance
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task
  */
 extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
@@ -108,6 +110,8 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
  * @param calcDistMethod Distance calculation method
  * @param calcScalingMethod Scaling method
  * @param isSpherical 0 = euclidean, 1 = earth-distance
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task
  */
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,

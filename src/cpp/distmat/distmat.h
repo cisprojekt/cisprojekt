@@ -66,6 +66,14 @@ double euclideanDistance(VectorXd pointA, VectorXd pointB);
  */
 double tanimotoDistance(std::string fingerprintA, std::string fingerprintB);
 
+/**
+ * @brief Calculate Anti-Tanimoto distance between two bitfingerprints
+ * @param fingerprintA Fingerprint of first molecule
+ * @param fingerprintB Fingerprint of second molecule
+  *@param bitset_size number of bits/length of one string
+ * @return dist Euclidean distance between two points
+ */
+
 double tanimotoDistanceBitwise(boost::dynamic_bitset<> fingerprintA,
                                boost::dynamic_bitset<> fingerprintB,
                                int bitset_size);

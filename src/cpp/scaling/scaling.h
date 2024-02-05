@@ -106,28 +106,49 @@ MatrixXd calculateMDSsmacof(MatrixXd &distMat, float *totalprogress,  // NOLINT
 MatrixXd createRandomPoints(int n, int m);
 
 /**
- * @brief Webassembly function, will apply multidimensional scaling and
- * clustering for given points
- * @param points The points to cluster
- * @param dimension Dimension of the input points
- * @param distMat Distance matrix for the points
- * @param height Cluster distance for each step
- * @param merge Encoded dendrogram
- * @param labels Label assignment for clusters
- * @param nPoints Number of points
- * @param maxIterations Maximum number of iterations
- * @param zoomLevels Number of zoomlevels for the d3js plot
+ * @brief calculate a single iteration of the scikit mds
+ * @param dissimilarities Matrix which contains distance information
+ * @param x table with 2 columns contains the final coordinates of MDS
+ * @param x_inter table with 2 columns contains coordinates single MDSiteration
+ * @param n_samples number of points to be processed
+ * @param n_iterations number of iterations per reduction calculation
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task
+ * @param init boolean whether initialization is random or provided
+ * @param metric bool whether distance information is euclidic
+ * @param n_components original dimensionality
+ * @param max_iter number when algorithm breaks, no matter the stress
+ * @param verbose boolean to activate further runtime documentation
+ * @param eps threshold of stress which determines termination
+ * @param random_state which random start configuration is chosen
+ * @param normalized_stress bool whether stress value is normalize to [0,1]            
+ * @return stress
  */
-
-// full distance-matrix needed!
-
-// Scikit functions
 double scikit_mds_single(const MatrixXd &dissimilarities, const MatrixXd &x,
                          const MatrixXd &x_inter, int n_samples,
                          int n_iterations, float *totalprogress,
                          float *partialprogress, bool init, bool metric,
                          int n_components, int max_iter, bool verbose,
                          double eps, int random_state, bool normalized_stress);
+/**
+ * @brief calculate the mds, output two-dimensional point coordinates
+ * @param dissimilarities Matrix which contains distance information
+ * @param x table with 2 columns contains the final coordinates of MDS
+ * @param x_inter table with 2 columns contains coordinates single MDSiteration
+ * @param n_samples number of points to be processed
+ * @param n_iterations number of iterations per reduction calculation
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task
+ * @param init boolean whether initialization is random or provided
+ * @param metric bool whether distance information is euclidic
+ * @param n_components original dimensionality
+ * @param max_iter number when algorithm breaks, no matter the stress
+ * @param verbose boolean to activate further runtime documentation
+ * @param eps threshold of stress which determines termination
+ * @param random_state which random start configuration is chosen
+ * @param normalized_stress bool whether stress value is normalize to [0,1]            
+ * @return changes the called by reference x-Matrix
+ */
 
 void scikit_mds_multi(const MatrixXd &dissimilarities, const MatrixXd &x,
                       const MatrixXd &x_inter, int n_iterations,
@@ -135,6 +156,14 @@ void scikit_mds_multi(const MatrixXd &dissimilarities, const MatrixXd &x,
                       int n_samples, bool init, bool metric, int n_components,
                       int max_iter, bool verbose, double eps, int random_state,
                       bool normalized_stress);
+
+/**
+ * @brief calculate the mds, output two-dimensional point coordinates
+ * @param distanceMatrix Matrix which contains distance information
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task          
+ * @return Eigen-Matrix with two-dimensional point coordinates
+ */
 
 MatrixXd calculateMDSscikit(int N, const MatrixXd &distanceMatrix,
                             float *totalprogress, float *partialprogress);
@@ -152,15 +181,71 @@ typedef struct _VECTYPE {
   float value;
 } VECTYPE;
 
+/**
+ * @brief num_p number of points to be processed
+ * @param distanceMatrix Matrix which contains distance information
+ * @param totalprogress tracker how far the calculation progressed over all tasks
+ * @param partialprogress tracker how far the calculation over the recent task          
+ * @return Eigen-Matrix with two-dimensional point coordinates
+ */
+
 MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
                              float *totalprogress, float *partialprogress);
+
+/**
+ * @brief calculates 32-bit random integers
+ */
 int myrand(void);
+
+/**
+ * @brief comparison of two distances
+ * @param a distance to be compared
+ * @param b distance to be compared         
+ * @return which distance is higher
+ */
+
 int distcomp(const void *a, const void *b);
+
+/**
+ * @brief comparison of two indices
+ * @param a indices to be compared
+ * @param b indices to be compared         
+ * @return which index is higher
+ */
+
 int idxcomp(const void *a, const void *b);
+/**
+ * @brief comparison of two floats
+ * @param a float to be compared
+ * @param b float to be compared         
+ * @return which float has higher value
+ */
 float max(float a, float b);
+/**
+ * @brief comparison of two floats
+ * @param a float to be compared
+ * @param b float to be compared         
+ * @return which float has lower value
+ */
 float min(float a, float b);
+/**
+ * @brief checks when algorithm is terminated
+ * @param idx_set points to be calculated
+ * @param size number of points to be calculated        
+ * @return control value
+ */
 int terminate(INDEXTYPE *idx_set, int size);
+/**
+ * @brief applies force on points
+ * @param size number of points to be calculated 
+ * @param fixedsize number of points considered as neighbour
+ * @param distanceMatrix Matrix which contains distance information        
+ */
 void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix);
+/**
+ * @brief random initialization of start configuration
+ * @param embedding storage for points
+ */
 void init_embedding(float *embedding);
 int fill_level_count(int input, int *h);
 

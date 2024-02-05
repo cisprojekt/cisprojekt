@@ -133,7 +133,6 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
     std::string inputString(inputStringChar);
     std::vector<std::string> stringVector(nStrings);
     int startLength = 0;
-    std::cout << "tempstrings " << std::endl;
     for (int i = 0; i < nStrings; i++) {
       std::string tempString =
           inputString.substr(startLength, lengthOfString[i]);
@@ -329,6 +328,8 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
         cutree_k(nPoints, merge, numclust, oneLabel);
         std::memcpy(labels + i * nPoints, oneLabel, nPoints * sizeof(int));
         numclust = static_cast<int>(numclust /= zoomNumber);
+        // exponential decrease of numclust, for quicker processing through
+        // hierarchy
       }
       break;
     }
