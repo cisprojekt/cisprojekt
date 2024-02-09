@@ -87,7 +87,7 @@ function mapFunctions(
       averages.push({
         x: sums[label].x / sums[label].count,
         y: sums[label].y / sums[label].count,
-        r: Math.log2(sums[label].count + 1) / Math.log2(5),
+        r: Math.log2(sums[label].count + 15),
         l: label,
 		c: "#0000ff",  
       });
@@ -245,7 +245,7 @@ function mapFunctions(
     .style("fill-opacity", 0.5)
     .on("click", function (event, d) {
       d3.select(this).style("stroke", "black");
-      d3.select(this).style("stroke-width", '0.2');
+      d3.select(this).style("stroke-width", '4');
     });
 
   // Define the event handler function for zoom
@@ -332,7 +332,7 @@ function mapFunctions(
         .on("click", function (event, d) {
           svg.selectAll("circle").on("click", null);
           d3.select(this).style("stroke", "black");
-		  d3.select(this).style("stroke-width", '0.2');
+		  d3.select(this).style("stroke-width", '4');
         });
     } else {
       circles
@@ -357,7 +357,7 @@ function mapFunctions(
             selectedPoint = null;
           } else {
             d3.select(this).style("stroke", "black");
-			d3.select(this).style("stroke-width", '0.2');
+			d3.select(this).style("stroke-width", '4');
             selectedPoint = d.l;
           }
           updateClusterInfoBox(
