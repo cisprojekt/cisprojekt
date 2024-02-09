@@ -1,4 +1,4 @@
-// Copyright [year] <Copyright Owner>
+// Copyright [2024] <cisprojekt>
 
 #include <Eigen/Dense>
 #include <cmath>
@@ -6,8 +6,8 @@
 #include <map>
 #include <random>
 
-#include "../dv_main.h"
-#include "../external/hclust/fastcluster.h"
+#include "src/cpp/dv_main.h"
+#include "src/cpp/external/hclust/fastcluster.h"
 
 using Eigen::MatrixXd;
 

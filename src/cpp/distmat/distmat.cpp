@@ -1,4 +1,4 @@
-// Copyright [year] <Copyright Owner>
+// Copyright [2024] <cisprojekt>
 #include "src/cpp/distmat/distmat.h"
 
 #include <time.h>
@@ -18,6 +18,7 @@ using Eigen::MatrixXd;
 
 MatrixXd distanceMatrix(double *distMatFilled, int n, float *totalprogress,
                         float *partialprogress) {
+  // Initialize tracking and parameters
   MatrixXd distMat(n, n);
   *partialprogress = 0.0;
   float tStep = 1 / n * 0.35;
@@ -26,6 +27,7 @@ MatrixXd distanceMatrix(double *distMatFilled, int n, float *totalprogress,
     *totalprogress += tStep;
     *partialprogress += pStep;
     for (int j = i + 1; j < n; j++) {
+      // Copy entries from distmatfilled
       int idx = i * (n - 1) + j - ((i + 1) * (i + 2)) / 2;
       distMat(i, j) = distMatFilled[idx];
       distMat(j, i) = distMatFilled[idx];
@@ -42,9 +44,11 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       if (isSperical) {
+        // Use calculation based on spherical coordinates
         distMat(i, j) =
             haversine(points(i, 0), points(i, 1), points(j, 0), points(j, 1));
       } else {
+        // Use vector 2-norm
         distMat(i, j) = euclideanDistance(points.row(i), points.row(j));
       }
     }
@@ -54,6 +58,7 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical) {
 
 MatrixXd distanceMatrix(MatrixXd points, bool isSperical, float *totalprogress,
                         float *partialprogress) {
+  // Initialize parameters and tracking
   int n = points.rows();
   MatrixXd distMat(n, n);
   *partialprogress = 0.0;
@@ -63,11 +68,12 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical, float *totalprogress,
     *totalprogress += tStep;
     *partialprogress += pStep;
     for (int j = 0; j < n; j++) {
-      // TODO(Jonas): Implement other distance functions
       if (isSperical) {
+        // Use calculation based on spherical coordinates
         distMat(i, j) =
             haversine(points(i, 0), points(i, 1), points(j, 0), points(j, 1));
       } else {
+        // Use vector 2-norm
         distMat(i, j) = euclideanDistance(points.row(i), points.row(j));
       }
     }
@@ -78,6 +84,7 @@ MatrixXd distanceMatrix(MatrixXd points, bool isSperical, float *totalprogress,
 
 MatrixXd distanceMatrix(std::vector<std::string> strings, int type,
                         float *totalprogress, float *partialprogress) {
+  // Initialize parameters and tracking
   int n = strings.size();
   MatrixXd distMat(n, n);
   *partialprogress = 0.0;
@@ -86,9 +93,8 @@ MatrixXd distanceMatrix(std::vector<std::string> strings, int type,
   for (int i = 0; i < n; i++) {
     *totalprogress += tStep;
     *partialprogress += pStep;
-    std::cout << "DistMat did row " << i << "from " << n << std::endl;
     for (int j = 0; j < n; j++) {
-      // TODO(Jonas): Implement other distance functions
+      // Choose which kind of data is represented by string and calculate dist
       if (type == 0) {
         distMat(i, j) = tanimotoDistance(strings[i], strings[j]);
       } else if (type == 1) {
@@ -103,6 +109,7 @@ MatrixXd distanceMatrix(std::vector<std::string> strings, int type,
 MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
                         int bitset_size, float *totalprogress,
                         float *partialprogress) {
+  // Initialize parameters, time and tracking
   clock_t start_time1 = clock();
   int n = bitstrings.size();
   MatrixXd distMat(n, n);
@@ -114,8 +121,11 @@ MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
   for (int i = 0; i < n; i++) {
     *totalprogress += tStep;
     *partialprogress += pStep;
+    // Determine one string to be compared with for one column of matrix
     boost::dynamic_bitset<> comparestring = bitstrings[i];
+    // Initialize iterator
     std::vector<boost::dynamic_bitset<>>::iterator bitstringptr;
+    // Iterate over container with bitstrings and calculate pairwise tanimoto
     for (bitstringptr = bitstrings.begin(); bitstringptr < bitstrings.end();
          bitstringptr++) {
       *matrixpointer =
@@ -123,7 +133,7 @@ MatrixXd distanceMatrix(std::vector<boost::dynamic_bitset<>> bitstrings,
       matrixpointer++;
     }
   }
-
+  // Statistical output
   clock_t start_time2 = clock();
   std::cout << "distanceMatrix_bitstring needed "
             << static_cast<float>(start_time2 - start_time1) / (CLOCKS_PER_SEC)
@@ -139,12 +149,15 @@ double tanimotoDistanceBitwise(boost::dynamic_bitset<> fingerprintA,
                                boost::dynamic_bitset<> fingerprintB,
                                int bitset_size) {
   int molA = 0, molB = 0, molC = 0;
+  // Fingerprint C is 1, if both fingerprints are 1 at this index
   boost::dynamic_bitset<> fingerprintC = fingerprintA & fingerprintB;
   // We assume both fingerprints have equal length
+  // Sum of '1' in those three arrays
   molA = fingerprintA.count();
   molB = fingerprintB.count();
   molC = fingerprintC.count();
 
+  // Calculate 1 - tanimoto
   double distance = 1 - (static_cast<double>(molC) / (molA + molB - molC));
   return distance;
 }
@@ -152,16 +165,15 @@ double tanimotoDistanceBitwise(boost::dynamic_bitset<> fingerprintA,
 double tanimotoDistance(std::string fingerprintA, std::string fingerprintB) {
   int molA = 0, molB = 0, molC = 0;
   // We assume both fingerprints have equal length
+  // Sum of '1' in those three arrays
   for (std::string::size_type i = 0; i < fingerprintA.size(); i++) {
     if (fingerprintA[i] == '1') molA++;
     if (fingerprintB[i] == '1') molB++;
     if (fingerprintA[i] == '1' && fingerprintB[i] == '1') molC++;
   }
 
+  // Calculate 1 - tanimoto
   double distance = 1 - (static_cast<double>(molC) / (molA + molB - molC));
-  if (molA + molB - molC == 0) {
-    distance = 0;
-  }
   return distance;
 }
 
@@ -199,6 +211,7 @@ int editdistance(std::string seq1, std::string seq2) {
 int hammingDistance(char *str1, char *str2, int string_length) {
   int distance = 0;
   for (size_t i = 0; i < string_length; i++) {
+    // Compare content of string at specific index
     if (str1[i] != str2[i]) {
       distance++;
     }

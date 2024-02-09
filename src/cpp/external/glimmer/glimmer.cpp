@@ -1,4 +1,4 @@
-// Copyright [year] <Copyright Owner>
+// Copyright [2008] <Stephen Ingram>
 // glimmer.cpp : Console program to compute Glimmer CPU MDS on a set of input
 // coordinates
 
@@ -6,6 +6,16 @@
 
 
 // structs are not defined in glimmer.cpp but in scaling.h
+
+/*
+  Adjustments made by Timo Hofmann:
+  * removed loadCSV function
+  * added calculateMDSGlimmer (modified from original main-function)
+  * removed calculation of distance from input data
+  * substituted editing distance highd value through reading
+    MatrixXd distanceMatrix entries
+  * removed alternative setting of constants V_SET_SIZE and S_SET_SIZE
+*/
 #include <Eigen/Dense>
 #include <float.h>
 #include <stdlib.h>
@@ -18,16 +28,13 @@
 #include <iostream>
 #include <fstream>
 
-#include "../../scaling/scaling.h"
+#include "src/cpp/scaling/scaling.h"
 
 /*
         CONSTANTS
 */
 #define MIN_NUM_ARGS 0  // minimum command line arguments
 #define SKIP_LINES 0    // number of lines to skip in the input CSV
-// #define V_SET_SIZE   4               // number of close neighbors
-// #define S_SET_SIZE   4               // number of randomly chosen
-// neighbors
 #define V_SET_SIZE 8        // number of close neighbors
 #define S_SET_SIZE 12       // number of randomly chosen neighbors
 #define USE_GLUT 0          // comment this when timing tests are done
@@ -149,7 +156,7 @@ void outputCSV(const char *filename, float *embedding) {
   }
 
   // output header
-  fprintf(fp, "X,Y\nDOUBLE,DOUBLE\n");
+  fprintf(fp, "X,Y\n");
 
   // output data to file
   for (int i = 0; i < N; i++) {
@@ -165,85 +172,6 @@ void outputCSV(const char *filename, float *embedding) {
   fclose(fp);
 }
 
-
-                                // parse character data
-                                if( line[i] == ',' ) {
-
-                                        item[j] = '\0';
-                                        data[k++] = (float) atof( item );
-                                        j = 0;
-                                }
-                                else if( line[i] == '\n' || line[i] == '\0' ) {
-
-                                        item[j] = '\0';
-                                        data[k++] = (float) atof( item );
-                                        done++;
-                                }
-                                else if( line[i] != ' ' ) {
-
-                                        item[j++] = line[i];
-                                }
-                                i++;
-                        }
-                }
-        }
-
-        //// normalize the data
-
-        float *max_vals = (float *) malloc( sizeof( float ) * n_original_dims );
-        float *min_vals = (float *) malloc( sizeof( float ) * n_original_dims );
-        for( int i = 0; i < n_original_dims; i++ ) {
-                max_vals[ i ] = 0.f;
-                min_vals[ i ] = 10000.0f;
-        }
-        k = 0;
-        for( int i = 0; i < N; i++ ) {
-                for( int j = 0; j < n_original_dims; j++ ) {
-                        if( data[i*(n_original_dims)+j] > max_vals[j] ) {
-                                max_vals[j] = data[i*(n_original_dims)+j];
-                        }
-                        if( data[i*(n_original_dims)+j] < min_vals[j] ) {
-                                min_vals[j] = data[i*(n_original_dims)+j];
-                        }
-                }
-        }
-        for( int i = 0; i < n_original_dims; i++ ) {
-                max_vals[ i ] -= min_vals[ i ];
-        }
-        for( int i = 0; i < N; i++ ) {
-                for( int j = 0; j < n_original_dims; j++ ) {
-                        if( (max_vals[j] - min_vals[j]) < 0.0001f ) {
-                                data[i*(n_original_dims)+j] = 0.f;
-                        }
-                        else {
-                                data[i*(n_original_dims)+j] =
-                                        (data[i*(n_original_dims)+j] -
-min_vals[j])/max_vals[j]; if( !isfinite( data[i*(n_original_dims)+j]) )
-                                        data[i*(n_original_dims)+j] = 0.f;
-                        }
-                }
-        }
-        free( max_vals );
-        free( min_vals );
-
-        // permute the data using Knuth shuffle
-        float *shuffle_temp = (float *) malloc( sizeof( float ) *
-n_original_dims ) ; int shuffle_idx = 0; for( int i = 0; i < N*n_original_dims;
-i+=n_original_dims ) {
-
-                shuffle_idx = i + ( rand() % (N-(i/n_original_dims))
-)*n_original_dims; for( int j = 0; j < n_original_dims; j++ ) {	// swap
-
-                        shuffle_temp[j]=data[i+j];
-                        data[i+j] = data[shuffle_idx+j];
-                        data[shuffle_idx+j] = shuffle_temp[j];
-                }
-        }
-        free(shuffle_temp);
-
-        return data;
-}
-*/
 /*
         distance and index comparison functions for qsort
 */
@@ -375,25 +303,15 @@ void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix) {
 
     // move the point
     for (int j = 0; j < (V_SET_SIZE + S_SET_SIZE); j++) {
-      // for (int a; a < N*(V_SET_SIZE+S_SET_SIZE); a++) {
-      // printf("%d\n",g_idx[a].index); } break;
       //  get a reference to the other point in the index set
       int idx = g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].index;
 
       norm = 0.f;
       for (int k = 0; k < n_embedding_dims; k++) {
-        // printf("%f",g_embed[20001]);
-        // printf("init\n"); printf("%d ",idx*2+k); printf("%d
-        // ",i*(V_SET_SIZE+S_SET_SIZE)+j); printf("%d
-        // ",g_idx[i*(V_SET_SIZE+S_SET_SIZE)+j].index); printf("%d\n",k);
         //  calculate the direction vector
         dir_vec[k] = g_embed[2 * idx * n_embedding_dims + k] -
                      g_embed[i * n_embedding_dims + k];
-        // printf("%f ",dir_vec[k]); printf("%f
-        // ",g_embed[idx*n_embedding_dims+k]);
-        // printf("%f\n",g_embed[i*n_embedding_dims+k]);
         norm += dir_vec[k] * dir_vec[k];
-        // printf("init2\n");
       }
       norm = sqrt(norm);
       g_idx[i * (V_SET_SIZE + S_SET_SIZE) + j].lowd = norm;
@@ -473,7 +391,6 @@ void init_embedding(float *embedding) {
 */
 int fill_level_count(int input, int *h) {
   static int levels = 0;
-  // printf("h[%d]=%d\n",levels,input);
   h[levels] = input;
   levels++;
   if (input <= MIN_SET_SIZE)
@@ -486,10 +403,9 @@ int fill_level_count(int input, int *h) {
 */
 MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
                              float *totalprogress, float *partialprogress) {
-  // float* distmat = new float[line_num];           --> convert to MatrixXd
-  // distmat
-  // begin timing -------------------------------------BEGIN TIMING
+  // begin timing
   clock_t start_time1 = clock();
+  // initialize function parameters
   N = num_p;
   MatrixXd XUpdated(N, 2);
   int skip = 0;

@@ -7,6 +7,14 @@
 //            (see the file LICENSE for details)
 //
 
+/*
+  Adjustments made by Timo Hofmann:
+  * added options weighted, ward, centroid to hclust_fast
+  * changed double* distance matrix format to &MatrixXd
+  * added totalprogress, partialprogress parameter to hclust_fast
+  * to keep track of progress of the app in general
+*/
+
 #ifndef fastclustercpp_H
 #define fastclustercpp_H
 
@@ -72,8 +80,14 @@ enum hclust_fast_methods {
   // median link with the generic algorithm (Müllner, 2011)
   // requires euclidean distances as distance data
   HCLUST_METHOD_MEDIAN = 3,
+  // weighted link with the generic algorithm (Müllner, 2011)
+  // requires euclidean distances as distance data
   HCLUST_METHOD_WEIGHTED = 4,
+  // ward link with the generic algorithm (Müllner, 2011)
+  // requires euclidean distances as distance data
   HCLUST_METHOD_WARD = 5,
+  // centroid link with the generic algorithm (Müllner, 2011)
+  // requires euclidean distances as distance data
   HCLUST_METHOD_CENTROID = 6
 };
   

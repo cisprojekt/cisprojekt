@@ -43,13 +43,20 @@ async function calculateClusters(
 
   let n = inputPoints.length;
   var zoomLevels = 1;
+  //determine ZoomMode and Number of Zoomlevels accordingly
   if (zoomMode == 0) {
+    //automatic - app chooses how many clusters are built
+    //zoomLevels are given by user
     zoomLevels = zoomNumber;
   }
   if (zoomMode == 1) {
+    //number of cluster increase linear
+    //zoomlevels proportional to increase per level
     zoomLevels = Math.ceil(n / zoomNumber);
   }
   if (zoomMode == 2) {
+    //number of cluster increase exponential
+    //zoomlevels logarithmic to zoomNumber
     zoomLevels = Math.ceil(Math.log(n / 2) / Math.log(zoomNumber));
   }
 
@@ -104,6 +111,7 @@ async function calculateClusters(
       n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
 
+    //Buffers to keep track of progress of calculation
     let totalprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
     let partialprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
 
@@ -290,6 +298,7 @@ async function calculateClusters(
       n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
 
+    //Buffers to keep track of progress of calculation
     totalprogress = 0.05;
     let totalprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
     let partialprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
@@ -455,6 +464,7 @@ async function calculateClusters(
     );
 
     totalprogress = 0.05;
+    //Buffers to keep track of progress of calculation
 
     let totalprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
     let partialprogressBuf = Module._malloc(Float32Array.BYTES_PER_ELEMENT);
@@ -955,7 +965,6 @@ function getClusterInfo(
           clusters[cluster_idx].numPoints;
       }
     }
-    //console.log(clusters);
     clusterInfos[i] = clusters;
 
     //`Creating pies for each cluster in zoom layer ${i}, and logging them.`,

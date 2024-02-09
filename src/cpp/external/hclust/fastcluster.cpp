@@ -1,5 +1,5 @@
 //
-// C++ standalone verion of fastcluster by Daniel Müllner
+// C++ standalone version of fastcluster by Daniel Müllner
 //
 // Copyright: Christoph Dalitz, 2020
 //            Daniel Müllner, 2011
@@ -7,7 +7,16 @@
 //            (see the file LICENSE for details)
 //
 
-
+/*
+  Adjustments made by Timo Hofmann:
+  * added options weighted, ward, centroid to hclust_fast
+  * changed double* distance matrix format to &MatrixXd
+  * added totalprogress, partialprogress parameter to hclust_fast
+  * added method 4,5,6
+  * to keep track of progress of the app in general
+  * added clock counter to determine needed calculation time
+    and cout-Statement to check status
+*/
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -136,22 +145,17 @@ int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double*
   
   // call appropriate culstering function
   clock_t start_time1 = clock();
-  std::cout << "initialize hclust_fast" << std::endl;
   cluster_result Z2(n-1);
-  std::cout << "initialize cluster_result" << std::endl;
   if (method == 0) {
     // single link
     MST_linkage_core(n, distmat, Z2, totalprogress, partialprogress);
   }
   else if (method == 1) {
     // complete link
-    std::cout << "initialize complete_link" << std::endl;
     NN_chain_core<METHOD_METR_COMPLETE, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
-    std::cout << "finish complete_link" << std::endl;
   }
   else if (method == 2) {
     // best average distance
-    std::cout << "initialize average_link" << std::endl;
     double* members = new double[n];
     for (int i=0; i<n; i++) members[i] = 1;
     NN_chain_core<METHOD_METR_AVERAGE, t_float>(n, distmat, members, Z2, totalprogress, partialprogress);
@@ -161,16 +165,17 @@ int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double*
     // best median distance (beware: O(n^3))
     generic_linkage<METHOD_METR_MEDIAN, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
   }
+    // TH: New methods added
   else if (method == 4) {
-    // best median distance (beware: O(n^3))
+    // best weighted distance (beware: O(n^3))
     generic_linkage<METHOD_METR_WEIGHTED, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
   }
   else if (method == 5) {
-    // best median distance (beware: O(n^3))
+    // best ward distance (beware: O(n^3))
     generic_linkage<METHOD_METR_WARD, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
   }
   else if (method == 6) {
-    // best median distance (beware: O(n^3))
+    // best centroid distance (beware: O(n^3))
     generic_linkage<METHOD_METR_CENTROID, t_float>(n, distmat, NULL, Z2, totalprogress, partialprogress);
   }
   else {
@@ -178,7 +183,7 @@ int hclust_fast(int n, Eigen::MatrixXd &distmat, int method, int* merge, double*
   }
   
   int* order = new int[n];
-  if (method == 3) {
+  if (method == 3 || method == 4 || method == 5 || method == 6) {  // TH: adjusted, added more methods
     generate_R_dendrogram<true>(merge, height, order, Z2, n);
   } else {
     generate_R_dendrogram<false>(merge, height, order, Z2, n);

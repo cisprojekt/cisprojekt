@@ -170,6 +170,10 @@ function clean_fun_slector() {
   let fun_slector = document.getElementById("D_function");
   fun_slector.options.length = 1;
 }
+/**
+ * This function makes that only one zoom popup is visible. if the other opens
+ * the first one gets deleted.
+ */
 function showZoomAutoPopup() {
   if (document.getElementById("CustomZoomPopUp").style.display == "block") {
     document.getElementById("CustomZoomPopUp").style.display = "none";
@@ -182,7 +186,9 @@ function showZoomCustomPopup() {
   }
   document.getElementById("CustomZoomPopUp").style.display = "block";
 }
-
+/**
+ * This function reads input on zoomlevel-textbox and parses it to int
+ */
 function getAutoZoomlevel() {
   let zoomLevel = document.getElementById("AutoZoomInput").value;
   if (zoomLevel == "") {
@@ -190,7 +196,9 @@ function getAutoZoomlevel() {
   }
   return parseInt(zoomLevel);
 }
-
+/**
+ * This function reads input on zoomlevel-textbox and parses it to int
+ */
 function getCustomZoomlevel() {
   let clustPerLevel = document.getElementById("CustomZoomInput").value;
   if (clustPerLevel == "") {
@@ -198,7 +206,10 @@ function getCustomZoomlevel() {
   }
   return parseInt(clustPerLevel);
 }
-
+/**
+ * This function decides, which zoomMode is chosen. Automatic is default.
+ * If the CustomZoomPopup is visible, zoomMode is custom
+ */
 function getZoomMode() {
   var zoomMode = 0;
   if (document.getElementById("CustomZoomPopUp").style.display == "block") {
@@ -206,7 +217,7 @@ function getZoomMode() {
   }
   return zoomMode;
 }
-/*When text-area not empty, will read the inhalt and check if the first line is the title line */
+/*When text-area not empty, will read the content and check if the first line is the title line */
 function getTitleLine(InputFlag = "coord") {
   console.log("trying to get the title Title line from", InputFlag, "data");
   let inhalt = document.getElementById("text_box").value;
@@ -322,14 +333,14 @@ function ColFlagCheck() {
   while (rows.length > 1) {
     checklist.deleteRow(-1);
   }
-
+  //show tooltip for this particular functionality
   let guide_info = document.getElementById("flag_guide");
   guide_info.innerHTML =
     dimension +
     " Columns are detected in your file. \
     </br> Please choose for every column, that you want to use, one of the following flags: </br> \
   1. Name </br> 2. Distance information </br> 3. Non-numerical flags </br> 4. Numericial flags";
-
+  //build table for specifying csv contents
   for (let d = 1; d < dimension + 1; d++) {
     let _check_tr = checklist.insertRow();
     let cell_1 = _check_tr.insertCell(0);
@@ -561,8 +572,6 @@ function dealwithrun() {
     default:
       console.log("Input data doesn't match the distance function");
   }
-  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-  //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   // read the data from the text area and store it in the arrays
   let points_array = [];
