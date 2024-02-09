@@ -44,10 +44,10 @@ async function calculateClusters(
   let n = inputPoints.length;
   var zoomLevels = 1;
   //determine ZoomMode and Number of Zoomlevels accordingly
-  if (zoomMode == 0) {  
+  if (zoomMode == 0) {
     //automatic - app chooses how many clusters are built
     //zoomLevels are given by user
-    zoomLevels = zoomNumber; 
+    zoomLevels = zoomNumber;
   }
   if (zoomMode == 1) {
     //number of cluster increase linear
@@ -462,7 +462,7 @@ async function calculateClusters(
     let labelsBuf = Module._malloc(
       n * zoomLevels * Int32Array.BYTES_PER_ELEMENT,
     );
-    
+
     totalprogress = 0.05;
     //Buffers to keep track of progress of calculation
 

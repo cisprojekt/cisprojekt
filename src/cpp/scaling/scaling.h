@@ -105,8 +105,10 @@ MatrixXd calculateMDSsmacof(MatrixXd &distMat, float *totalprogress,  // NOLINT
  */
 MatrixXd createRandomPoints(int n, int m);
 
+// Scikit functions
+
 /**
- * @brief calculate a single iteration of the scikit mds
+ * @brief Calculate a single iteration of the scikit mds
  * @param dissimilarities Matrix which contains distance information
  * @param x table with 2 columns contains the final coordinates of MDS
  * @param x_inter table with 2 columns contains coordinates single MDSiteration
@@ -131,7 +133,7 @@ double scikit_mds_single(const MatrixXd &dissimilarities, const MatrixXd &x,
                          int n_components, int max_iter, bool verbose,
                          double eps, int random_state, bool normalized_stress);
 /**
- * @brief calculate the mds, output two-dimensional point coordinates
+ * @brief Calculate the mds, output two-dimensional point coordinates
  * @param dissimilarities Matrix which contains distance information
  * @param x table with 2 columns contains the final coordinates of MDS
  * @param x_inter table with 2 columns contains coordinates single MDSiteration
@@ -157,7 +159,7 @@ void scikit_mds_multi(const MatrixXd &dissimilarities, const MatrixXd &x,
                       bool normalized_stress);
 
 /**
- * @brief calculate the mds, output two-dimensional point coordinates
+ * @brief Calculate the mds, output two-dimensional point coordinates
  * @param distanceMatrix Matrix which contains distance information
  * @param totalprogress tracker how far the calculation progressed over all tasks
  * @param partialprogress tracker how far the calculation over the recent task          
@@ -181,7 +183,8 @@ typedef struct _VECTYPE {
 } VECTYPE;
 
 /**
- * @brief num_p number of points to be processed
+ * @brief Calculate the mds with glimmer, output 2D point coordinates
+ * @param num_p number of points to be processed
  * @param distanceMatrix Matrix which contains distance information
  * @param totalprogress tracker how far the calculation progressed over all tasks
  * @param partialprogress tracker how far the calculation over the recent task          
@@ -192,7 +195,7 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
                              float *totalprogress, float *partialprogress);
 
 /**
- * @brief calculates 32-bit random integers
+ * @brief Calculates 32-bit random integers
  * @return random 32-bit integer
  */
 int myrand(void);

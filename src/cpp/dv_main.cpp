@@ -53,7 +53,7 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
               partialprogress);
 
   // For each zoomlevel calculate a labels assignment
-  // based on chosen zoomMode
+  // Based on chosen zoomMode
   int *oneLabel = new int[n];  // One label array for each zoomLevel
   switch (zoomMode) {
     case 0: {
@@ -65,7 +65,7 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
           maxHeight = height[i];
         }
       }
-      //extract part of the dendrogram based on input height-threshold
+      // Extract part of the dendrogram based on input height-threshold
       for (int i = 0; i < zoomLevels; i++) {
         cutree_cdist(n, merge, height, (i + 1) * maxHeight / zoomLevels,
                      oneLabel);
@@ -73,8 +73,8 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
       }
       break;
     }
-    //extract part of the dendrogram based on input number of clusters
-    //cluster quantity refreshed by substraction by zoomNumber (linear change)
+    // Extract part of the dendrogram based on input number of clusters
+    // Cluster quantity refreshed by substraction by zoomNumber (linear change)
     case 1: {
       for (int i = 0; i < zoomLevels; i++) {
         cutree_k(n, merge, n - (i * zoomNumber), oneLabel);
@@ -82,8 +82,8 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
       }
       break;
     }
-    //extract part of the dendrogram based on input number of clusters
-    //cluster quantity refreshed by division by zoomNumber (exponential change)
+    // Extract part of the dendrogram based on input number of clusters
+    // Cluster quantity refreshed by division by zoomNumber (exponential change)
     case 2: {
       int numclust = n;
       for (int i = 0; i < zoomLevels; i++) {
@@ -106,24 +106,25 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *resultPoints, int type,
                                float *totalprogress, float *partialprogress) {
   // Split the long string into smaller strings
-  // and put them in a vector
+  // And put them in a vector
   clock_t start_time1 = clock();
   MatrixXd distMatMDS(nStrings, nStrings);
 
   // String is converted to bitstring instead of std::string
-  // if boolBit is true and input only contains [0,1]
+  // If boolBit is true and input only contains [0,1]
   if (bool_bit == 1) {
-    //initialize parameter
+    // Initialize parameter
     int substringlength = lengthOfString[0];
     std::cout << "clusterStrings start" << std::endl;
     std::vector<boost::dynamic_bitset<>> bitstringVector;
 
-    //copy information from long string to vector of bitsets 
+    // Copy information from long string to vector of bitsets
     for (int i = 0; i < nStrings; i++) {
       boost::dynamic_bitset<> currentbitset(substringlength);
-      int startidx = i * substringlength; //find the correct pos in long string
+      // find the correct pos in long string
+      int startidx = i * substringlength;
       for (int j = 0; j < substringlength; j++) {
-        //overwrite default zeros when finding '1'
+        // overwrite default zeros when finding '1'
         if (inputStringChar[startidx + j] == '1') {
           currentbitset[j] = 1;
         }
@@ -136,14 +137,14 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
     distMatMDS = distanceMatrix(bitstringVector, substringlength, totalprogress,
                                 partialprogress);
     std::cout << "calculate distancematrix finished" << std::endl;
-  } else { //arbitrary string input
+  } else {  // Arbitrary string input
     std::cout << "clusterStrings start" << std::endl;
-    //convert inputString in Cpp string
+    // Convert inputString in Cpp string
     std::string inputString(inputStringChar);
-    //Container for extracted strings
+    // Container for extracted strings
     std::vector<std::string> stringVector(nStrings);
     int startLength = 0;
-    //extract strings from long string
+    // Extract strings from long string
     for (int i = 0; i < nStrings; i++) {
       std::string tempString =
           inputString.substr(startLength, lengthOfString[i]);
@@ -196,7 +197,7 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
   clock_t start_time3 = clock();
 
   // For each zoomlevel calculate a labels assignment
-  // based on chosen zoomMode
+  // Based on chosen zoomMode
   int *oneLabel = new int[nStrings];
   switch (zoomMode) {
     case 0: {
@@ -208,7 +209,7 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
           maxHeight = height[i];
         }
       }
-      //extract part of the dendrogram based on input height-threshold
+      // Extract part of the dendrogram based on input height-threshold
       for (int i = 0; i < zoomLevels; i++) {
         cutree_cdist(nStrings, merge, height, (i + 1) * maxHeight / zoomLevels,
                      oneLabel);
@@ -216,8 +217,8 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
       }
       break;
     }
-    //extract part of the dendrogram based on input number of clusters
-    //cluster quantity refreshed by substraction by zoomNumber (linear change)
+    // Extract part of the dendrogram based on input number of clusters
+    // Cluster quantity refreshed by substraction by zoomNumber (linear change)
     case 1: {
       for (int i = 0; i < zoomLevels; i++) {
         cutree_k(nStrings, merge, nStrings - (i * zoomNumber), oneLabel);
@@ -225,8 +226,8 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
       }
       break;
     }
-    //extract part of the dendrogram based on input number of clusters
-    //cluster quantity refreshed by division by zoomNumber (exponential change)
+    // Extract part of the dendrogram based on input number of clusters
+    // Cluster quantity refreshed by division by zoomNumber (exponential change)
     case 2: {
       int numclust = nStrings;
       for (int i = 0; i < zoomLevels; i++) {
@@ -309,9 +310,9 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
   std::cout << "clustering finished" << std::endl;
   std::cout << "cutree start" << std::endl;
   clock_t start_time3 = clock();
- 
+
   // For each zoomlevel calculate a labels assignment
-  // based on chosen zoomMode
+  // Based on chosen zoomMode
   int *oneLabel = new int[nPoints];
   switch (zoomMode) {
     case 0: {
@@ -323,7 +324,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
           maxHeight = height[i];
         }
       }
-      //extract part of the dendrogram based on input height-threshold
+      // Extract part of the dendrogram based on input height-threshold
       for (int i = 0; i < zoomLevels; i++) {
         cutree_cdist(nPoints, merge, height, (i + 1) * maxHeight / zoomLevels,
                      oneLabel);
@@ -331,8 +332,8 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
       }
       break;
     }
-    //extract part of the dendrogram based on input number of clusters
-    //cluster quantity refreshed by substraction by zoomNumber (linear change)
+    // Extract part of the dendrogram based on input number of clusters
+    // Cluster quantity refreshed by substraction by zoomNumber (linear change)
     case 1: {
       for (int i = 0; i < zoomLevels; i++) {
         cutree_k(nPoints, merge, nPoints - (i * zoomNumber), oneLabel);
@@ -340,8 +341,8 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
       }
       break;
     }
-    //extract part of the dendrogram based on input number of clusters
-    //cluster quantity refreshed by division by zoomNumber (exponential change)
+    // Extract part of the dendrogram based on input number of clusters
+    // Cluster quantity refreshed by division by zoomNumber (exponential change)
     case 2: {
       int numclust = nPoints;
       for (int i = 0; i < zoomLevels; i++) {
@@ -352,7 +353,7 @@ extern "C" void clusterPoints(double *points, int dimension, double *distMat,
       break;
     }
   }
-  // end time measurement for cutree
+  // End time measurement for cutree
   std::cout << "tree cut" << std::endl;
   clock_t start_time4 = clock();
   delete[] oneLabel;

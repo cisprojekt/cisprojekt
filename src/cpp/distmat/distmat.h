@@ -103,7 +103,7 @@ double tanimotoDistanceBitwise(boost::dynamic_bitset<> fingerprintA,
                                int bitset_size);
 
 /**
- * @brief converts degree angle into radian angle
+ * @brief Converts degree angle into radian angle
  * @param degree angle value in degrees
  * @return angle value in radian
  */
