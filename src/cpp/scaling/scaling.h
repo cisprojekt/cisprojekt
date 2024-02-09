@@ -1,8 +1,8 @@
-// Copyright [year] <Copyright Owner>
+// Copyright [2024] <cisprojekt>
 #ifndef SRC_CPP_SCALING_SCALING_H_
 #define SRC_CPP_SCALING_SCALING_H_
 
-// #include "../distmat/distmat.h"
+// #include "src/cpp/distmat/distmat.h"
 #include <Eigen/Dense>
 #include <algorithm>
 
@@ -120,9 +120,9 @@ MatrixXd createRandomPoints(int n, int m);
  * @param max_iter number when algorithm breaks, no matter the stress
  * @param verbose boolean to activate further runtime documentation
  * @param eps threshold of stress which determines termination
- * @param random_state which random start configuration is chosen
- * @param normalized_stress bool whether stress value is normalize to [0,1]            
- * @return stress
+ * @param random_state which random configuration for non-euclidian input
+ * @param normalized_stress bool whether stress value is normalized to [0,1]            
+ * @return stress value of discrepancy between calculated and original distance
  */
 double scikit_mds_single(const MatrixXd &dissimilarities, const MatrixXd &x,
                          const MatrixXd &x_inter, int n_samples,
@@ -145,9 +145,8 @@ double scikit_mds_single(const MatrixXd &dissimilarities, const MatrixXd &x,
  * @param max_iter number when algorithm breaks, no matter the stress
  * @param verbose boolean to activate further runtime documentation
  * @param eps threshold of stress which determines termination
- * @param random_state which random start configuration is chosen
- * @param normalized_stress bool whether stress value is normalize to [0,1]            
- * @return changes the called by reference x-Matrix
+ * @param random_state which random configuration for non-euclidian input
+ * @param normalized_stress bool whether stress value is normalized to [0,1]
  */
 
 void scikit_mds_multi(const MatrixXd &dissimilarities, const MatrixXd &x,
@@ -194,6 +193,7 @@ MatrixXd calculateMDSglimmer(int num_p, const MatrixXd &distanceMatrix,
 
 /**
  * @brief calculates 32-bit random integers
+ * @return random 32-bit integer
  */
 int myrand(void);
 
@@ -201,7 +201,7 @@ int myrand(void);
  * @brief comparison of two distances
  * @param a distance to be compared
  * @param b distance to be compared         
- * @return which distance is higher
+ * @return a or b ->highd, which distance is higher
  */
 
 int distcomp(const void *a, const void *b);
@@ -210,7 +210,7 @@ int distcomp(const void *a, const void *b);
  * @brief comparison of two indices
  * @param a indices to be compared
  * @param b indices to be compared         
- * @return which index is higher
+ * @return a or b ->idx, which index is higher
  */
 
 int idxcomp(const void *a, const void *b);
@@ -218,19 +218,19 @@ int idxcomp(const void *a, const void *b);
  * @brief comparison of two floats
  * @param a float to be compared
  * @param b float to be compared         
- * @return which float has higher value
+ * @return a or b, which float has higher value
  */
 float max(float a, float b);
 /**
  * @brief comparison of two floats
  * @param a float to be compared
  * @param b float to be compared         
- * @return which float has lower value
+ * @return a or b, which float has lower value
  */
 float min(float a, float b);
 /**
  * @brief checks when algorithm is terminated
- * @param idx_set points to be calculated
+ * @param idx_set storage of distance matrix representation to be calculated
  * @param size number of points to be calculated        
  * @return control value
  */
@@ -238,7 +238,7 @@ int terminate(INDEXTYPE *idx_set, int size);
 /**
  * @brief applies force on points
  * @param size number of points to be calculated 
- * @param fixedsize number of points considered as neighbour
+ * @param fixedsize starting point of calculation (for parallelism)
  * @param distanceMatrix Matrix which contains distance information        
  */
 void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix);
@@ -247,6 +247,12 @@ void force_directed(int size, int fixedsize, const MatrixXd &distanceMatrix);
  * @param embedding storage for points
  */
 void init_embedding(float *embedding);
+/**
+ * @brief determines number of iterations of glimmer algorithm
+ * @param input number of points to be calculated
+ * @param h storage for points in force field
+ * @return levels number of iterations
+ */
 int fill_level_count(int input, int *h);
 
 #endif  // SRC_CPP_SCALING_SCALING_H_

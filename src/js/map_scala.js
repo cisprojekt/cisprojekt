@@ -1,3 +1,4 @@
+//Scaling the map window, so normal and full screen windows show the full map
 function mapPreview() {
   let offsetWid = document.documentElement.clientWidth;
   let offsetHei = document.documentElement.clientHeight;

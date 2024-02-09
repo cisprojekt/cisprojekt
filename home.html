@@ -126,6 +126,7 @@
           CSV-Divider
         </button>
       </div>
+      <!-- textbox to choose how columns are separated in csv -->
       <div id="CSVDeviderPopUp" style="display: none">
         <input
           type="text"
@@ -134,7 +135,7 @@
           class="divider"
         />
       </div>
-      <!---was ist das?-->
+      <!---button to import your formerly exported data-->
       <button
         type="button"
         id="directRun"
@@ -248,6 +249,7 @@
               name="distance_calcu"
               style="width: 200px"
             >
+            <!-- to choose which distance update the hierarchical clustering should use -->
               <option value="noChoice">Distance Calculation</option>
               <option value="0">Single</option>
               <option value="1">Complete</option>
@@ -257,7 +259,7 @@
               <option value="5">Ward</option>
               <option value="6">Centroid</option>
             </select>
-
+            <!-- selection of zoom-mode -->
             <select id="zoom_mode" name="zoom_mode" style="width: 200px">
               <option value="noChoice">Zoom Mode</option>
               <option value="auto" onclick="showZoomAutoPopup()">
@@ -267,7 +269,7 @@
                 Custom
               </option>
             </select>
-
+             <!-- text box for individually taking in number of zoomlevels -->
             <div id="AutoZoomPopUp" style="display: none; margin-left: 400px">
               <input
                 type="text"
@@ -276,6 +278,7 @@
                 class="zoomlevel"
               />
             </div>
+            <!-- text box for individually taking in number of new clusters per zoomlevel -->
             <div id="CustomZoomPopUp" style="display: none; margin-left: 400px">
               <input
                 type="text"
@@ -287,6 +290,7 @@
           </div>
         </div>
         <br />
+        <!-- text box for javascript function that gets evaluated for distance calculation -->
         <textarea
           placeholder="Enter custom distance function"
           id="distFunction"
@@ -388,12 +392,13 @@
 </body>
 
 <script>
+  //button to choose csv for data upload
   document
     .getElementById("addDataButton")
     .addEventListener("click", function () {
       document.getElementById("dataFile").click();
     });
-
+  // call function for input parsing
   document.getElementById("dataFile").addEventListener("change", function () {
     readFileContents();
   });

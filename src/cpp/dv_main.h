@@ -1,7 +1,7 @@
 #ifndef SRC_CPP_DV_MAIN_H_
 #define SRC_CPP_DV_MAIN_H_
 
-// Copyright [year] <Copyright Owner>
+// Copyright [2024] <cisprojekt>
 
 // clang-format off
 
@@ -30,9 +30,9 @@
 #include <map>
 #include <random>
 
-#include "distmat/distmat.h"
-#include "external/hclust/fastcluster.h"
-#include "scaling/scaling.h"
+#include "src/cpp/distmat/distmat.h"
+#include "src/cpp/external/hclust/fastcluster.h"
+#include "src/cpp/scaling/scaling.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -47,12 +47,14 @@ using Eigen::VectorXd;
  * @param n Number of entries
  * @param zoomMode Way of cutting the dendrogram 0 = equidistant, 1 = relative
  * number, 2 = fixed number
- * @param zoomNumber
+ * @param zoomNumber Specifies how fine-grained the zoom-differences will be
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
  * @param calcDistMethod Distance calculation method
- * @param calcScalingMethod Scaling method
  * @param resultPoints Resulting points after MDS
+ * @param calcScalingMethod Scaling method
+ * @param totalprogress progress tracker for calculation over all tasks
+ * @param partialprogress progress tracker calculation over recent task
  */
 extern "C" void clusterCustom(double *distMat, double *height, int *merge,
                               int *labels, int n, int zoomMode, int zoomNumber,
@@ -73,7 +75,7 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
  * @param nStrings Number of strings
  * @param zoomMode Way of cutting the dendrogram 0 = equidistant, 1 = relative
  * number, 2 = fixed number
- * @param zoomNumber
+ * @param zoomNumber Specifies how fine-grained the zoom-differences will be
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
  * @param calcDistMethod Distance calculation method
@@ -81,8 +83,8 @@ extern "C" void clusterCustom(double *distMat, double *height, int *merge,
  * @param bool_bit 1 = string is bitstring, 0 = normal string
  * @param resultPoints Resulting points after MDS
  * @param type 0 = tanimoto, 1 = edit-distance
- * @param totalprogress tracker how far the calculation progressed over all tasks
- * @param partialprogress tracker how far the calculation over the recent task
+ * @param totalprogress progress tracker for calculation over all tasks
+ * @param partialprogress progress tracker calculation over recent task
  */
 extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
                                double *distMat, double *height, int *merge,
@@ -104,14 +106,14 @@ extern "C" void clusterStrings(char *inputStringChar, int *lengthOfString,
  * @param nPoints Number of points
  * @param zoomMode Way of cutting the dendrogram 0 = equidistant, 1 = relative
  * number, 2 = fixed number
- * @param zoomNumber
+ * @param zoomNumber Specifies how fine-grained the zoom-differences will be
  * @param maxIterations Maximum number of iterations
  * @param zoomLevels Number of zoomlevels for the d3js plot
  * @param calcDistMethod Distance calculation method
  * @param calcScalingMethod Scaling method
  * @param isSpherical 0 = euclidean, 1 = earth-distance
- * @param totalprogress tracker how far the calculation progressed over all tasks
- * @param partialprogress tracker how far the calculation over the recent task
+ * @param totalprogress progress tracker for calculation over all tasks
+ * @param partialprogress progress tracker calculation over recent task
  */
 extern "C" void clusterPoints(double *points, int dimension, double *distMat,
                               double *height, int *merge, int *labels,

@@ -1,4 +1,4 @@
-// Copyright [year] <Copyright Owner>
+// Copyright [2024] <cisprojekt>
 #include <float.h>
 #include <math.h>
 #include <stdbool.h>
@@ -23,14 +23,15 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
                          int max_iter = 1000, bool verbose = 0,
                          double eps = 1e-5, int random_state = 0,
                          bool normalized_stress = false) {
-  int m = n_samples * (n_samples - 1) / 2;
   srand(time(NULL));
+  //initialize random configuration
   if (!init) {
     for (int it = 0; it < n_samples; it++) {
       const_cast<MatrixXd &>(x_inter)(it, 0) = drand48();
       const_cast<MatrixXd &>(x_inter)(it, 1) = drand48();
     }
   } else {
+    //if not random, produce the following fixed start configuration:
     const_cast<MatrixXd &>(x_inter)(0, 0) = 0.0;
     const_cast<MatrixXd &>(x_inter)(0, 1) = 0.0;
     const_cast<MatrixXd &>(x_inter)(1, 0) = 1.0;
@@ -43,6 +44,7 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
     const_cast<MatrixXd &>(x_inter)(4, 1) = -1.0;
   }
   double old_stress = 1e15;
+  //new matrix to compare distance to originals
   Eigen::MatrixXd dis(n_samples, n_samples);
   double stress = 0;
   float pStep = 1 / (n_iterations * max_iter);
@@ -50,6 +52,7 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
   for (int it = 0; it < max_iter; it++) {
     *totalprogress += tStep;
     *partialprogress += pStep;
+    //calculate distance as euclidean distance of projected points
     for (int f = 0; f < n_samples; f++) {
       for (int g = 0; g < n_samples; g++) {
         dis(f, g) = sqrt(pow(x_inter(f, 0) - x_inter(g, 0), 2) +
@@ -60,14 +63,17 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
     double normalizer;
     for (int i = 0; i < n_samples; i++) {
       for (int j = 0; j < n_samples; j++) {
+        //calculate stress as gaussian mean squared error
         stress += pow(dis(i, j) - dissimilarities(i, j), 2);
-        if (dis(i, j) == 0) {
+        //to avoid invalid operations, eliminate 0 distances
+        if (dis(i, j) == 0) { 
           dis(i, j) = 1e-5;
         }
       }
     }
     stress *= 0.5;
     if (normalized_stress) {
+      //normalize stress to values between [0,1]
       for (int i = 0; i < n_samples; i++) {
         for (int j = 0; j < n_samples; j++) {
           normalizer += pow(dissimilarities(i, j), 2);
@@ -78,13 +84,16 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
     }
     Eigen::MatrixXd ratio(n_samples, n_samples);
 
+    //change diagonal elements based on distance discrepancy
     ratio.array() = -1.0 * (dissimilarities.array() / dis.array());
 
     for (int i = 0; i < n_samples; i++) {
       ratio(i, i) += -1.0 * (ratio.col(i).sum());
     }
     const_cast<MatrixXd &>(x_inter) = ratio * x_inter;
+    //normalize coordinates
     const_cast<MatrixXd &>(x_inter).array() = 1.0 / n_samples * x_inter.array();
+    //calculate stress
     Eigen::MatrixXd x_sq(n_samples, 2);
     x_sq = (x_inter.array()) * (x_inter.array());
     Eigen::VectorXd interm(n_samples);
@@ -92,6 +101,7 @@ double scikit_mds_single(const Eigen::MatrixXd &dissimilarities,
       interm(i) = sqrt(x_sq.row(i).sum());
     }
     double discrepancy = interm.sum();
+    //termination if stress undercuts threshold
     if ((old_stress - stress / discrepancy) < eps) {
       *partialprogress += pStep * (max_iter - it);
       *totalprogress += tStep * (max_iter - it);
@@ -108,15 +118,19 @@ void scikit_mds_multi(const Eigen::MatrixXd &dissimilarities,
                       bool metric = true, int n_components = 2,
                       int max_iter = 1000, bool verbose = 0, double eps = 1e-5,
                       int random_state = 0, bool normalized_stress = false) {
+  //initialize parameter
   double min_stress = 1e18;
   double stress;
   *partialprogress = 0.0;
+  //call core calculation function
   for (int i = 0; i < n_iterations; i++) {
     stress = scikit_mds_single(dissimilarities, x, x_inter, n_samples,
                                n_iterations, totalprogress, partialprogress,
                                init, metric, n_components, max_iter, verbose,
                                eps, random_state, normalized_stress);
     if (stress < min_stress) {
+      //decide whether recent iteration is better than former iterations
+      //and overwrite final configuration
       for (int k = 0; k < n_samples; k++) {
         const_cast<MatrixXd &>(x)(k, 0) = const_cast<MatrixXd &>(x_inter)(k, 0);
         const_cast<MatrixXd &>(x)(k, 1) = const_cast<MatrixXd &>(x_inter)(k, 1);
@@ -132,6 +146,7 @@ MatrixXd calculateMDSscikit(int n, const MatrixXd &distanceMatrix,
   MatrixXd x(n, 2);
   MatrixXd x_inter(n, 2);
 
+  //default parameters
   int n_iterations = 5;
   bool init = false;
   bool metric = true;
@@ -142,14 +157,17 @@ MatrixXd calculateMDSscikit(int n, const MatrixXd &distanceMatrix,
   double eps = 1e-5;
   int random_state = 0;
   bool normalized_stress = false;
-
+  //execute calculation
   scikit_mds_multi(distanceMatrix, x, x_inter, n_iterations, totalprogress,
                    partialprogress, n_samples, init, metric, n_components,
                    max_iter, verbose, eps, random_state, normalized_stress);
+  
+  //normalize output to interval [-1,1] 
   double *matrixpointer = x.data();
   double min_value = 1e100;
   double max_value = -1e100;
   double factor;
+  //find min and max value in point coordinates
   for (int i = 0; i < 2 * n_samples; i++, matrixpointer++) {
     if (*matrixpointer < min_value) {
       min_value = *matrixpointer;
@@ -158,7 +176,7 @@ MatrixXd calculateMDSscikit(int n, const MatrixXd &distanceMatrix,
       max_value = *matrixpointer;
     }
   }
-
+  //decide the normalization factor
   if (max_value < -min_value) {
     factor = -min_value;
   } else {
@@ -166,7 +184,7 @@ MatrixXd calculateMDSscikit(int n, const MatrixXd &distanceMatrix,
   }
 
   matrixpointer = x.data();
-
+  //calculate normalization
   for (int i = 0; i < 2 * n_samples; i++, matrixpointer++) {
     *matrixpointer /= factor;
   }

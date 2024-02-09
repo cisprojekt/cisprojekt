@@ -35,6 +35,20 @@
   exception if a NaN distance value occurs.
 */
 
+/*
+  Adjustments made by Timo Hofmann:
+  * MST_linkage_core, NN_chain_core and generic_linkage get
+    MatrixXd& D as input instead of double* D
+  * removed short version of conversion triangular index D into 
+    full matrix index D_
+  * added fullprogress and partialprogress parameters to keep track of
+    total calculation progress of the app
+  * changed all occurences of D_ to D
+  * changed is NaN errorcheck to a MatrixXd compatible version
+  * changed f_single, f_complex, f_average, f_weighted, ...
+    function to a version, that takes MatrixXd entries as input
+*/
+
 // Older versions of Microsoft Visual Studio do not have the fenv header.
 #ifdef _MSC_VER
 #if (_MSC_VER == 1500 || _MSC_VER == 1600)
@@ -587,7 +601,6 @@ static void NN_chain_core(const t_index N, Eigen::MatrixXd &D,
   float tStep = 1/N*0.18;
   float pStep = 1/N;
   *partialprogress = 0.0;
-  std::cout << "Fehlercheck" << std::endl;
   double *matrixpointer = D.data();
   for (int it_1 = 0, size = D.size(); i < size; i++) {
 #if HAVE_DIAGNOSTIC
@@ -595,7 +608,7 @@ static void NN_chain_core(const t_index N, Eigen::MatrixXd &D,
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
     if (fc_isnan(*matrixpointer)) {
-      std::cout << "Matrixeintrag " << (i % D.rows()) << ", " << static_cast<int>(i/(D.rows())) << " ist NaN " << std::endl;
+      std::cout << "matrix entry " << (i % D.rows()) << ", " << static_cast<int>(i/(D.rows())) << " is NaN " << std::endl;
       throw(nan_error());
     }
     matrixpointer++;
@@ -607,7 +620,6 @@ static void NN_chain_core(const t_index N, Eigen::MatrixXd &D,
   if (feclearexcept(FE_INVALID))
     throw fenv_error();
 #endif
-  std::cout << "Fehlercheck beendet" << std::endl;
   for (t_index j = 0; j < N - 1; ++j) {
     *partialprogress += pStep;
     *totalprogress += tStep;

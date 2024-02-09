@@ -1,4 +1,4 @@
-// Copyright [year] <Copyright Owner>
+// Copyright [2024] <cisprojekt>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -95,7 +95,7 @@ int main() {
 
   // for euclidean data
   if (dataType == "euclidean") {
-    std::cout << "adsada" << std::endl;
+    std::cout << "euclidean" << std::endl;
 
     // count the number of lines (header not included)
     std::ifstream countFile(inputFile);
